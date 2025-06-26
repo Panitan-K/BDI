@@ -11,11 +11,11 @@ import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel } from '@/componen
 import type { DataLayer, Filters } from '@/types';
 import { suggestDataLayers } from '@/ai/flows/suggest-data-layers';
 import { useToast } from '@/hooks/use-toast';
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogCancel } from './ui/alert-dialog';
 import { Sparkles, Loader2, ListPlus } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
-import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, Legend } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 
 interface SidebarContentComponentProps {
   layers: DataLayer[];
