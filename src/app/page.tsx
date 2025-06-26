@@ -1,20 +1,19 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   SidebarProvider,
   Sidebar,
-  SidebarInset,
   SidebarHeader,
-  SidebarTrigger,
   SidebarContent,
   SidebarFooter,
+  SidebarInset,
+  SidebarTrigger,
 } from '@/components/ui/sidebar';
 import GeoMap from '@/components/geo-map';
 import SidebarContentComponent from '@/components/sidebar-content';
-import type { DataLayer, Filters, GeoFeature } from '@/types';
-import { Layers, Building, Trees, Droplets, Route, User } from 'lucide-react';
-import { mockFeatures } from '@/components/geo-map';
+import type { DataLayer, Filters } from '@/types';
+import { Layers, User, Building } from 'lucide-react';
 
 const initialLayers: DataLayer[] = [
   { id: 'population', name: 'Population', icon: User, enabled: false, description: 'Population density in different areas.' },
@@ -36,7 +35,6 @@ const initialFilters: Filters = {
 export default function GeoMapperPage() {
   const [layers, setLayers] = useState<DataLayer[]>(initialLayers);
   const [filters, setFilters] = useState<Filters>(initialFilters);
-  const [selectedFeature, setSelectedFeature] = useState<GeoFeature | null>(null);
 
   const handleLayerToggle = (id: DataLayer['id']) => {
     setLayers(prevLayers =>
@@ -61,24 +59,10 @@ export default function GeoMapperPage() {
       enabled: true,
       description: `User-suggested layer: ${layerName}`,
     };
-    // Avoid adding duplicate layers
     if (!layers.find(l => l.id === newLayer.id)) {
       setLayers(prev => [...prev, newLayer]);
     }
   };
-
-  const filteredFeatures = useMemo(() => {
-    return mockFeatures.filter(feature => {
-      const { population, height } = feature.properties;
-      const { population: popFilter, buildingHeight: heightFilter } = filters;
-
-      const populationMatch = !layers.find(l => l.id === 'population')?.enabled || !population || (population >= popFilter.min && population <= popFilter.max);
-      const heightMatch = !population || (height || 0) >= heightFilter.min && (height || 0) <= heightFilter.max;
-      
-      return populationMatch && heightMatch;
-    });
-  }, [filters, layers]);
-
 
   return (
     <SidebarProvider>
@@ -109,10 +93,8 @@ export default function GeoMapperPage() {
           <SidebarTrigger />
         </div>
         <GeoMap
-          features={filteredFeatures}
           activeLayers={layers.filter(l => l.enabled)}
-          selectedFeature={selectedFeature}
-          onSelectFeature={setSelectedFeature}
+          filters={filters}
         />
       </SidebarInset>
     </SidebarProvider>

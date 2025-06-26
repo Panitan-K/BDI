@@ -4,7 +4,8 @@ export interface GeoFeature {
   id: string;
   type: 'building' | 'park' | 'water';
   name: string;
-  path: string; // SVG path data
+  lat: number;
+  lng: number;
   properties: {
     population?: number;
     usage?: 'residential' | 'commercial' | 'recreational';

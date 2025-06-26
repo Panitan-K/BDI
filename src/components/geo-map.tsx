@@ -1,147 +1,131 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
-import type { GeoFeature, DataLayer } from '@/types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import React, { useState, useMemo } from 'react';
+import { APIProvider, Map, AdvancedMarker, InfoWindow } from '@vis.gl/react-google-maps';
+import type { GeoFeature, DataLayer, Filters } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { Button } from './ui/button';
-import { Plus, Minus } from 'lucide-react';
+import { Building, Trees, Waves } from 'lucide-react';
 
-export const mockFeatures: GeoFeature[] = [
-  { id: 'b1', type: 'building', name: 'Quantum Tower', path: 'M100,100 h40 v50 h-40 z', properties: { population: 1200, usage: 'commercial', height: 150 } },
-  { id: 'b2', type: 'building', name: 'Orion Complex', path: 'M150,120 h50 v60 h-50 z', properties: { population: 850, usage: 'residential', height: 90 } },
-  { id: 'b3', type: 'building', name: 'Skyline Hub', path: 'M110,200 h30 v40 h-30 z', properties: { population: 300, usage: 'commercial', height: 45 } },
-  { id: 'p1', type: 'park', name: 'Central Park', path: 'M220,100 h80 v100 h-80 z', properties: { usage: 'recreational' } },
-  { id: 'w1', type: 'water', name: 'River Styx', path: 'M50,250 q100 -50 200 0', properties: {} },
-  { id: 'b4', type: 'building', name: 'The Monolith', path: 'M320,150 h20 v80 h-20 z', properties: { population: 2500, usage: 'commercial', height: 180 } },
-  { id: 'b5', type: 'building', name: 'Vertex Plaza', path: 'M230,220 h60 v30 h-60 z', properties: { population: 450, usage: 'commercial', height: 35 } },
+const mockFeatures: GeoFeature[] = [
+  { id: 'b1', type: 'building', name: 'Coit Tower', lat: 37.8024, lng: -122.4058, properties: { population: 1200, usage: 'commercial', height: 64 } },
+  { id: 'b2', type: 'building', name: 'Transamerica Pyramid', lat: 37.7952, lng: -122.4028, properties: { population: 2500, usage: 'commercial', height: 260 } },
+  { id: 'b3', type: 'building', name: 'Salesforce Tower', lat: 37.7897, lng: -122.3969, properties: { population: 4000, usage: 'commercial', height: 326 } },
+  { id: 'p1', type: 'park', name: 'Washington Square Park', lat: 37.8005, lng: -122.4103, properties: { usage: 'recreational' } },
+  { id: 'w1', type: 'water', name: 'Pier 39', lat: 37.8087, lng: -122.4098, properties: {} },
 ];
 
-
-const getFeatureFill = (feature: GeoFeature, activeLayers: DataLayer[]) => {
-  if (feature.type === 'park') return 'hsl(120, 40%, 30%)';
-  if (feature.type === 'water') return 'hsl(200, 50%, 40%)';
-  
+const getMarkerColor = (feature: GeoFeature, activeLayers: DataLayer[]) => {
   if (activeLayers.some(l => l.id === 'population')) {
     const pop = feature.properties.population || 0;
-    const intensity = Math.min(pop / 2000, 1);
-    return `hsl(48, 100%, ${50 + intensity * 40}%)`;
+    const intensity = Math.min(pop / 4000, 1);
+    return `hsl(48, 100%, ${50 + intensity * 30}%)`;
   }
-
   if (activeLayers.some(l => l.id === 'land_use')) {
     switch (feature.properties.usage) {
-      case 'commercial': return 'hsl(300, 40%, 50%)';
+      case 'commercial': return 'hsl(var(--primary))';
       case 'residential': return 'hsl(240, 40%, 60%)';
+      case 'recreational': return 'hsl(120, 40%, 40%)';
       default: return 'hsl(0, 0%, 50%)';
     }
   }
-
   if (activeLayers.some(l => l.id === 'elevation')) {
     const height = feature.properties.height || 0;
-    const intensity = Math.min(height / 200, 1);
-    return `hsl(0, 80%, ${50 + intensity * 30}%)`;
+    const intensity = Math.min(height / 350, 1);
+    return `hsl(183, 100%, ${30 + intensity * 40}%)`;
   }
-  
-  return 'hsl(0, 0%, 50%)';
+  return 'hsl(var(--accent))';
+};
+
+const getIcon = (type: GeoFeature['type']) => {
+  switch (type) {
+    case 'building':
+      return <Building className="w-4 h-4 text-white" />;
+    case 'park':
+      return <Trees className="w-4 h-4 text-white" />;
+    case 'water':
+      return <Waves className="w-4 h-4 text-white" />;
+    default:
+      return null;
+  }
 };
 
 interface GeoMapProps {
-  features: GeoFeature[];
   activeLayers: DataLayer[];
-  selectedFeature: GeoFeature | null;
-  onSelectFeature: (feature: GeoFeature | null) => void;
+  filters: Filters;
 }
 
-const GeoMap = ({ features, activeLayers, selectedFeature, onSelectFeature }: GeoMapProps) => {
-  const [viewState, setViewState] = useState({ x: -150, y: -150, zoom: 1 });
-  const mapRef = useRef<HTMLDivElement>(null);
+const GeoMap = ({ activeLayers, filters }: GeoMapProps) => {
+  const [selectedFeature, setSelectedFeature] = useState<GeoFeature | null>(null);
 
-  const handleZoom = (direction: 'in' | 'out') => {
-    setViewState(prev => ({ ...prev, zoom: Math.max(0.2, prev.zoom + (direction === 'in' ? 0.2 : -0.2)) }));
-  };
-  
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
+  const filteredFeatures = useMemo(() => {
+    return mockFeatures.filter(feature => {
+      const { population, height } = feature.properties;
+      const { population: popFilter, buildingHeight: heightFilter } = filters;
+      
+      const populationMatch = !population || (population >= popFilter.min && population <= popFilter.max);
+      const heightMatch = !height || (height >= heightFilter.min && height <= heightFilter.max);
+      
+      return populationMatch && heightMatch;
+    });
+  }, [filters]);
 
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const zoomFactor = e.deltaY * -0.001;
-      setViewState(prev => ({...prev, zoom: Math.max(0.1, Math.min(5, prev.zoom + zoomFactor))}));
-    };
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-    const mapEl = mapRef.current;
-    mapEl?.addEventListener('wheel', handleWheel, { passive: false });
-    return () => mapEl?.removeEventListener('wheel', handleWheel);
-  }, []);
+  if (!apiKey) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted">
+        <p className="text-muted-foreground">Google Maps API key is missing.</p>
+      </div>
+    );
+  }
 
   return (
-    <div ref={mapRef} className="relative w-full h-full bg-background overflow-hidden cursor-grab active:cursor-grabbing">
-      <motion.div
-        className="w-full h-full"
-        style={{ perspective: '2000px' }}
-        drag
-        dragMomentum={false}
-      >
-        <motion.div
-          className="relative w-full h-full transition-transform duration-200 ease-linear"
-          style={{
-            transform: `scale(${viewState.zoom}) rotateX(45deg) rotateZ(0deg)`,
-            transformStyle: 'preserve-3d',
-          }}
+    <div className="w-full h-full">
+      <APIProvider apiKey={apiKey}>
+        <Map
+          defaultCenter={{ lat: 37.795, lng: -122.405 }}
+          defaultZoom={15}
+          mapId="e909980143896582"
+          disableDefaultUI={true}
         >
-          <svg viewBox="0 0 400 400" className="absolute top-0 left-0 w-[400px] h-[400px]">
-            {features.map(feature => (
-              <Popover key={feature.id} open={selectedFeature?.id === feature.id} onOpenChange={(isOpen) => onSelectFeature(isOpen ? feature : null)}>
-                <PopoverTrigger asChild>
-                  <motion.path
-                    d={feature.path}
-                    onClick={() => onSelectFeature(feature)}
-                    className={cn(
-                      'stroke-accent/50 stroke-1 cursor-pointer transition-all duration-300 hover:stroke-accent hover:stroke-2',
-                      { 'stroke-accent stroke-2': selectedFeature?.id === feature.id }
-                    )}
-                    initial={{ fill: '#555' }}
-                    animate={{ fill: getFeatureFill(feature, activeLayers) }}
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </PopoverTrigger>
-              </Popover>
-            ))}
-          </svg>
-        </motion.div>
-      </motion.div>
-
-      {selectedFeature && (
-        <div className="absolute top-4 right-4 z-10 w-80">
-          <Card className="bg-background/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="font-headline text-primary">{selectedFeature.name}</CardTitle>
-              <CardDescription>{selectedFeature.type.charAt(0).toUpperCase() + selectedFeature.type.slice(1)}</CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm space-y-2">
-              {Object.entries(selectedFeature.properties).map(([key, value]) => (
-                <div key={key} className="flex justify-between">
-                  <span className="text-muted-foreground">{key.charAt(0).toUpperCase() + key.slice(1)}:</span>
-                  <span>{value}</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
-        <Button size="icon" onClick={() => handleZoom('in')} className="bg-primary/80 hover:bg-primary">
-          <Plus />
-        </Button>
-        <Button size="icon" onClick={() => handleZoom('out')} className="bg-primary/80 hover:bg-primary">
-          <Minus />
-        </Button>
-      </div>
+          {filteredFeatures.map(feature => (
+            <AdvancedMarker
+              key={feature.id}
+              position={{ lat: feature.lat, lng: feature.lng }}
+              onClick={() => setSelectedFeature(feature)}
+            >
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-200 hover:scale-110"
+                style={{ backgroundColor: getMarkerColor(feature, activeLayers) }}
+              >
+                {getIcon(feature.type)}
+              </div>
+            </AdvancedMarker>
+          ))}
+          {selectedFeature && (
+            <InfoWindow
+              position={{ lat: selectedFeature.lat, lng: selectedFeature.lng }}
+              onCloseClick={() => setSelectedFeature(null)}
+              pixelOffset={[0, -40]}
+            >
+              <Card className="bg-popover text-popover-foreground border-none shadow-lg w-64">
+                <CardHeader>
+                  <CardTitle className="font-headline text-primary">{selectedFeature.name}</CardTitle>
+                  <CardDescription>{selectedFeature.type.charAt(0).toUpperCase() + selectedFeature.type.slice(1)}</CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm space-y-2">
+                  {Object.entries(selectedFeature.properties).map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <span className="text-muted-foreground">{key.charAt(0).toUpperCase() + key.slice(1)}:</span>
+                      <span>{value}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </InfoWindow>
+          )}
+        </Map>
+      </APIProvider>
     </div>
   );
 };
