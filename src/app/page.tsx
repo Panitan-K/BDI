@@ -122,196 +122,194 @@ export default function NliPlatformPage() {
   }
 
   return (
-    <div className={cn(
-      "flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden",
-      isFullscreen && "absolute inset-0 z-50"
-    )}>
-      {!isFullscreen && (
-        <NliHeader 
-          activeProject={activeProject} 
-          onProjectChange={handleProjectChange} 
-          isComparing={isComparing}
-          onCompareToggle={handleCompareToggle}
-          onShare={() => setShareOpen(true)}
-          onFullscreenToggle={() => setIsFullscreen(prev => !prev)}
-        />
-      )}
-
-      {/* Toolbars Row */}
-       {!isFullscreen && (
-          <div className="flex items-center justify-between px-4 py-1 border-b border-border/50 bg-secondary/20 shrink-0">
-              <div className="flex items-center gap-1 w-auto">
-                <TooltipProvider>
-                    <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <Upload className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Import Data</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <Settings className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Settings</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <Layers className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Layer Control</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <BookText className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Legend</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <Table2 className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Attribute Table</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </div>
-                </TooltipProvider>
-              </div>
-              <div className="flex-1 flex justify-center">
-                  <NliMapToolbar 
-                      onBasemapChange={setBasemapStyle}
-                      activeTool={activeTool}
-                      onToolSelect={handleToolSelect}
-                      is3D={is3D}
-                      on3DToggle={() => setIs3D(!is3D)}
-                  />
-              </div>
-              <div className="flex items-center gap-1 w-auto justify-end">
-                <TooltipProvider>
-                    <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <SlidersHorizontal className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Parameters</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <History className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Time-Series Slider</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <StickyNote className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>User Notes</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
-                                    <Download className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Export Data</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8" onClick={() => setAiChatOpen(true)}>
-                                    <Bot className="h-4 w-4"/>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Ask AI Assistant</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </div>
-                </TooltipProvider>
-              </div>
-          </div>
-       )}
-
-      <div className={cn("flex flex-1 overflow-hidden transition-all duration-300", isFullscreen ? "p-0" : "p-3 gap-3")}>
-        {!isFullscreen && <NliLeftSidebar 
-          activeLayers={activeLayers}
-          onLayerToggle={handleLayerToggle}
-        />}
-
-        <main className="flex-1 flex flex-col relative rounded-lg overflow-hidden border border-border/20">
-          {isFullscreen && (
-             <Button 
-                variant="secondary"
-                size="sm"
-                className="absolute top-4 left-4 z-20"
-                onClick={() => setIsFullscreen(false)}>
-                <Download className="mr-2 h-4 w-4" />
-                Exit Fullscreen
-             </Button>
-          )}
-
-          <NliMap 
-            is3D={is3D} 
-            activeLayers={activeLayers} 
-            basemapStyle={basemapStyle} 
-            activeTool={activeTool}
-            onRegionClick={handleRegionSelect}
-            selectedRegion={selectedRegion}
+    <TooltipProvider>
+      <div className={cn(
+        "flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden",
+        isFullscreen && "absolute inset-0 z-50"
+      )}>
+        {!isFullscreen && (
+          <NliHeader 
+            activeProject={activeProject} 
+            onProjectChange={handleProjectChange} 
+            isComparing={isComparing}
+            onCompareToggle={handleCompareToggle}
+            onShare={() => setShareOpen(true)}
+            onFullscreenToggle={() => setIsFullscreen(prev => !prev)}
           />
+        )}
 
-            <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
-              <Button
-                size="icon"
-                className="bg-primary hover:bg-primary/90 rounded-full h-11 w-11 shadow-lg"
-                onClick={() => setAiChatOpen(true)}
-                title="Open AI Assistant"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-primary-foreground h-5 w-5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-              </Button>
+        {/* Toolbars Row */}
+        {!isFullscreen && (
+            <div className="flex items-center justify-between px-4 py-1 border-b border-border/50 bg-secondary/20 shrink-0">
+                <div className="flex items-center gap-1 w-auto">
+                      <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <Upload className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Import Data</p>
+                              </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <Settings className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Settings</p>
+                              </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <Layers className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Layer Control</p>
+                              </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <BookText className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Legend</p>
+                              </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <Table2 className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Attribute Table</p>
+                              </TooltipContent>
+                          </Tooltip>
+                      </div>
+                </div>
+                <div className="flex-1 flex justify-center">
+                    <NliMapToolbar 
+                        onBasemapChange={setBasemapStyle}
+                        activeTool={activeTool}
+                        onToolSelect={handleToolSelect}
+                        is3D={is3D}
+                        on3DToggle={() => setIs3D(!is3D)}
+                    />
+                </div>
+                <div className="flex items-center gap-1 w-auto justify-end">
+                      <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <SlidersHorizontal className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Parameters</p>
+                              </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <History className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Time-Series Slider</p>
+                              </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <StickyNote className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>User Notes</p>
+                              </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                      <Download className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Export Data</p>
+                              </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                              <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8" onClick={() => setAiChatOpen(true)}>
+                                      <Bot className="h-4 w-4"/>
+                                  </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                  <p>Ask AI Assistant</p>
+                              </TooltipContent>
+                          </Tooltip>
+                      </div>
+                </div>
             </div>
-        </main>
-        
-        {!isFullscreen && <NliRightSidebar 
-          activeProject={activeProject} 
-          isComparing={isComparing} 
-          selectedRegion={selectedRegion}
-          onClearRegion={() => setSelectedRegion(null)}
-        />}
+        )}
+
+        <div className={cn("flex flex-1 overflow-hidden transition-all duration-300", isFullscreen ? "p-0" : "p-3 gap-3")}>
+          {!isFullscreen && <NliLeftSidebar 
+            activeLayers={activeLayers}
+            onLayerToggle={handleLayerToggle}
+          />}
+
+          <main className="flex-1 flex flex-col relative rounded-lg overflow-hidden border border-border/20">
+            {isFullscreen && (
+              <Button 
+                  variant="secondary"
+                  size="sm"
+                  className="absolute top-4 left-4 z-20"
+                  onClick={() => setIsFullscreen(false)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Exit Fullscreen
+              </Button>
+            )}
+
+            <NliMap 
+              is3D={is3D} 
+              activeLayers={activeLayers} 
+              basemapStyle={basemapStyle} 
+              activeTool={activeTool}
+              onRegionClick={handleRegionSelect}
+              selectedRegion={selectedRegion}
+            />
+
+              <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+                <Button
+                  size="icon"
+                  className="bg-primary hover:bg-primary/90 rounded-full h-11 w-11 shadow-lg"
+                  onClick={() => setAiChatOpen(true)}
+                  title="Open AI Assistant"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-primary-foreground h-5 w-5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                </Button>
+              </div>
+          </main>
+          
+          {!isFullscreen && <NliRightSidebar 
+            activeProject={activeProject} 
+            isComparing={isComparing} 
+            selectedRegion={selectedRegion}
+            onClearRegion={() => setSelectedRegion(null)}
+          />}
+        </div>
+        <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} />
+        <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} />
       </div>
-      <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} />
-      <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} />
-    </div>
+    </TooltipProvider>
   );
 }

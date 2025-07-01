@@ -37,64 +37,61 @@ const tools = [
 export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D, on3DToggle }: NliMapToolbarProps) {
   return (
     <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
-      <TooltipProvider>
+      <DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="sm" className="glass-panel text-white h-8">
+                <Layers className="h-4 w-4 mr-2" />
+                Basemap
+                <ChevronDown className="h-4 w-4 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Change Basemap</p>
+          </TooltipContent>
+        </Tooltip>
+        <DropdownMenuContent>
+          {basemaps.map((basemap) => (
+            <DropdownMenuItem key={basemap.name} onClick={() => onBasemapChange(basemap.url)}>
+              {basemap.name}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-        <DropdownMenu>
-          <Tooltip>
+      {tools.map((tool) => (
+          <Tooltip key={tool.name}>
             <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="sm" className="glass-panel text-white h-8">
-                  <Layers className="h-4 w-4 mr-2" />
-                  Basemap
-                  <ChevronDown className="h-4 w-4 ml-1" />
+                <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                    "text-white hover:bg-accent hover:text-primary h-8 w-8",
+                    activeTool === tool.name && "bg-accent text-primary"
+                )}
+                onClick={() => onToolSelect(tool.name)}
+                >
+                <tool.icon className="h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Change Basemap</p>
+                <p>{tool.name} Tool</p>
             </TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent>
-            {basemaps.map((basemap) => (
-              <DropdownMenuItem key={basemap.name} onClick={() => onBasemapChange(basemap.url)}>
-                {basemap.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        </Tooltip>
+      ))}
 
-        {tools.map((tool) => (
-           <Tooltip key={tool.name}>
-              <TooltipTrigger asChild>
-                  <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                      "text-white hover:bg-accent hover:text-primary h-8 w-8",
-                      activeTool === tool.name && "bg-accent text-primary"
-                  )}
-                  onClick={() => onToolSelect(tool.name)}
-                  >
-                  <tool.icon className="h-4 w-4" />
-                  </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                  <p>{tool.name} Tool</p>
-              </TooltipContent>
-          </Tooltip>
-        ))}
-
-          <Tooltip>
-              <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8" onClick={on3DToggle}>
-                  <Globe className="h-4 w-4" />
-              </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-              <p>Toggle {is3D ? "2D" : "3D"} View</p>
-              </TooltipContent>
-          </Tooltip>
-      </TooltipProvider>
+        <Tooltip>
+            <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8" onClick={on3DToggle}>
+                <Globe className="h-4 w-4" />
+            </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+            <p>Toggle {is3D ? "2D" : "3D"} View</p>
+            </TooltipContent>
+        </Tooltip>
     </div>
   );
 }
