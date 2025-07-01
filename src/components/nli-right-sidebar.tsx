@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -18,43 +19,96 @@ import {
 
 const project1Data = {
   name: "Project 1: Eastern EEC High-Speed Rail",
+  name_th: "โปรเจกต์ 1: รถไฟความเร็วสูง EEC ตะวันออก",
   gdpData: Array.from({ length: 10 }, (_, i) => ({ name: `T${i+1}`, v: Math.random() * 3 + 1 })),
   freightData: Array.from({ length: 10 }, (_, i) => ({ name: `T${i+1}`,v: Math.random() * 20 + 10 })),
-  jobsData: [ { name: 'Construction', value: 4500 }, { name: 'Logistics', value: 2700 }, { name: 'Services', value: 3200 }, { name: 'Manufacturing', value: 1800 } ],
-  pieData: [ { name: 'North', value: 400 }, { name: 'East', value: 300 }, { name: 'South', value: 300 }, { name: 'West', value: 200 } ],
+  jobsData: [ { name: 'Construction', name_th: 'ก่อสร้าง', value: 4500 }, { name: 'Logistics', name_th: 'โลจิสติกส์', value: 2700 }, { name: 'Services', name_th: 'บริการ', value: 3200 }, { name: 'Manufacturing', name_th: 'การผลิต', value: 1800 } ],
+  pieData: [ { name: 'North', name_th: 'เหนือ', value: 400 }, { name: 'East', name_th: 'ตะวันออก', value: 300 }, { name: 'South', name_th: 'ใต้', value: 300 }, { name: 'West', name_th: 'ตะวันตก', value: 200 } ],
   economicImpact: 2.8, logisticFlow: 15, environmentalScore: 72, investmentSuitability: 79, landPriceTrend: 2.1, businessReg: 425, skilledLabor: 38.2
 };
 const project2Data = {
   name: "Project 2: Southern Land Bridge",
+  name_th: "โปรเจกต์ 2: สะพานเศรษฐกิจภาคใต้",
   gdpData: Array.from({ length: 10 }, (_, i) => ({ name: `T${i+1}`, v: Math.random() * 2 + 0.5 })),
   freightData: Array.from({ length: 10 }, (_, i) => ({ name: `T${i+1}`,v: Math.random() * 15 + 5 })),
-  jobsData: [ { name: 'Construction', value: 2200 }, { name: 'Logistics', value: 5100 }, { name: 'Services', value: 1800 }, { name: 'Manufacturing', value: 4200 } ],
-  pieData: [ { name: 'North', value: 150 }, { name: 'East', value: 550 }, { name: 'South', value: 200 }, { name: 'West', value: 100 } ],
+  jobsData: [ { name: 'Construction', name_th: 'ก่อสร้าง', value: 2200 }, { name: 'Logistics', name_th: 'โลจิสติกส์', value: 5100 }, { name: 'Services', name_th: 'บริการ', value: 1800 }, { name: 'Manufacturing', name_th: 'การผลิต', value: 4200 } ],
+  pieData: [ { name: 'North', name_th: 'เหนือ', value: 150 }, { name: 'East', name_th: 'ตะวันออก', value: 550 }, { name: 'South', name_th: 'ใต้', value: 200 }, { name: 'West', name_th: 'ตะวันตก', value: 100 } ],
   economicImpact: 1.2, logisticFlow: 8, environmentalScore: 85, investmentSuitability: 68, landPriceTrend: 1.3, businessReg: 210, skilledLabor: 25.6
 };
 const comparisonData = {
   name: "Comparison: P1 vs P2",
+  name_th: "เปรียบเทียบ: P1 vs P2",
   gdpData: project1Data.gdpData.map((d, i) => ({name: d.name, p1: d.v, p2: project2Data.gdpData[i].v})),
   freightData: project1Data.freightData.map((d, i) => ({name: d.name, p1: d.v, p2: project2Data.freightData[i].v})),
-  jobsData: [ { name: 'Construction', p1: 4500, p2: 2200 }, { name: 'Logistics', p1: 2700, p2: 5100 }, { name: 'Services', p1: 3200, p2: 1800 }, { name: 'Manufacturing', p1: 1800, p2: 4200 } ],
-  pieData: project1Data.pieData.map((d, i) => ({ name: d.name, p1: d.value, p2: project2Data.pieData[i].value })),
+  jobsData: [ { name: 'Construction', name_th: 'ก่อสร้าง', p1: 4500, p2: 2200 }, { name: 'Logistics', name_th: 'โลจิสติกส์', p1: 2700, p2: 5100 }, { name: 'Services', name_th: 'บริการ', p1: 3200, p2: 1800 }, { name: 'Manufacturing', name_th: 'การผลิต', p1: 1800, p2: 4200 } ],
+  pieData: project1Data.pieData.map((d, i) => ({ name: d.name, name_th: d.name_th, p1: d.value, p2: project2Data.pieData[i].value })),
   economicImpact: { p1: 2.8, p2: 1.2 }, logisticFlow: { p1: 15, p2: 8 }, environmentalScore: { p1: 72, p2: 85 }, investmentSuitability: { p1: 79, p2: 68 }, landPriceTrend: { p1: 2.1, p2: 1.3 }, businessReg: { p1: 425, p2: 210 }, skilledLabor: { p1: 38.2, p2: 25.6 }
 };
 const regionalMockData: Record<string, any> = {
-    'Bangkok': { ...project1Data, name: 'Bangkok Analysis', economicImpact: 5.1, environmentalScore: 55, investmentSuitability: 92 },
-    'Chiang Mai': { ...project2Data, name: 'Chiang Mai Analysis', economicImpact: 1.8, environmentalScore: 88, investmentSuitability: 75 },
-    'Phuket': { ...project1Data, name: 'Phuket Analysis', economicImpact: 3.5, environmentalScore: 78, investmentSuitability: 85 },
-    'Chon Buri': { ...project2Data, name: 'Chon Buri Analysis', economicImpact: 4.2, environmentalScore: 65, investmentSuitability: 89 }
+    'Bangkok': { ...project1Data, name: 'Bangkok Analysis', name_th: 'การวิเคราะห์กรุงเทพมหานคร', economicImpact: 5.1, environmentalScore: 55, investmentSuitability: 92 },
+    'Chiang Mai': { ...project2Data, name: 'Chiang Mai Analysis', name_th: 'การวิเคราะห์เชียงใหม่', economicImpact: 1.8, environmentalScore: 88, investmentSuitability: 75 },
+    'Phuket': { ...project1Data, name: 'Phuket Analysis', name_th: 'การวิเคราะห์ภูเก็ต', economicImpact: 3.5, environmentalScore: 78, investmentSuitability: 85 },
+    'Chon Buri': { ...project2Data, name: 'Chon Buri Analysis', name_th: 'การวิเคราะห์ชลบุรี', economicImpact: 4.2, environmentalScore: 65, investmentSuitability: 89 }
 };
+
+const translations = {
+  en: {
+    economicImpact: 'Economic Impact',
+    gdpForecast: 'GDP Forecast',
+    logisticFlow: 'Logistic Flow',
+    freightVolume: 'Freight Volume',
+    envScore: 'Environmental Score',
+    investSuitability: 'Investment Suitability',
+    jobsCreated: 'Jobs Created (k)',
+    regionalDist: 'Regional Distribution',
+    predictiveTools: 'Predictive Tools',
+    landPriceTrend: 'Land Price Trend',
+    landPriceUnit: 'Yr/Yr',
+    landPriceTooltip: 'Annualized land price increase based on current investment models.',
+    businessReg: 'Business Registration',
+    businessRegUnit: 'May 2024',
+    businessRegTooltip: 'New business registrations in the target region this month.',
+    skilledLabor: 'Skilled Labor (k)',
+    skilledLaborTooltip: 'Available skilled labor pool in the sub-region.',
+    project1: 'Project 1',
+    project2: 'Project 2',
+    jobs: 'Jobs',
+  },
+  th: {
+    economicImpact: 'ผลกระทบทางเศรษฐกิจ',
+    gdpForecast: 'พยากรณ์ GDP',
+    logisticFlow: 'การไหลของโลจิสติกส์',
+    freightVolume: 'ปริมาณการขนส่งสินค้า',
+    envScore: 'คะแนนสิ่งแวดล้อม',
+    investSuitability: 'ความเหมาะสมในการลงทุน',
+    jobsCreated: 'จำนวนงานที่สร้าง (พัน)',
+    regionalDist: 'การกระจายตัวในภูมิภาค',
+    predictiveTools: 'เครื่องมือคาดการณ์',
+    landPriceTrend: 'แนวโน้มราคาที่ดิน',
+    landPriceUnit: 'ต่อปี',
+    landPriceTooltip: 'การเพิ่มขึ้นของราคาที่ดินรายปีตามแบบจำลองการลงทุนปัจจุบัน',
+    businessReg: 'การจดทะเบียนธุรกิจ',
+    businessRegUnit: 'พ.ค. 2567',
+    businessRegTooltip: 'การจดทะเบียนธุรกิจใหม่ในพื้นที่เป้าหมายในเดือนนี้',
+    skilledLabor: 'แรงงานมีฝีมือ (พัน)',
+    skilledLaborTooltip: 'จำนวนแรงงานมีฝีมือที่มีอยู่ในอนุภูมิภาค',
+    project1: 'โปรเจกต์ 1',
+    project2: 'โปรเจกต์ 2',
+    jobs: 'จำนวนงาน',
+  }
+};
+
 
 const COLORS = ['#57C3FF', '#4A69F6', '#FCE525', '#6C72FF'];
 
-const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+const CustomTooltip = ({ active, payload, label, language }: TooltipProps<number, string> & { language: string }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
+    const nameKey = language === 'en' ? 'name' : 'name_th';
+    const labelToShow = data[nameKey] || label;
     return (
       <div className="p-2 glass-panel text-white rounded-md border-border text-sm">
-        <p className="label font-bold">{`${label}`}</p>
+        <p className="label font-bold">{`${labelToShow}`}</p>
         {payload.map((p, index) => (
              <p key={index} style={{ color: p.color }}>{`${p.name}: ${p.value?.toLocaleString()}`}</p>
         ))}
@@ -65,7 +119,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
   return null;
 };
 
-const SmallSparkline = ({ data, dataKey, dataKey2, strokeColor, strokeColor2 }: { data: any[], dataKey: string, dataKey2?: string, strokeColor: string, strokeColor2?: string }) => (
+const SmallSparkline = ({ data, dataKey, dataKey2, strokeColor, strokeColor2, language }: { data: any[], dataKey: string, dataKey2?: string, strokeColor: string, strokeColor2?: string, language: string }) => (
   <ResponsiveContainer width="100%" height={40}>
     <AreaChart data={data}>
       <defs>
@@ -78,7 +132,7 @@ const SmallSparkline = ({ data, dataKey, dataKey2, strokeColor, strokeColor2 }: 
           <stop offset="100%" stopColor={strokeColor2} stopOpacity={0} />
         </linearGradient>}
       </defs>
-      <Tooltip content={<CustomTooltip />} />
+      <Tooltip content={<CustomTooltip language={language} />} />
       <Area type="monotone" dataKey={dataKey} stroke={strokeColor} strokeWidth={2} fill={`url(#sparkline-${strokeColor})`} />
       {dataKey2 && strokeColor2 && <Area type="monotone" dataKey={dataKey2} stroke={strokeColor2} strokeWidth={2} fill={`url(#sparkline-${strokeColor2})`} />}
       <YAxis domain={['dataMin - 1', 'dataMax + 1']} hide />
@@ -86,22 +140,26 @@ const SmallSparkline = ({ data, dataKey, dataKey2, strokeColor, strokeColor2 }: 
   </ResponsiveContainer>
 );
 
-export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion }: { isOpen?: boolean; activeProject: string; isComparing: boolean; selectedRegion: string | null; onClearRegion: () => void; }) {
+export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language }: { isOpen?: boolean; activeProject: string; isComparing: boolean; selectedRegion: string | null; onClearRegion: () => void; language: string; }) {
   const [data, setData] = useState<any>(project1Data);
   const [title, setTitle] = useState(project1Data.name);
+  const t = translations[language as keyof typeof translations] || translations.en;
+  const nameKey = language === 'en' ? 'name' : 'name_th';
+
 
   useEffect(() => {
     if (selectedRegion) {
         setData(regionalMockData[selectedRegion] || project1Data);
-        setTitle(regionalMockData[selectedRegion]?.name || "Region Analysis");
+        setTitle(language === 'en' ? (regionalMockData[selectedRegion]?.name || "Region Analysis") : (regionalMockData[selectedRegion]?.name_th || "การวิเคราะห์ภูมิภาค"));
     } else if (isComparing) {
       setData(comparisonData);
-      setTitle(comparisonData.name);
+      setTitle(language === 'en' ? comparisonData.name : comparisonData.name_th);
     } else {
-      setData(activeProject === 'project1' ? project1Data : project2Data);
-      setTitle(activeProject === 'project1' ? project1Data.name : project2Data.name);
+      const projectData = activeProject === 'project1' ? project1Data : project2Data;
+      setData(projectData);
+      setTitle(language === 'en' ? projectData.name : projectData.name_th);
     }
-  }, [activeProject, isComparing, selectedRegion]);
+  }, [activeProject, isComparing, selectedRegion, language]);
 
   const renderComparisonValue = (val: any) => (
       <div className="flex items-baseline gap-2">
@@ -118,7 +176,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
-            <h2 className="text-base font-bold text-white">{title}</h2>
+            <h2 className="text-base font-bold text-foreground">{title}</h2>
             {selectedRegion && <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onClearRegion}><XIcon className='h-4 w-4'/></Button>}
         </div>
         <ScrollArea className="flex-1 -mr-2 pr-2">
@@ -126,33 +184,35 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             <div className="grid grid-cols-2 gap-2">
               <Card className="glass-panel border-none">
                 <CardHeader className="p-2 pb-1">
-                  <CardTitle className="text-xs font-medium text-muted-foreground">Economic Impact</CardTitle>
+                  <CardTitle className="text-xs font-medium text-muted-foreground">{t.economicImpact}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 pt-0">
-                  <div className="text-xl font-bold text-white">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
-                  <p className="text-xs text-green-400">GDP Forecast</p>
+                  <div className="text-xl font-bold text-foreground">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
+                  <p className="text-xs text-green-400">{t.gdpForecast}</p>
                   <SmallSparkline 
                     data={data.gdpData} 
                     dataKey={isComparing ? 'p1' : 'v'} 
                     dataKey2={isComparing ? 'p2' : undefined}
                     strokeColor="hsl(var(--chart-1))"
                     strokeColor2={isComparing ? "hsl(var(--chart-2))" : undefined}
+                    language={language}
                   />
                 </CardContent>
               </Card>
               <Card className="glass-panel border-none">
                 <CardHeader className="p-2 pb-1">
-                  <CardTitle className="text-xs font-medium text-muted-foreground">Logistic Flow</CardTitle>
+                  <CardTitle className="text-xs font-medium text-muted-foreground">{t.logisticFlow}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 pt-0">
-                  <div className="text-xl font-bold text-white">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
-                  <p className="text-xs text-green-400">Freight Volume</p>
+                  <div className="text-xl font-bold text-foreground">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
+                  <p className="text-xs text-green-400">{t.freightVolume}</p>
                   <SmallSparkline 
                     data={data.freightData} 
                     dataKey={isComparing ? 'p1' : 'v'} 
                     dataKey2={isComparing ? 'p2' : undefined}
                     strokeColor="hsl(var(--chart-4))"
                     strokeColor2={isComparing ? "hsl(var(--chart-5))" : undefined}
+                    language={language}
                    />
                 </CardContent>
               </Card>
@@ -160,7 +220,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
 
             <Card className="glass-panel border-none">
               <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
-                <CardTitle className="text-xs font-medium text-muted-foreground">Environmental Score</CardTitle>
+                <CardTitle className="text-xs font-medium text-muted-foreground">{t.envScore}</CardTitle>
                 <span className="font-bold text-lg text-chart-3">{isComparing ? `${data.environmentalScore.p1}/${data.environmentalScore.p2}` : data.environmentalScore}</span>
               </CardHeader>
               <CardContent className="p-2 pt-0">
@@ -170,22 +230,22 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
 
             <Card className="glass-panel border-none">
               <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
-                 <CardTitle className="text-xs font-medium text-muted-foreground">Investment Suitability</CardTitle>
+                 <CardTitle className="text-xs font-medium text-muted-foreground">{t.investSuitability}</CardTitle>
                  <span className="font-bold text-lg text-chart-2">{isComparing ? `${data.investmentSuitability.p1}/${data.investmentSuitability.p2}`: data.investmentSuitability}</span>
               </CardHeader>
               <CardContent className="p-2 pt-0">
-                <p className="text-xs text-muted-foreground mb-1">Jobs Created (k)</p>
+                <p className="text-xs text-muted-foreground mb-1">{t.jobsCreated}</p>
                  <ResponsiveContainer width="100%" height={80}>
                     <BarChart data={data.jobsData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }} barGap={isComparing ? 2 : 4}>
-                      <Tooltip content={<CustomTooltip />} cursor={{fill: 'rgba(255, 255, 255, 0.05)'}}/>
-                      <XAxis dataKey="name" fontSize={10} tickLine={false} axisLine={false} />
+                      <Tooltip content={<CustomTooltip language={language} />} cursor={{fill: 'rgba(255, 255, 255, 0.05)'}}/>
+                      <XAxis dataKey={nameKey} fontSize={10} tick={{ fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
                        {isComparing ? (
                           <>
-                            <Bar dataKey="p1" name="Project 1" barSize={8} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-1))" />
-                            <Bar dataKey="p2" name="Project 2" barSize={8} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-2))" />
+                            <Bar dataKey="p1" name={t.project1} barSize={8} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-1))" />
+                            <Bar dataKey="p2" name={t.project2} barSize={8} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-2))" />
                           </>
                         ) : (
-                          <Bar dataKey="value" name="Jobs" barSize={10} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-2))" />
+                          <Bar dataKey="value" name={t.jobs} barSize={10} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-2))" />
                         )}
                     </BarChart>
                 </ResponsiveContainer>
@@ -194,19 +254,19 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             
             <Card className="glass-panel border-none">
               <CardHeader className='p-2'>
-                <CardTitle className="text-white text-sm">Regional Distribution</CardTitle>
+                <CardTitle className="text-foreground text-sm">{t.regionalDist}</CardTitle>
               </CardHeader>
               <CardContent className='p-2 pt-0 -mt-2'>
                  <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
-                       <Tooltip content={<CustomTooltip />} />
+                       <Tooltip content={<CustomTooltip language={language} />} />
                        {isComparing ? (
                          <>
-                            <Pie data={data.pieData} dataKey="p1" nameKey="name" cx="50%" cy="50%" outerRadius={50} fill="hsl(var(--chart-1))" stroke="none" />
-                            <Pie data={data.pieData} dataKey="p2" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={70} fill="hsl(var(--chart-2))" stroke="none" />
+                            <Pie data={data.pieData} dataKey="p1" nameKey={nameKey} cx="50%" cy="50%" outerRadius={50} fill="hsl(var(--chart-1))" stroke="none" />
+                            <Pie data={data.pieData} dataKey="p2" nameKey={nameKey} cx="50%" cy="50%" innerRadius={60} outerRadius={70} fill="hsl(var(--chart-2))" stroke="none" />
                          </>
                        ) : (
-                        <Pie data={data.pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={40} outerRadius={60} fill="#8884d8" stroke="none" labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+                        <Pie data={data.pieData} dataKey="value" nameKey={nameKey} cx="50%" cy="50%" innerRadius={40} outerRadius={60} fill="#8884d8" stroke="none" label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
                           const RADIAN = Math.PI / 180;
                           const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                           const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -222,7 +282,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                             ))}
                         </Pie>
                        )}
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{fontSize: "10px", paddingTop: '10px'}}/>
+                      <Legend iconType="circle" iconSize={8} wrapperStyle={{fontSize: "10px", paddingTop: '10px'}} formatter={(value, entry) => <span className="text-muted-foreground">{value}</span>} />
                     </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -230,41 +290,41 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
 
             <Card className="glass-panel border-none">
               <CardHeader className='p-2'>
-                <CardTitle className="text-white text-sm">Predictive Tools</CardTitle>
+                <CardTitle className="text-foreground text-sm">{t.predictiveTools}</CardTitle>
               </CardHeader>
               <CardContent className="p-2 pt-0 space-y-2 text-xs">
                 <TooltipProvider>
                     <ShadTooltip>
                         <TooltipTrigger asChild>
                             <div className="flex justify-between items-center cursor-pointer">
-                                <span className="text-muted-foreground">Land Price Trend</span>
-                                <span className="font-bold text-green-400">{isComparing ? `${data.landPriceTrend.p1}% / ${data.landPriceTrend.p2}%` : `+${data.landPriceTrend}%`} <span className="text-xs font-normal text-muted-foreground">Yr/Yr</span></span>
+                                <span className="text-muted-foreground">{t.landPriceTrend}</span>
+                                <span className="font-bold text-green-400">{isComparing ? `${data.landPriceTrend.p1}% / ${data.landPriceTrend.p2}%` : `+${data.landPriceTrend}%`} <span className="text-xs font-normal text-muted-foreground">{t.landPriceUnit}</span></span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Annualized land price increase based on current investment models.</p>
+                            <p>{t.landPriceTooltip}</p>
                         </TooltipContent>
                     </ShadTooltip>
                     <ShadTooltip>
                         <TooltipTrigger asChild>
                             <div className="flex justify-between items-center cursor-pointer">
-                                <span className="text-muted-foreground">Business Registration</span>
-                                <span className="font-bold text-white">{isComparing ? `${data.businessReg.p1} / ${data.businessReg.p2}` : data.businessReg} <span className="text-xs font-normal text-muted-foreground">May 2024</span></span>
+                                <span className="text-muted-foreground">{t.businessReg}</span>
+                                <span className="font-bold text-foreground">{isComparing ? `${data.businessReg.p1} / ${data.businessReg.p2}` : data.businessReg} <span className="text-xs font-normal text-muted-foreground">{t.businessRegUnit}</span></span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>New business registrations in the target region this month.</p>
+                            <p>{t.businessRegTooltip}</p>
                         </TooltipContent>
                     </ShadTooltip>
                     <ShadTooltip>
                         <TooltipTrigger asChild>
                             <div className="flex justify-between items-center cursor-pointer">
-                                <span className="text-muted-foreground">Skilled Labor (k)</span>
-                                <span className="font-bold text-white">{isComparing ? `${data.skilledLabor.p1}k / ${data.skilledLabor.p2}k` : `${data.skilledLabor}k`}</span>
+                                <span className="text-muted-foreground">{t.skilledLabor}</span>
+                                <span className="font-bold text-foreground">{isComparing ? `${data.skilledLabor.p1}k / ${data.skilledLabor.p2}k` : `${data.skilledLabor}k`}</span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>Available skilled labor pool in the sub-region.</p>
+                            <p>{t.skilledLaborTooltip}</p>
                         </TooltipContent>
                     </ShadTooltip>
                 </TooltipProvider>
@@ -275,3 +335,5 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </aside>
   );
 }
+
+    

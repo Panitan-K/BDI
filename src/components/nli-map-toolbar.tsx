@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -12,6 +13,38 @@ import { Layers, Ruler, Pen, MousePointerSquareDashed, ChevronDown, Globe } from
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+const translations = {
+    en: {
+        basemap: 'Basemap',
+        basemapTitle: 'Change Basemap',
+        basemapDesc: 'Select a different background map style, such as streets, satellite, or outdoors.',
+        measureTitle: 'Measure Tool',
+        measureDesc: 'Measure distances and areas directly on the map.',
+        drawTitle: 'Draw Tool',
+        drawDesc: 'Draw points, lines, and polygons to add or highlight features.',
+        selectTitle: 'Select Tool',
+        selectDesc: 'Select and interact with features already on the map to view their data.',
+        toggle3dTitle: 'Toggle 3D View',
+        toggle2dTitle: 'Toggle 2D View',
+        toggle3dDesc: 'Switch to an interactive 3D globe.',
+        toggle2dDesc: 'Switch to a flat 2D map.'
+    },
+    th: {
+        basemap: 'แผนที่ฐาน',
+        basemapTitle: 'เปลี่ยนแผนที่ฐาน',
+        basemapDesc: 'เลือกสไตล์แผนที่พื้นหลังอื่น เช่น ถนน, ดาวเทียม, หรือ ภูมิประเทศ',
+        measureTitle: 'เครื่องมือวัด',
+        measureDesc: 'วัดระยะทางและพื้นที่บนแผนที่โดยตรง',
+        drawTitle: 'เครื่องมือวาด',
+        drawDesc: 'วาดจุด, เส้น, และรูปหลายเหลี่ยมเพื่อเพิ่มหรือเน้นคุณลักษณะ',
+        selectTitle: 'เครื่องมือเลือก',
+        selectDesc: 'เลือกและโต้ตอบกับคุณลักษณะบนแผนที่เพื่อดูข้อมูล',
+        toggle3dTitle: 'สลับมุมมอง 3 มิติ',
+        toggle2dTitle: 'สลับมุมมอง 2 มิติ',
+        toggle3dDesc: 'เปลี่ยนเป็นมุมมองลูกโลก 3 มิติแบบโต้ตอบ',
+        toggle2dDesc: 'เปลี่ยนเป็นแผนที่ 2 มิติแบบแบน'
+    }
+};
 
 interface NliMapToolbarProps {
   onBasemapChange: (styleUrl: string) => void;
@@ -19,6 +52,7 @@ interface NliMapToolbarProps {
   onToolSelect: (toolName: string) => void;
   is3D: boolean;
   on3DToggle: () => void;
+  language: string;
 }
 
 const basemaps = [
@@ -29,28 +63,30 @@ const basemaps = [
 ];
 
 const tools = [
-    { name: 'Measure', icon: Ruler, title: 'Measure Tool', description: 'Measure distances and areas directly on the map.' },
-    { name: 'Draw', icon: Pen, title: 'Draw Tool', description: 'Draw points, lines, and polygons to add or highlight features.' },
-    { name: 'Select', icon: MousePointerSquareDashed, title: 'Select Tool', description: 'Select and interact with features already on the map to view their data.' },
+    { name: 'Measure', icon: Ruler, titleEn: 'Measure Tool', titleTh: 'เครื่องมือวัด', descEn: 'Measure distances and areas directly on the map.', descTh: 'วัดระยะทางและพื้นที่บนแผนที่โดยตรง' },
+    { name: 'Draw', icon: Pen, titleEn: 'Draw Tool', titleTh: 'เครื่องมือวาด', descEn: 'Draw points, lines, and polygons to add or highlight features.', descTh: 'วาดจุด, เส้น, และรูปหลายเหลี่ยมเพื่อเพิ่มหรือเน้นคุณลักษณะ' },
+    { name: 'Select', icon: MousePointerSquareDashed, titleEn: 'Select Tool', titleTh: 'เครื่องมือเลือก', descEn: 'Select and interact with features already on the map to view their data.', descTh: 'เลือกและโต้ตอบกับคุณลักษณะบนแผนที่เพื่อดูข้อมูล' },
 ];
 
-export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D, on3DToggle }: NliMapToolbarProps) {
+export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D, on3DToggle, language }: NliMapToolbarProps) {
+  const t = translations[language as keyof typeof translations] || translations.en;
+
   return (
     <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
       <DropdownMenu>
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="sm" className="glass-panel text-white h-8">
+              <Button variant="secondary" size="sm" className="glass-panel text-foreground h-8">
                 <Layers className="h-4 w-4 mr-2" />
-                Basemap
+                {t.basemap}
                 <ChevronDown className="h-4 w-4 ml-1" />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
           <TooltipContent className="max-w-xs text-left">
-            <p className="font-bold">Change Basemap</p>
-            <p className="text-muted-foreground">Select a different background map style, such as streets, satellite, or outdoors.</p>
+            <p className="font-bold">{t.basemapTitle}</p>
+            <p className="text-muted-foreground">{t.basemapDesc}</p>
           </TooltipContent>
         </Tooltip>
         <DropdownMenuContent>
@@ -69,7 +105,7 @@ export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D,
                 variant="ghost"
                 size="icon"
                 className={cn(
-                    "text-white hover:bg-accent hover:text-primary h-8 w-8",
+                    "text-foreground hover:bg-accent hover:text-primary h-8 w-8",
                     activeTool === tool.name && "bg-accent text-primary"
                 )}
                 onClick={() => onToolSelect(tool.name)}
@@ -78,23 +114,25 @@ export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D,
                 </Button>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs text-left">
-                <p className="font-bold">{tool.title}</p>
-                <p className="text-muted-foreground">{tool.description}</p>
+                <p className="font-bold">{language === 'en' ? tool.titleEn : tool.titleTh}</p>
+                <p className="text-muted-foreground">{language === 'en' ? tool.descEn : tool.descTh}</p>
             </TooltipContent>
         </Tooltip>
       ))}
 
         <Tooltip>
             <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8" onClick={on3DToggle}>
+            <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent hover:text-primary h-8 w-8" onClick={on3DToggle}>
                 <Globe className="h-4 w-4" />
             </Button>
             </TooltipTrigger>
             <TooltipContent className="max-w-xs text-left">
-                <p className="font-bold">Toggle {is3D ? "2D" : "3D"} View</p>
-                <p className="text-muted-foreground">Switch between a flat 2D map and an interactive 3D globe.</p>
+                <p className="font-bold">{is3D ? t.toggle2dTitle : t.toggle3dTitle}</p>
+                <p className="text-muted-foreground">{is3D ? t.toggle2dDesc : t.toggle3dDesc}</p>
             </TooltipContent>
         </Tooltip>
     </div>
   );
 }
+
+    
