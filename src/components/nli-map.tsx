@@ -106,19 +106,17 @@ export function NliMap({ is3D, activeLayers, basemapStyle }: NliMapProps) {
 
   useEffect(() => {
     const currentMap = map.current;
-    if (!currentMap) return;
+    if (!currentMap || !isStyleLoaded) return;
     
     const projectionName = is3D ? 'globe' : 'mercator';
-    if (currentMap.getProjection().name !== projectionName) {
-        currentMap.setProjection({ name: projectionName });
-    }
+    currentMap.setProjection({ name: projectionName });
 
     if (is3D) {
       currentMap.flyTo({ pitch: 60, zoom: 4, bearing: -20, duration: 2000, essential: true });
     } else {
       currentMap.flyTo({ pitch: 0, zoom: 5.5, bearing: 0, duration: 2000, essential: true });
     }
-  }, [is3D]);
+  }, [is3D, isStyleLoaded]);
 
   useEffect(() => {
     const currentMap = map.current;
