@@ -84,6 +84,6 @@
 
 @layer components {
   .glass-panel {
-    @apply bg-[#1C1C4C]/60 backdrop-blur-lg border border-white/10;
+    @apply bg-card/60 backdrop-blur-lg border border-white/10;
   }
 }

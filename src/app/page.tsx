@@ -7,40 +7,65 @@ import { NliLeftSidebar } from '@/components/nli-left-sidebar';
 import { NliRightSidebar } from '@/components/nli-right-sidebar';
 import { NliMap } from '@/components/nli-map';
 import { AiChatModal } from '@/components/nli-ai-chat';
-import { ChevronLeft, ChevronRight, Sparkles, Globe, LucideIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Globe } from 'lucide-react';
 
 export default function NliPlatformPage() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [isAiChatOpen, setAiChatOpen] = useState(false);
   const [is3D, setIs3D] = useState(false);
+  
+  // This state will hold the visibility of each layer
+  const [activeLayers, setActiveLayers] = useState<Record<string, boolean>>({
+    'Roads': false,
+    'Railways': false,
+    'Airports': false,
+    'Ports': false,
+    'Land Use Plan': false,
+    'Forest Zones': false,
+    'Agricultural Zones': false,
+    'Province': false,
+    'District': false,
+    'Sub-district': false,
+    'Industrial Zones': false,
+    'Special Economic Corridors': false,
+  });
+
+  const handleLayerToggle = (layerName: string, isActive: boolean) => {
+    setActiveLayers(prev => ({ ...prev, [layerName]: isActive }));
+  };
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       <NliHeader />
-      <div className="flex flex-1 overflow-hidden">
-        <NliLeftSidebar isOpen={leftSidebarOpen} />
+      <div className="flex flex-1 overflow-hidden transition-all duration-300">
+        <NliLeftSidebar 
+          isOpen={leftSidebarOpen} 
+          activeLayers={activeLayers}
+          onLayerToggle={handleLayerToggle}
+        />
 
-        <main className="flex-1 flex flex-col relative transition-all duration-300 ease-in-out">
+        <main className="flex-1 flex flex-col relative">
           <div className="absolute top-2 left-2 z-10">
             <Button
               variant="ghost"
               size="icon"
-              className="bg-background/50 hover:bg-background/80 rounded-full"
+              className="glass-panel hover:bg-background/80 rounded-full"
               onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
             >
               {leftSidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
             </Button>
           </div>
           
-          <NliMap is3D={is3D} />
+          <NliMap is3D={is3D} activeLayers={activeLayers} />
 
           <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
             <Button
               variant="secondary"
               size="icon"
-              className="rounded-full h-12 w-12 shadow-lg"
+              className="rounded-full h-12 w-12 shadow-lg glass-panel hover:bg-accent"
               onClick={() => setIs3D(!is3D)}
+              title="Toggle 2D/3D View"
             >
               <Globe className="h-6 w-6" />
             </Button>
@@ -48,8 +73,9 @@ export default function NliPlatformPage() {
               size="icon"
               className="bg-primary hover:bg-primary/90 rounded-full h-12 w-12 shadow-lg"
               onClick={() => setAiChatOpen(true)}
+              title="Open AI Assistant"
             >
-              <Sparkles className="h-6 w-6 text-white" />
+              <Sparkles className="h-6 w-6 text-primary-foreground" />
             </Button>
           </div>
           
@@ -57,7 +83,7 @@ export default function NliPlatformPage() {
              <Button
               variant="ghost"
               size="icon"
-              className="bg-background/50 hover:bg-background/80 rounded-full"
+              className="glass-panel hover:bg-background/80 rounded-full"
               onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
             >
               {rightSidebarOpen ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
