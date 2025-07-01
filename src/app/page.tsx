@@ -8,11 +8,9 @@ import { NliRightSidebar } from '@/components/nli-right-sidebar';
 import { NliMap } from '@/components/nli-map';
 import { NliMapToolbar } from '@/components/nli-map-toolbar';
 import { AiChatModal } from '@/components/nli-ai-chat';
-import { Share2, Link, Copy } from 'lucide-react';
+import { Share2, Link, Copy, Upload, Settings, SlidersHorizontal, Download } from 'lucide-react';
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -62,7 +60,7 @@ function ShareDialog({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: 
             </Button>
         </div>
         <AlertDialogFooter>
-          <AlertDialogCancel>Close</AlertDialogCancel>
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>Close</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -110,21 +108,22 @@ export default function NliPlatformPage() {
   }
 
   const handleProjectChange = (project: string) => {
+    if (isComparing) return;
     setActiveProject(project);
-    setIsComparing(false);
   }
 
   const handleCompareToggle = () => {
     setIsComparing(prev => !prev);
     if (!isComparing) {
-       // When turning compare on, we don't need a specific active project
+      // When turning compare on, deselect any specific region
+      setSelectedRegion(null);
     }
   }
 
   return (
     <div className={cn(
       "flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden",
-      isFullscreen && "h-screen w-screen"
+      isFullscreen && "absolute inset-0 z-50"
     )}>
       {!isFullscreen && (
         <NliHeader 
@@ -133,26 +132,51 @@ export default function NliPlatformPage() {
           isComparing={isComparing}
           onCompareToggle={handleCompareToggle}
           onShare={() => setShareOpen(true)}
-          onFullscreenToggle={() => setIsFullscreen(true)}
+          onFullscreenToggle={() => setIsFullscreen(prev => !prev)}
         />
       )}
-      <div className={cn("flex flex-1 overflow-hidden transition-all duration-300", isFullscreen ? "p-0" : "p-4 gap-4")}>
+
+      {/* Toolbars Row */}
+       {!isFullscreen && (
+          <div className="flex items-center justify-between px-4 py-1 border-b border-border/50 bg-secondary/20 shrink-0">
+              <div className="flex items-center gap-1 w-80">
+                  <Button variant="ghost" size="sm"><Upload className="mr-2 h-4 w-4"/> Import</Button>
+                  <Button variant="ghost" size="sm"><Settings className="mr-2 h-4 w-4"/> Settings</Button>
+              </div>
+              <div className="flex-1 flex justify-center">
+                  <NliMapToolbar 
+                      onBasemapChange={setBasemapStyle}
+                      activeTool={activeTool}
+                      onToolSelect={handleToolSelect}
+                      is3D={is3D}
+                      on3DToggle={() => setIs3D(!is3D)}
+                  />
+              </div>
+              <div className="flex items-center gap-1 w-96 justify-end">
+                  <Button variant="ghost" size="sm"><SlidersHorizontal className="mr-2 h-4 w-4"/> Parameters</Button>
+                  <Button variant="ghost" size="sm"><Download className="mr-2 h-4 w-4"/> Export</Button>
+              </div>
+          </div>
+       )}
+
+      <div className={cn("flex flex-1 overflow-hidden transition-all duration-300", isFullscreen ? "p-0" : "p-3 gap-3")}>
         {!isFullscreen && <NliLeftSidebar 
           activeLayers={activeLayers}
           onLayerToggle={handleLayerToggle}
         />}
 
-        <main className="flex-1 flex flex-col relative rounded-lg overflow-hidden">
-          <NliMapToolbar 
-             onBasemapChange={setBasemapStyle}
-             activeTool={activeTool}
-             onToolSelect={handleToolSelect}
-             is3D={is3D}
-             on3DToggle={() => setIs3D(!is3D)}
-             isFullscreen={isFullscreen}
-             onFullscreenToggle={() => setIsFullscreen(prev => !prev)}
-          />
-          
+        <main className="flex-1 flex flex-col relative rounded-lg overflow-hidden border border-border/20">
+          {isFullscreen && (
+             <Button 
+                variant="secondary"
+                size="sm"
+                className="absolute top-4 left-4 z-20"
+                onClick={() => setIsFullscreen(false)}>
+                <Download className="mr-2 h-4 w-4" />
+                Exit Fullscreen
+             </Button>
+          )}
+
           <NliMap 
             is3D={is3D} 
             activeLayers={activeLayers} 
@@ -162,18 +186,16 @@ export default function NliPlatformPage() {
             selectedRegion={selectedRegion}
           />
 
-          {!isFullscreen && (
             <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
               <Button
                 size="icon"
-                className="bg-primary hover:bg-primary/90 rounded-full h-12 w-12 shadow-lg"
+                className="bg-primary hover:bg-primary/90 rounded-full h-11 w-11 shadow-lg"
                 onClick={() => setAiChatOpen(true)}
                 title="Open AI Assistant"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-primary-foreground h-6 w-6"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-primary-foreground h-5 w-5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
               </Button>
             </div>
-          )}
         </main>
         
         {!isFullscreen && <NliRightSidebar 

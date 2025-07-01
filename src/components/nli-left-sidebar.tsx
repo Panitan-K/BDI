@@ -63,21 +63,21 @@ export function NliLeftSidebar({ activeLayers, onLayerToggle }: NliLeftSidebarPr
   return (
     <aside
       className={cn(
-        'w-80 p-4 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-20 shrink-0'
+        'w-80 p-3 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0'
       )}
     >
-        <h2 className="text-lg font-bold text-white mb-4">Data Layers</h2>
-        <ScrollArea className="flex-1 -mr-4 pr-4">
-          <div className="space-y-6">
+        <h2 className="text-base font-bold text-white mb-3 px-1">Data Layers</h2>
+        <ScrollArea className="flex-1 -mr-3 pr-3">
+          <div className="space-y-4 px-1">
             {Object.entries(dataLayers).map(([category, layers]) => (
               <div key={category}>
-                <h3 className="font-semibold text-muted-foreground mb-3">{category}</h3>
-                <div className="space-y-3">
+                <h3 className="font-semibold text-muted-foreground mb-2 text-sm">{category}</h3>
+                <div className="space-y-2">
                   {layers.map((layer) => (
-                    <div key={layer.name} className="flex items-center justify-between">
+                    <div key={layer.name} className="flex items-center justify-between p-1 rounded-md hover:bg-white/5">
                       <div className="flex items-center gap-3">
-                        <layer.icon className="h-5 w-5 text-primary" />
-                        <span className="text-sm text-white">{layer.name}</span>
+                        <layer.icon className="h-4 w-4 text-primary" />
+                        <span className="text-xs text-white">{layer.name}</span>
                       </div>
                       <Switch 
                         checked={activeLayers[layer.name]}
