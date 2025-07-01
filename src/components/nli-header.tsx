@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -36,7 +37,7 @@ import { Separator } from './ui/separator';
 
 const translations = {
   en: {
-    title: 'NLI-Thailand Land',
+    title: 'NLI-Thailand',
     project1: 'Project 1',
     project2: 'Project 2',
     addProject: 'Add New Project',

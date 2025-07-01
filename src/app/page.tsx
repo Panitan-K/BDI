@@ -360,7 +360,7 @@ export default function NliPlatformPage() {
           </div>
       )}
 
-      <div className={cn("flex flex-1 p-2 gap-2 transition-all duration-300", isFullscreen ? "p-0" : "p-2 gap-2")}>
+      <div className={cn("flex flex-1 p-2 gap-2 min-h-0 transition-all duration-300", isFullscreen ? "p-0" : "p-2 gap-2")}>
         {!isFullscreen && <NliLeftSidebar 
           activeLayers={activeLayers}
           onLayerToggle={handleLayerToggle}
@@ -413,5 +413,3 @@ export default function NliPlatformPage() {
     </div>
   );
 }
-
-    
