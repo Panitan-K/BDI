@@ -27,7 +27,7 @@ export function NliHeader({
   onFullscreenToggle
 }: NliHeaderProps) {
   return (
-    <header className="flex items-center justify-between px-4 py-2 border-b border-border/50 glass-panel !rounded-none z-20 shrink-0">
+    <header className="flex items-center justify-between px-2 py-2 border-b border-border/50 glass-panel !rounded-none z-10 shrink-0">
       <div className="flex items-center gap-4">
         <MapPin className="text-primary h-6 w-6" />
         <h1 className="text-lg font-bold text-white">NLI-Thailand Land</h1>

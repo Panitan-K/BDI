@@ -114,22 +114,22 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   return (
     <aside
       className={cn(
-        'w-96 p-3 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0'
+        'w-80 p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0'
       )}
     >
-        <div className='flex justify-between items-center mb-3 px-1'>
+        <div className='flex justify-between items-center mb-2 px-1'>
             <h2 className="text-base font-bold text-white">{title}</h2>
             {selectedRegion && <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onClearRegion}><XIcon className='h-4 w-4'/></Button>}
         </div>
-        <ScrollArea className="flex-1 -mr-3 pr-3">
-          <div className="space-y-3 px-1">
-            <div className="grid grid-cols-2 gap-3">
+        <ScrollArea className="flex-1 -mr-2 pr-2">
+          <div className="space-y-2 px-1">
+            <div className="grid grid-cols-2 gap-2">
               <Card className="glass-panel border-none">
-                <CardHeader className="p-3 pb-1">
+                <CardHeader className="p-2 pb-1">
                   <CardTitle className="text-xs font-medium text-muted-foreground">Economic Impact</CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  <div className="text-2xl font-bold text-white">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
+                <CardContent className="p-2 pt-0">
+                  <div className="text-xl font-bold text-white">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
                   <p className="text-xs text-green-400">GDP Forecast</p>
                   <SmallSparkline 
                     data={data.gdpData} 
@@ -141,11 +141,11 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                 </CardContent>
               </Card>
               <Card className="glass-panel border-none">
-                <CardHeader className="p-3 pb-1">
+                <CardHeader className="p-2 pb-1">
                   <CardTitle className="text-xs font-medium text-muted-foreground">Logistic Flow</CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 pt-0">
-                  <div className="text-2xl font-bold text-white">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
+                <CardContent className="p-2 pt-0">
+                  <div className="text-xl font-bold text-white">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
                   <p className="text-xs text-green-400">Freight Volume</p>
                   <SmallSparkline 
                     data={data.freightData} 
@@ -159,21 +159,21 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             </div>
 
             <Card className="glass-panel border-none">
-              <CardHeader className="p-3 pb-2 flex-row items-center justify-between">
+              <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
                 <CardTitle className="text-xs font-medium text-muted-foreground">Environmental Score</CardTitle>
                 <span className="font-bold text-lg text-chart-3">{isComparing ? `${data.environmentalScore.p1}/${data.environmentalScore.p2}` : data.environmentalScore}</span>
               </CardHeader>
-              <CardContent className="p-3 pt-0">
+              <CardContent className="p-2 pt-0">
                 <Progress value={isComparing ? (data.environmentalScore.p1 + data.environmentalScore.p2)/2 : data.environmentalScore} className="h-1.5 [&>div]:bg-chart-3" />
               </CardContent>
             </Card>
 
             <Card className="glass-panel border-none">
-              <CardHeader className="p-3 pb-2 flex-row items-center justify-between">
+              <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
                  <CardTitle className="text-xs font-medium text-muted-foreground">Investment Suitability</CardTitle>
                  <span className="font-bold text-lg text-chart-2">{isComparing ? `${data.investmentSuitability.p1}/${data.investmentSuitability.p2}`: data.investmentSuitability}</span>
               </CardHeader>
-              <CardContent className="p-3 pt-0">
+              <CardContent className="p-2 pt-0">
                 <p className="text-xs text-muted-foreground mb-1">Jobs Created (k)</p>
                  <ResponsiveContainer width="100%" height={80}>
                     <BarChart data={data.jobsData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }} barGap={isComparing ? 2 : 4}>
@@ -193,10 +193,10 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             </Card>
             
             <Card className="glass-panel border-none">
-              <CardHeader className='p-3'>
+              <CardHeader className='p-2'>
                 <CardTitle className="text-white text-sm">Regional Distribution</CardTitle>
               </CardHeader>
-              <CardContent className='p-3 pt-0 -mt-2'>
+              <CardContent className='p-2 pt-0 -mt-2'>
                  <ResponsiveContainer width="100%" height={180}>
                     <PieChart>
                        <Tooltip content={<CustomTooltip />} />
@@ -229,10 +229,10 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             </Card>
 
             <Card className="glass-panel border-none">
-              <CardHeader className='p-3'>
+              <CardHeader className='p-2'>
                 <CardTitle className="text-white text-sm">Predictive Tools</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 pt-0 space-y-3 text-xs">
+              <CardContent className="p-2 pt-0 space-y-2 text-xs">
                 <TooltipProvider>
                     <ShadTooltip>
                         <TooltipTrigger asChild>
