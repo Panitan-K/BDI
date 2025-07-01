@@ -6,6 +6,7 @@ import { NliHeader } from '@/components/nli-header';
 import { NliLeftSidebar } from '@/components/nli-left-sidebar';
 import { NliRightSidebar } from '@/components/nli-right-sidebar';
 import { NliMap } from '@/components/nli-map';
+import { NliMapToolbar } from '@/components/nli-map-toolbar';
 import { AiChatModal } from '@/components/nli-ai-chat';
 import { ChevronLeft, ChevronRight, Sparkles, Globe } from 'lucide-react';
 
@@ -14,8 +15,10 @@ export default function NliPlatformPage() {
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [isAiChatOpen, setAiChatOpen] = useState(false);
   const [is3D, setIs3D] = useState(false);
-  
-  // This state will hold the visibility of each layer
+  const [activeProject, setActiveProject] = useState('project1');
+  const [activeTool, setActiveTool] = useState<string | null>(null);
+  const [basemapStyle, setBasemapStyle] = useState('https://api.maptiler.com/maps/dataviz-dark/style.json');
+
   const [activeLayers, setActiveLayers] = useState<Record<string, boolean>>({
     'Roads': false,
     'Railways': false,
@@ -29,20 +32,27 @@ export default function NliPlatformPage() {
     'Sub-district': false,
     'Industrial Zones': false,
     'Special Economic Corridors': false,
+    'Population Density (3D)': false,
   });
 
   const handleLayerToggle = (layerName: string, isActive: boolean) => {
     setActiveLayers(prev => ({ ...prev, [layerName]: isActive }));
   };
+  
+  const handleToolSelect = (toolName: string) => {
+    setActiveTool(prev => prev === toolName ? null : toolName);
+  }
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
-      <NliHeader />
+      <NliHeader activeProject={activeProject} onProjectChange={setActiveProject} />
       <div className="flex flex-1 overflow-hidden transition-all duration-300">
         <NliLeftSidebar 
           isOpen={leftSidebarOpen} 
           activeLayers={activeLayers}
           onLayerToggle={handleLayerToggle}
+          activeTool={activeTool}
+          onToolSelect={handleToolSelect}
         />
 
         <main className="flex-1 flex flex-col relative">
@@ -57,7 +67,13 @@ export default function NliPlatformPage() {
             </Button>
           </div>
           
-          <NliMap is3D={is3D} activeLayers={activeLayers} />
+          <NliMapToolbar 
+             onBasemapChange={setBasemapStyle}
+             activeTool={activeTool}
+             onToolSelect={handleToolSelect}
+          />
+          
+          <NliMap is3D={is3D} activeLayers={activeLayers} basemapStyle={basemapStyle} />
 
           <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
             <Button
@@ -91,7 +107,7 @@ export default function NliPlatformPage() {
           </div>
         </main>
         
-        <NliRightSidebar isOpen={rightSidebarOpen} />
+        <NliRightSidebar isOpen={rightSidebarOpen} activeProject={activeProject} />
       </div>
       <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} />
     </div>

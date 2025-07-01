@@ -20,7 +20,8 @@ import {
   Pen,
   MousePointerSquareDashed,
   GalleryVertical,
-  LucideIcon
+  LucideIcon,
+  Layers3
 } from 'lucide-react';
 
 interface Layer {
@@ -52,6 +53,9 @@ const dataLayers: LayerCategory = {
   'Economic': [
     { name: 'Industrial Zones', icon: Factory },
     { name: 'Special Economic Corridors', icon: LandPlot },
+  ],
+  'Analysis': [
+    { name: 'Population Density (3D)', icon: Layers3 },
   ]
 };
 
@@ -59,16 +63,17 @@ const tools = [
   { name: 'Measure', icon: Ruler },
   { name: 'Draw', icon: Pen },
   { name: 'Select', icon: MousePointerSquareDashed },
-  { name: 'Basemap Gallery', icon: GalleryVertical },
 ];
 
 interface NliLeftSidebarProps {
   isOpen: boolean;
   activeLayers: Record<string, boolean>;
   onLayerToggle: (layerName: string, isActive: boolean) => void;
+  activeTool: string | null;
+  onToolSelect: (toolName: string) => void;
 }
 
-export function NliLeftSidebar({ isOpen, activeLayers, onLayerToggle }: NliLeftSidebarProps) {
+export function NliLeftSidebar({ isOpen, activeLayers, onLayerToggle, activeTool, onToolSelect }: NliLeftSidebarProps) {
   return (
     <aside
       className={cn(
@@ -78,7 +83,27 @@ export function NliLeftSidebar({ isOpen, activeLayers, onLayerToggle }: NliLeftS
       style={{ overflow: 'hidden' }}
     >
       <div className={cn("flex flex-col min-h-0 h-full transition-opacity", isOpen ? "opacity-100 delay-200" : "opacity-0")}>
-        <h2 className="text-lg font-bold text-white mb-4">Data Layers & Tools</h2>
+        <h2 className="text-lg font-bold text-white mb-4">Tools</h2>
+        <div className="flex justify-around bg-secondary/50 rounded-lg p-1 mb-4">
+            {tools.map((tool) => (
+              <Button 
+                key={tool.name} 
+                variant="ghost" 
+                size="sm" 
+                className={cn(
+                  "flex-1 text-muted-foreground hover:text-primary",
+                  activeTool === tool.name && "bg-accent text-primary"
+                )} 
+                title={tool.name}
+                onClick={() => onToolSelect(tool.name)}
+              >
+                <tool.icon className="h-5 w-5 mr-2" />
+                {tool.name}
+              </Button>
+            ))}
+        </div>
+        
+        <h2 className="text-lg font-bold text-white mb-4">Data Layers</h2>
         <ScrollArea className="flex-1 pr-2">
           <div className="space-y-6">
             {Object.entries(dataLayers).map(([category, layers]) => (
@@ -102,16 +127,6 @@ export function NliLeftSidebar({ isOpen, activeLayers, onLayerToggle }: NliLeftS
             ))}
           </div>
         </ScrollArea>
-
-        <div className="mt-auto pt-4 border-t border-white/10">
-          <div className="flex justify-around">
-            {tools.map((tool) => (
-              <Button key={tool.name} variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" title={tool.name}>
-                <tool.icon className="h-5 w-5" />
-              </Button>
-            ))}
-          </div>
-        </div>
       </div>
     </aside>
   );
