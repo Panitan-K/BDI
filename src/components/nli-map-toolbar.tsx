@@ -29,9 +29,9 @@ const basemaps = [
 ];
 
 const tools = [
-  { name: 'Measure', icon: Ruler },
-  { name: 'Draw', icon: Pen },
-  { name: 'Select', icon: MousePointerSquareDashed },
+    { name: 'Measure', icon: Ruler, title: 'Measure Tool', description: 'Measure distances and areas directly on the map.' },
+    { name: 'Draw', icon: Pen, title: 'Draw Tool', description: 'Draw points, lines, and polygons to add or highlight features.' },
+    { name: 'Select', icon: MousePointerSquareDashed, title: 'Select Tool', description: 'Select and interact with features already on the map to view their data.' },
 ];
 
 export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D, on3DToggle }: NliMapToolbarProps) {
@@ -48,8 +48,9 @@ export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D,
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent>
-            <p>Change Basemap</p>
+          <TooltipContent className="max-w-xs text-left">
+            <p className="font-bold">Change Basemap</p>
+            <p className="text-muted-foreground">Select a different background map style, such as streets, satellite, or outdoors.</p>
           </TooltipContent>
         </Tooltip>
         <DropdownMenuContent>
@@ -76,8 +77,9 @@ export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D,
                 <tool.icon className="h-4 w-4" />
                 </Button>
             </TooltipTrigger>
-            <TooltipContent>
-                <p>{tool.name} Tool</p>
+            <TooltipContent className="max-w-xs text-left">
+                <p className="font-bold">{tool.title}</p>
+                <p className="text-muted-foreground">{tool.description}</p>
             </TooltipContent>
         </Tooltip>
       ))}
@@ -88,8 +90,9 @@ export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D,
                 <Globe className="h-4 w-4" />
             </Button>
             </TooltipTrigger>
-            <TooltipContent>
-            <p>Toggle {is3D ? "2D" : "3D"} View</p>
+            <TooltipContent className="max-w-xs text-left">
+                <p className="font-bold">Toggle {is3D ? "2D" : "3D"} View</p>
+                <p className="text-muted-foreground">Switch between a flat 2D map and an interactive 3D globe.</p>
             </TooltipContent>
         </Tooltip>
     </div>

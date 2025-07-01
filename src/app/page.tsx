@@ -149,8 +149,9 @@ export default function NliPlatformPage() {
                                       <Upload className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Import Data</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Import Data</p>
+                                <p className="text-muted-foreground">Upload and visualize your own geospatial data from KML, GeoJSON, or Shapefile formats.</p>
                               </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -159,8 +160,9 @@ export default function NliPlatformPage() {
                                       <Settings className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Settings</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Settings</p>
+                                <p className="text-muted-foreground">Configure application preferences, map settings, and user profile.</p>
                               </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -169,8 +171,9 @@ export default function NliPlatformPage() {
                                       <Layers className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Layer Control</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Layer Control</p>
+                                <p className="text-muted-foreground">Manage the visibility and properties of data layers on the map.</p>
                               </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -179,8 +182,9 @@ export default function NliPlatformPage() {
                                       <BookText className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Legend</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Legend</p>
+                                <p className="text-muted-foreground">View the map legend to understand the symbols and colors used.</p>
                               </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -189,8 +193,9 @@ export default function NliPlatformPage() {
                                       <Table2 className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Attribute Table</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Attribute Table</p>
+                                <p className="text-muted-foreground">Inspect the data associated with map features in a tabular format.</p>
                               </TooltipContent>
                           </Tooltip>
                       </div>
@@ -212,8 +217,9 @@ export default function NliPlatformPage() {
                                       <SlidersHorizontal className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Parameters</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Parameters</p>
+                                <p className="text-muted-foreground">Adjust variables and assumptions for analysis and simulation models.</p>
                               </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -222,8 +228,9 @@ export default function NliPlatformPage() {
                                       <History className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Time-Series Slider</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Time-Series Slider</p>
+                                <p className="text-muted-foreground">Animate and visualize how data changes across different time periods.</p>
                               </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -232,8 +239,9 @@ export default function NliPlatformPage() {
                                       <StickyNote className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>User Notes</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">User Notes</p>
+                                <p className="text-muted-foreground">Create, view, and manage your annotations and notes on the map.</p>
                               </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -242,8 +250,9 @@ export default function NliPlatformPage() {
                                       <Download className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Export Data</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Export Data</p>
+                                <p className="text-muted-foreground">Download map data, analysis results, or export the current view as an image.</p>
                               </TooltipContent>
                           </Tooltip>
                           <Tooltip>
@@ -252,8 +261,9 @@ export default function NliPlatformPage() {
                                       <Bot className="h-4 w-4"/>
                                   </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                  <p>Ask AI Assistant</p>
+                              <TooltipContent className="max-w-xs text-left">
+                                <p className="font-bold">Ask AI Assistant</p>
+                                <p className="text-muted-foreground">Get insights, run complex analyses, and ask questions using natural language.</p>
                               </TooltipContent>
                           </Tooltip>
                       </div>
