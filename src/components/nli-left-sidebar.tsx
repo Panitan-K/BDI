@@ -50,7 +50,7 @@ const dataLayers: LayerCategory = {
     { name: 'Special Economic Corridors', icon: LandPlot },
   ],
   'Analysis': [
-    { name: 'Population Density (3D)', icon: Layers3 },
+    { name: 'Population Density', icon: Layers3 },
   ]
 };
 

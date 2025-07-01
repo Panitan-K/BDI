@@ -20,8 +20,45 @@ const regionData: Record<string, { center: [number, number], zoom: number }> = {
     'Chon Buri': { center: [100.985, 13.361], zoom: 8 },
 };
 
+const originalProvincePaint = {
+    'fill-color': ['case',
+        ['boolean', ['feature-state', 'clicked'], false],
+        '#6C72FF', // Clicked color
+        '#4A69F6'  // Default color
+    ],
+    'fill-opacity': ['case',
+        ['boolean', ['feature-state', 'clicked'], false],
+        0.6,
+        0.3
+    ],
+    'fill-outline-color': '#fff'
+};
 
-const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circle' | 'fill-extrusion', paint: any, sourceData?: any, sourceLayer?: string }> = {
+const choroplethProvincePaint = {
+    'fill-color': ['case',
+        ['boolean', ['feature-state', 'clicked'], false],
+        '#6C72FF', // Clicked color, keep it consistent
+        [ // else, choropleth scale
+            'interpolate',
+            ['linear'],
+            ['get', 'pop_density'],
+            0, '#fef0d9',
+            250, '#fdd49e',
+            500, '#fdbb84',
+            750, '#fc8d59',
+            1000, '#e34a33',
+            1250, '#b30000'
+        ]
+    ],
+    'fill-opacity': ['case',
+        ['boolean', ['feature-state', 'clicked'], false],
+        0.9, // Make clicked more opaque
+        0.75 // Default choropleth opacity
+    ],
+    'fill-outline-color': '#fff'
+};
+
+const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circle' , paint: any, sourceData?: any, sourceLayer?: string }> = {
     'Roads': {
         url: 'https://api.maptiler.com/data/transportation/features.json?key=lVz5lFRZJpi7sv6fXhdz',
         type: 'line',
@@ -35,40 +72,8 @@ const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circl
     'Province': {
         url: 'https://api.maptiler.com/data/thailand-administrative/features.json?key=lVz5lFRZJpi7sv6fXhdz',
         type: 'fill',
-        paint: { 
-            'fill-color': ['case',
-                ['boolean', ['feature-state', 'clicked'], false],
-                '#6C72FF', // Clicked color
-                '#4A69F6'  // Default color
-            ],
-            'fill-opacity': ['case',
-                ['boolean', ['feature-state', 'clicked'], false],
-                0.6,
-                0.3
-            ], 
-            'fill-outline-color': '#fff' 
-        }
+        paint: originalProvincePaint
     },
-    'Population Density (3D)': {
-        url: 'https://api.maptiler.com/data/thailand-administrative/features.json?key=lVz5lFRZJpi7sv6fXhdz',
-        type: 'fill-extrusion',
-        paint: {
-            'fill-extrusion-color': [
-                'interpolate',
-                ['linear'],
-                ['get', 'pop_density'],
-                0, '#fef0d9',
-                250, '#fdd49e',
-                500, '#fdbb84',
-                750, '#fc8d59',
-                1000, '#e34a33',
-                1250, '#b30000'
-            ],
-            'fill-extrusion-height': ['/', ['get', 'pop_density'], 2],
-            'fill-extrusion-opacity': 0.75,
-            'fill-extrusion-base': 0
-        }
-    }
 };
 
 export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionClick, selectedRegion }: NliMapProps) {
@@ -91,23 +96,24 @@ export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionC
         bearing: 0,
     });
     
-    map.current.on('load', () => {
+    map.current.on('load', async () => {
         setIsStyleLoaded(true);
         
-        Object.keys(layerSources).forEach(async (layerName) => {
-            if (map.current?.getSource(layerName)) return;
+        // Handle province source separately to add mock data
+        const provinceConfig = layerSources['Province'];
+        const resp = await fetch(provinceConfig.url);
+        const geojson = await resp.json();
+        geojson.features.forEach((feature: any) => {
+            feature.properties.pop_density = Math.random() * 1500;
+        });
+        map.current?.addSource('Province', { type: 'geojson', data: geojson });
 
+        // Handle other sources
+        Object.keys(layerSources).forEach((layerName) => {
+            if (layerName === 'Province') return; // Already handled
+            if (map.current?.getSource(layerName)) return;
             const layerConfig = layerSources[layerName];
-            if (layerName === 'Population Density (3D)') {
-                const resp = await fetch(layerConfig.url);
-                const geojson = await resp.json();
-                geojson.features.forEach((feature: any) => {
-                    feature.properties.pop_density = Math.random() * 1500;
-                });
-                map.current?.addSource(layerName, { type: 'geojson', data: geojson });
-            } else {
-                map.current?.addSource(layerName, { type: 'geojson', data: layerConfig.url });
-            }
+            map.current?.addSource(layerName, { type: 'geojson', data: layerConfig.url });
         });
 
         // Add click listener for provinces
@@ -223,6 +229,21 @@ export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionC
     updateLayers();
 
   }, [activeLayers, isStyleLoaded]);
+
+  useEffect(() => {
+    const currentMap = map.current;
+    if (!currentMap || !currentMap.isStyleLoaded() || !currentMap.getLayer('Province')) {
+        return;
+    }
+
+    if (activeLayers['Population Density']) {
+        currentMap.setPaintProperty('Province', 'fill-color', choroplethProvincePaint['fill-color']);
+        currentMap.setPaintProperty('Province', 'fill-opacity', choroplethProvincePaint['fill-opacity']);
+    } else {
+        currentMap.setPaintProperty('Province', 'fill-color', originalProvincePaint['fill-color']);
+        currentMap.setPaintProperty('Province', 'fill-opacity', originalProvincePaint['fill-opacity']);
+    }
+  }, [activeLayers['Population Density'], isStyleLoaded]);
 
   useEffect(() => {
     const currentMap = map.current;

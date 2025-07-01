@@ -93,7 +93,7 @@ export default function NliPlatformPage() {
     'Sub-district': false,
     'Industrial Zones': false,
     'Special Economic Corridors': false,
-    'Population Density (3D)': false,
+    'Population Density': false,
   });
 
   const handleLayerToggle = (layerName: string, isActive: boolean) => {
