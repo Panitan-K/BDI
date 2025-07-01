@@ -139,7 +139,7 @@ export default function NliPlatformPage() {
 
       {/* Toolbars Row */}
       {!isFullscreen && (
-          <div className="flex items-center justify-between px-4 py-1 border-b border-border/50 bg-secondary/20 shrink-0">
+          <div className="relative z-20 flex items-center justify-between px-4 py-1 border-b border-border/50 bg-secondary/20 shrink-0">
               <div className="flex items-center gap-1 w-auto">
                     <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
                         <Tooltip>
@@ -270,7 +270,7 @@ export default function NliPlatformPage() {
           </div>
       )}
 
-      <div className={cn("flex flex-1 overflow-hidden transition-all duration-300", isFullscreen ? "p-0" : "p-3 gap-3")}>
+      <div className={cn("flex flex-1 p-3 gap-3 transition-all duration-300", isFullscreen ? "p-0" : "p-3 gap-3")}>
         {!isFullscreen && <NliLeftSidebar 
           activeLayers={activeLayers}
           onLayerToggle={handleLayerToggle}
@@ -321,5 +321,3 @@ export default function NliPlatformPage() {
     </div>
   );
 }
-
-    
