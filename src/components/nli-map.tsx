@@ -76,42 +76,60 @@ export function NliMap({ is3D, activeLayers }: NliMapProps) {
   }, [apiKey]);
   
   useEffect(() => {
-    if (map.current) {
+    const currentMap = map.current;
+    if (!currentMap) return;
+
+    const setView = () => {
+      // With an updated SDK, setProjection will be available.
+      // We directly set the projection based on the is3D state.
+      currentMap.setProjection({ name: is3D ? 'globe' : 'mercator' });
+
       if (is3D) {
-        map.current.flyTo({ pitch: 60, zoom: 6, bearing: -20, duration: 2000 });
-        if(map.current.getProjection().name !== 'globe') map.current.setProjection({name: 'globe'});
+        currentMap.flyTo({ pitch: 60, zoom: 6, bearing: -20, duration: 2000 });
       } else {
-        map.current.flyTo({ pitch: 0, zoom: 5.5, bearing: 0, duration: 2000 });
-        if(map.current.getProjection().name !== 'mercator') map.current.setProjection({name: 'mercator'});
+        currentMap.flyTo({ pitch: 0, zoom: 5.5, bearing: 0, duration: 2000 });
       }
+    };
+
+    if (currentMap.loaded()) {
+      setView();
+    } else {
+      currentMap.once('load', setView);
     }
   }, [is3D]);
 
   useEffect(() => {
-    if (!map.current) return;
-
     const currentMap = map.current;
-    
-    Object.keys(layerSources).forEach(layerName => {
-        const layerConfig = layerSources[layerName];
-        const isLayerVisible = activeLayers[layerName];
-        
-        if (isLayerVisible) {
-            if (!currentMap.getLayer(layerName)) {
-                currentMap.addLayer({
-                    id: layerName,
-                    type: layerConfig.type,
-                    source: layerName,
-                    paint: layerConfig.paint
-                });
-            }
-        } else {
-            if (currentMap.getLayer(layerName)) {
-                currentMap.removeLayer(layerName);
-            }
-        }
-    });
+    if (!currentMap) return;
 
+    const updateLayers = () => {
+      Object.keys(layerSources).forEach(layerName => {
+          const layerConfig = layerSources[layerName];
+          const isLayerVisible = activeLayers[layerName];
+          
+          if (isLayerVisible) {
+              if (!currentMap.getLayer(layerName) && currentMap.getSource(layerName)) {
+                  currentMap.addLayer({
+                      id: layerName,
+                      type: layerConfig.type,
+                      source: layerName,
+                      paint: layerConfig.paint
+                  });
+              }
+          } else {
+              if (currentMap.getLayer(layerName)) {
+                  currentMap.removeLayer(layerName);
+              }
+          }
+      });
+    };
+
+    // Ensure the map style is loaded before trying to manipulate layers.
+    if (currentMap.isStyleLoaded()) {
+      updateLayers();
+    } else {
+      currentMap.once('load', updateLayers);
+    }
   }, [activeLayers]);
 
   return (
