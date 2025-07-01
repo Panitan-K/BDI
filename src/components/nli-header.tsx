@@ -30,7 +30,7 @@ export function NliHeader({
     <header className="flex items-center justify-between px-4 py-2 border-b border-border/50 glass-panel !rounded-none z-20 shrink-0">
       <div className="flex items-center gap-2">
         <MapPin className="text-primary h-6 w-6" />
-        <h1 className="text-lg font-bold text-white">NLI-Tu Land</h1>
+        <h1 className="text-lg font-bold text-white">NLI-Thailand Land</h1>
       </div>
       
       <div className="flex-1 flex justify-center items-center gap-1">
