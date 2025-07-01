@@ -8,7 +8,7 @@ import { NliRightSidebar } from '@/components/nli-right-sidebar';
 import { NliMap } from '@/components/nli-map';
 import { NliMapToolbar } from '@/components/nli-map-toolbar';
 import { AiChatModal } from '@/components/nli-ai-chat';
-import { Share2, Copy, Upload, Settings, SlidersHorizontal, Download, Layers, BookText, Table2 } from 'lucide-react';
+import { Share2, Copy, Upload, Settings, SlidersHorizontal, Download, Layers, BookText, Table2, History, StickyNote, Bot } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -221,11 +221,41 @@ export default function NliPlatformPage() {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <History className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Time-Series Slider</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <StickyNote className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>User Notes</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
                                     <Download className="h-4 w-4"/>
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p>Export Data</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8" onClick={() => setAiChatOpen(true)}>
+                                    <Bot className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Ask AI Assistant</p>
                             </TooltipContent>
                         </Tooltip>
                     </div>
