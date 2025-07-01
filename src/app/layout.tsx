@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { cn } from '@/lib/utils';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export const metadata: Metadata = {
   title: 'NLI-Thai | National Logistic Investment Platform',
@@ -22,8 +23,10 @@ export default function RootLayout({
         <link href='https://cdn.maptiler.com/maptiler-sdk-js/v2.0.3/maptiler-sdk.css' rel='stylesheet' />
       </head>
       <body className={cn("min-h-screen bg-background font-sans antialiased")}>
-        {children}
-        <Toaster />
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </body>
     </html>
   );
