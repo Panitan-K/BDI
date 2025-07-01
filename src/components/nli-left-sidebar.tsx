@@ -19,7 +19,7 @@ import {
   LandPlot,
   Ruler,
   Pen,
-  MousePointerSquare,
+  MousePointerSquareDashed,
   GalleryVertical
 } from 'lucide-react';
 
@@ -49,7 +49,7 @@ const dataLayers = {
 const tools = [
   { name: 'Measure', icon: Ruler },
   { name: 'Draw', icon: Pen },
-  { name: 'Select', icon: MousePointerSquare },
+  { name: 'Select', icon: MousePointerSquareDashed },
   { name: 'Basemap Gallery', icon: GalleryVertical },
 ];
 
