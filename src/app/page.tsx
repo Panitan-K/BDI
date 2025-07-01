@@ -123,7 +123,7 @@ export default function NliPlatformPage() {
 
   return (
     <div className={cn(
-      "flex flex-col h-screen w-screen bg-background text-foreground overflow-hidden",
+      "flex flex-col h-screen w-screen bg-background text-foreground",
       isFullscreen && "absolute inset-0 z-50"
     )}>
       {!isFullscreen && (
@@ -321,3 +321,5 @@ export default function NliPlatformPage() {
     </div>
   );
 }
+
+    

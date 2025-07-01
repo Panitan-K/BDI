@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 interface NliHeaderProps {
@@ -28,30 +28,30 @@ export function NliHeader({
 }: NliHeaderProps) {
   return (
     <header className="flex items-center justify-between px-4 py-2 border-b border-border/50 glass-panel !rounded-none z-20 shrink-0">
-      <div className="flex items-center gap-2">
-        <MapPin className="text-primary h-6 w-6" />
-        <h1 className="text-lg font-bold text-white">NLI-Thailand Land</h1>
-      </div>
-      
-      <div className="flex-1 flex justify-center items-center gap-1">
-        <Tabs value={isComparing ? 'compare' : activeProject} onValueChange={onProjectChange} className="w-auto">
-          <TabsList className="grid w-full grid-cols-2 bg-secondary/50">
-            <TabsTrigger value="project1" disabled={isComparing}>Project 1</TabsTrigger>
-            <TabsTrigger value="project2" disabled={isComparing}>Project 2</TabsTrigger>
-          </TabsList>
-        </Tabs>
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" title="Add Project">
-                        <Plus className="h-4 w-4" />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>Add New Project</p>
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <MapPin className="text-primary h-6 w-6" />
+          <h1 className="text-lg font-bold text-white">NLI-Thailand Land</h1>
+        </div>
+        
+        <div className="flex items-center gap-1">
+          <Tabs value={isComparing ? 'compare' : activeProject} onValueChange={onProjectChange} className="w-auto">
+            <TabsList className="grid w-full grid-cols-2 bg-secondary/50">
+              <TabsTrigger value="project1" disabled={isComparing}>Project 1</TabsTrigger>
+              <TabsTrigger value="project2" disabled={isComparing}>Project 2</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Tooltip>
+              <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" title="Add Project">
+                      <Plus className="h-4 w-4" />
+                  </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                  <p>Add New Project</p>
+              </TooltipContent>
+          </Tooltip>
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
@@ -83,3 +83,5 @@ export function NliHeader({
     </header>
   );
 }
+
+    
