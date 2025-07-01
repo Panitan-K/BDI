@@ -1,12 +1,37 @@
 'use client';
 
-import React from 'react';
-import { MapPin, GitCompare, Share2, Plus, Maximize, User, Download } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  MapPin, 
+  GitCompare, 
+  Share2, 
+  Plus, 
+  Maximize, 
+  User, 
+  Settings,
+  Palette,
+  Globe,
+  LogOut
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Switch } from '@/components/ui/switch';
+import { Separator } from './ui/separator';
 
 
 interface NliHeaderProps {
@@ -26,12 +51,37 @@ export function NliHeader({
   onShare,
   onFullscreenToggle
 }: NliHeaderProps) {
+  const [isMounted, setIsMounted] = useState(false);
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    setIsMounted(true);
+    const storedTheme = localStorage.getItem('nli-theme');
+    if (storedTheme) {
+      setTheme(storedTheme);
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (isMounted) {
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+      localStorage.setItem('nli-theme', theme);
+    }
+  }, [theme, isMounted]);
+
+  const toggleTheme = () => {
+    setTheme(t => t === 'dark' ? 'light' : 'dark');
+  }
+
   return (
     <header className="flex items-center justify-between px-2 py-2 border-b border-border/50 glass-panel !rounded-none z-10 shrink-0">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <MapPin className="text-primary h-6 w-6" />
-        <h1 className="text-lg font-bold text-white">NLI-Thailand Land</h1>
+        <h1 className="text-lg font-bold text-foreground">NLI-Thailand Land</h1>
         
+        <Separator orientation="vertical" className="h-6" />
+
         <div className="flex items-center gap-1">
           <Tabs value={isComparing ? 'compare' : activeProject} onValueChange={onProjectChange} className="w-auto">
             <TabsList className="grid w-full grid-cols-2 bg-secondary/50">
@@ -57,7 +107,7 @@ export function NliHeader({
           variant="outline" 
           size="sm"
           className={cn(
-            "bg-transparent border-primary text-primary hover:bg-primary hover:text-white",
+            "bg-transparent border-primary text-primary hover:bg-primary hover:text-primary-foreground",
             isComparing && "bg-primary text-white"
             )}
           onClick={onCompareToggle}
@@ -73,10 +123,56 @@ export function NliHeader({
           <Share2 className="mr-2 h-4 w-4" />
           Share
         </Button>
-        <Avatar className="h-8 w-8">
-          <AvatarImage data-ai-hint="profile picture" src="https://placehold.co/40x40" alt="User Avatar" />
-          <AvatarFallback><User /></AvatarFallback>
-        </Avatar>
+
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Avatar className="h-8 w-8 cursor-pointer">
+                    <AvatarImage data-ai-hint="profile picture" src="https://placehold.co/40x40" alt="User Avatar" />
+                    <AvatarFallback><User /></AvatarFallback>
+                </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>View Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    <Palette className="mr-2 h-4 w-4" />
+                    <span>Appearance</span>
+                    {isMounted && (
+                      <Switch 
+                          checked={theme === 'dark'}
+                          onCheckedChange={toggleTheme}
+                          className="ml-auto"
+                      />
+                    )}
+                </DropdownMenuItem>
+                 <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                        <Globe className="mr-2 h-4 w-4" />
+                        <span>Language</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuPortal>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuItem>English</DropdownMenuItem>
+                            <DropdownMenuItem>Thai</DropdownMenuItem>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuPortal>
+                </DropdownMenuSub>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log Out</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+
       </div>
     </header>
   );
