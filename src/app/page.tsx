@@ -8,7 +8,7 @@ import { NliRightSidebar } from '@/components/nli-right-sidebar';
 import { NliMap } from '@/components/nli-map';
 import { NliMapToolbar } from '@/components/nli-map-toolbar';
 import { AiChatModal } from '@/components/nli-ai-chat';
-import { Share2, Link, Copy, Upload, Settings, SlidersHorizontal, Download } from 'lucide-react';
+import { Share2, Copy, Upload, Settings, SlidersHorizontal, Download, Layers, BookText, Table2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 function ShareDialog({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) {
@@ -139,9 +140,61 @@ export default function NliPlatformPage() {
       {/* Toolbars Row */}
        {!isFullscreen && (
           <div className="flex items-center justify-between px-4 py-1 border-b border-border/50 bg-secondary/20 shrink-0">
-              <div className="flex items-center gap-1 w-80">
-                  <Button variant="ghost" size="sm"><Upload className="mr-2 h-4 w-4"/> Import</Button>
-                  <Button variant="ghost" size="sm"><Settings className="mr-2 h-4 w-4"/> Settings</Button>
+              <div className="flex items-center gap-1 w-auto">
+                <TooltipProvider>
+                    <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <Upload className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Import Data</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <Settings className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Settings</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <Layers className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Layer Control</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <BookText className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Legend</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <Table2 className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Attribute Table</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+                </TooltipProvider>
               </div>
               <div className="flex-1 flex justify-center">
                   <NliMapToolbar 
@@ -152,9 +205,31 @@ export default function NliPlatformPage() {
                       on3DToggle={() => setIs3D(!is3D)}
                   />
               </div>
-              <div className="flex items-center gap-1 w-96 justify-end">
-                  <Button variant="ghost" size="sm"><SlidersHorizontal className="mr-2 h-4 w-4"/> Parameters</Button>
-                  <Button variant="ghost" size="sm"><Download className="mr-2 h-4 w-4"/> Export</Button>
+              <div className="flex items-center gap-1 w-auto justify-end">
+                <TooltipProvider>
+                    <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <SlidersHorizontal className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Parameters</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white hover:bg-accent hover:text-primary h-8 w-8">
+                                    <Download className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Export Data</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+                </TooltipProvider>
               </div>
           </div>
        )}
