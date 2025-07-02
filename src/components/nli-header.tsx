@@ -135,8 +135,8 @@ export function NliHeader({
         <div className="flex items-center gap-1">
           <Tabs value={isComparing ? 'compare' : activeProject} onValueChange={onProjectChange} className="w-auto">
             <TabsList className="grid w-full grid-cols-2 bg-secondary/50">
-              <TabsTrigger value="project1" disabled={isComparing}>{t.project1}</TabsTrigger>
-              <TabsTrigger value="project2" disabled={isComparing}>{t.project2}</TabsTrigger>
+              <TabsTrigger value="project1">{t.project1}</TabsTrigger>
+              <TabsTrigger value="project2">{t.project2}</TabsTrigger>
             </TabsList>
           </Tabs>
           <Tooltip>

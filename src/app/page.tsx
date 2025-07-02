@@ -151,6 +151,7 @@ export default function NliPlatformPage() {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [theme, setTheme] = useState('dark');
   const [language, setLanguage] = useState('en');
+  const [activeParameters, setActiveParameters] = useState<string[]>([]);
 
   const [activeLayers, setActiveLayers] = useState<Record<string, boolean>>({
     'Roads': false,
@@ -201,7 +202,10 @@ export default function NliPlatformPage() {
   }
 
   const handleProjectChange = (project: string) => {
-    if (isComparing) return;
+    if (isComparing) {
+      setIsComparing(false);
+      setRightSidebarMaximized(false);
+    }
     setActiveProject(project);
   }
 
@@ -215,7 +219,7 @@ export default function NliPlatformPage() {
     }
   };
 
-  const handleStartComparison = (values: { projects: string[], layers?: string[] }) => {
+  const handleStartComparison = (values: { projects: string[], layers?: string[], parameters?: string[] }) => {
     // Auto-activate selected layers
     const layerKeys = Object.keys(activeLayers);
     const newActiveLayers = Object.fromEntries(
@@ -227,6 +231,7 @@ export default function NliPlatformPage() {
         newActiveLayers['Province'] = true;
     }
     setActiveLayers(newActiveLayers);
+    setActiveParameters(values.parameters || []);
 
     // In a real application, you would pass these values to an AI or data processing backend.
     // For this demo, we'll just enable the mock comparison view in the right sidebar.
@@ -442,6 +447,7 @@ export default function NliPlatformPage() {
             language={language}
             isMaximized={isRightSidebarMaximized}
             onMaximizeToggle={() => setRightSidebarMaximized(prev => !prev)}
+            activeParameters={activeParameters}
           />
         )}
       </div>

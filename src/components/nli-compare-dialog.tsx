@@ -41,8 +41,8 @@ const dataLayers = [
 
 const analysisParameters = [
     'Economic Impact', 'Logistic Flow', 'Environmental Score',
-    'Investment Suitability', 'Job Creation', 'Financing & Costs',
-    'Socio-Economic Impact', 'Land Price Trend',
+    'Investment Suitability', 'Job Creation', 'Regional Distribution', 'Financing & Costs',
+    'Socio-Economic Impact', 'Predictive Tools',
 ];
 
 
