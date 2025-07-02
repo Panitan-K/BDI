@@ -5,17 +5,24 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart, Bar, AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from 'recharts';
-import type { TooltipProps } from 'recharts';
+import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { XIcon } from 'lucide-react';
+import { Building, Briefcase, TrendingUp, XIcon } from 'lucide-react';
 import {
     Tooltip as ShadTooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
   } from "@/components/ui/tooltip"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
 const project1Data = {
   name: "Project 1: Eastern EEC High-Speed Rail",
@@ -98,28 +105,7 @@ const translations = {
   }
 };
 
-
-const COLORS = ['#57C3FF', '#4A69F6', '#FCE525', '#6C72FF'];
-
-const CustomTooltip = ({ active, payload, label, language }: TooltipProps<number, string> & { language: string }) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    const nameKey = language === 'en' ? 'name' : 'name_th';
-    const labelToShow = data[nameKey] || label;
-    return (
-      <div className="p-2 glass-panel text-white rounded-md border-border text-sm">
-        <p className="label font-bold">{`${labelToShow}`}</p>
-        {payload.map((p, index) => (
-             <p key={index} style={{ color: p.color }}>{`${p.name}: ${p.value?.toLocaleString()}`}</p>
-        ))}
-         {data.note && <p className="text-muted-foreground text-xs mt-1">{data.note}</p>}
-      </div>
-    );
-  }
-  return null;
-};
-
-const SmallSparkline = ({ data, dataKey, dataKey2, strokeColor, strokeColor2, language }: { data: any[], dataKey: string, dataKey2?: string, strokeColor: string, strokeColor2?: string, language: string }) => (
+const SmallSparkline = ({ data, dataKey, dataKey2, strokeColor, strokeColor2 }: { data: any[], dataKey: string, dataKey2?: string, strokeColor: string, strokeColor2?: string }) => (
   <ResponsiveContainer width="100%" height={40}>
     <AreaChart data={data}>
       <defs>
@@ -132,7 +118,10 @@ const SmallSparkline = ({ data, dataKey, dataKey2, strokeColor, strokeColor2, la
           <stop offset="100%" stopColor={strokeColor2} stopOpacity={0} />
         </linearGradient>}
       </defs>
-      <Tooltip content={<CustomTooltip language={language} />} />
+      <ChartTooltip
+        cursor={false}
+        content={<ChartTooltipContent indicator="line" hideLabel />}
+      />
       <Area type="monotone" dataKey={dataKey} stroke={strokeColor} strokeWidth={2} fill={`url(#sparkline-${strokeColor})`} />
       {dataKey2 && strokeColor2 && <Area type="monotone" dataKey={dataKey2} stroke={strokeColor2} strokeWidth={2} fill={`url(#sparkline-${strokeColor2})`} />}
       <YAxis domain={['dataMin - 1', 'dataMax + 1']} hide />
@@ -145,7 +134,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   const [title, setTitle] = useState(project1Data.name);
   const t = translations[language as keyof typeof translations] || translations.en;
   const nameKey = language === 'en' ? 'name' : 'name_th';
-
 
   useEffect(() => {
     if (selectedRegion) {
@@ -161,6 +149,27 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     }
   }, [activeProject, isComparing, selectedRegion, language]);
 
+  const barChartConfig = {
+    p1: { label: t.project1, color: "hsl(var(--chart-1))" },
+    p2: { label: t.project2, color: "hsl(var(--chart-2))" },
+    value: { label: t.jobs, color: "hsl(var(--chart-2))" },
+  } satisfies ChartConfig;
+
+  const pieChartConfig = {
+    value: { label: "Value" },
+    p1: { label: t.project1 },
+    p2: { label: t.project2 },
+    North: { label: language === 'en' ? 'North' : 'เหนือ', color: "hsl(var(--chart-1))" },
+    East: { label: language === 'en' ? 'East' : 'ตะวันออก', color: "hsl(var(--chart-2))" },
+    South: { label: language === 'en' ? 'South' : 'ใต้', color: "hsl(var(--chart-3))" },
+    West: { label: language === 'en' ? 'West' : 'ตะวันตก', color: "hsl(var(--chart-4))" },
+  } satisfies ChartConfig;
+
+  const totalPieValue = React.useMemo(() => {
+    if (isComparing || !data.pieData) return 0;
+    return data.pieData.reduce((acc: number, curr: any) => acc + curr.value, 0);
+  }, [data.pieData, isComparing]);
+
   const renderComparisonValue = (val: any) => (
       <div className="flex items-baseline gap-2">
         <span className="text-chart-1">{val.p1}%</span>
@@ -172,7 +181,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   return (
     <aside
       className={cn(
-        'w-80 p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0'
+        'w-72 p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0'
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
@@ -187,7 +196,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                   <CardTitle className="text-xs font-medium text-muted-foreground">{t.economicImpact}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 pt-0">
-                  <div className="text-xl font-bold text-foreground">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
+                  <div className="text-lg font-bold text-foreground">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
                   <p className="text-xs text-green-400">{t.gdpForecast}</p>
                   <SmallSparkline 
                     data={data.gdpData} 
@@ -195,7 +204,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                     dataKey2={isComparing ? 'p2' : undefined}
                     strokeColor="hsl(var(--chart-1))"
                     strokeColor2={isComparing ? "hsl(var(--chart-2))" : undefined}
-                    language={language}
                   />
                 </CardContent>
               </Card>
@@ -204,7 +212,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                   <CardTitle className="text-xs font-medium text-muted-foreground">{t.logisticFlow}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 pt-0">
-                  <div className="text-xl font-bold text-foreground">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
+                  <div className="text-lg font-bold text-foreground">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
                   <p className="text-xs text-green-400">{t.freightVolume}</p>
                   <SmallSparkline 
                     data={data.freightData} 
@@ -212,7 +220,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                     dataKey2={isComparing ? 'p2' : undefined}
                     strokeColor="hsl(var(--chart-4))"
                     strokeColor2={isComparing ? "hsl(var(--chart-5))" : undefined}
-                    language={language}
                    />
                 </CardContent>
               </Card>
@@ -229,26 +236,34 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             </Card>
 
             <Card className="glass-panel border-none">
-              <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
-                 <CardTitle className="text-xs font-medium text-muted-foreground">{t.investSuitability}</CardTitle>
-                 <span className="font-bold text-lg text-chart-2">{isComparing ? `${data.investmentSuitability.p1}/${data.investmentSuitability.p2}`: data.investmentSuitability}</span>
+              <CardHeader className="p-2 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{t.jobsCreated}</CardTitle>
               </CardHeader>
               <CardContent className="p-2 pt-0">
-                <p className="text-xs text-muted-foreground mb-1">{t.jobsCreated}</p>
-                 <ResponsiveContainer width="100%" height={80}>
-                    <BarChart data={data.jobsData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }} barGap={isComparing ? 2 : 4}>
-                      <Tooltip content={<CustomTooltip language={language} />} cursor={{fill: 'rgba(255, 255, 255, 0.05)'}}/>
-                      <XAxis dataKey={nameKey} fontSize={10} tick={{ fill: 'hsl(var(--muted-foreground))' }} tickLine={false} axisLine={false} />
-                       {isComparing ? (
-                          <>
-                            <Bar dataKey="p1" name={t.project1} barSize={8} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-1))" />
-                            <Bar dataKey="p2" name={t.project2} barSize={8} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-2))" />
-                          </>
-                        ) : (
-                          <Bar dataKey="value" name={t.jobs} barSize={10} radius={[4, 4, 0, 0]} fill="hsl(var(--chart-2))" />
-                        )}
-                    </BarChart>
-                </ResponsiveContainer>
+                <ChartContainer config={barChartConfig} className="h-[120px] w-full">
+                  <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -25, top: 10 }}>
+                    <XAxis
+                      dataKey={nameKey}
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      fontSize={10}
+                    />
+                    <YAxis tickLine={false} axisLine={false} fontSize={10} />
+                    <ChartTooltip
+                      cursor={{ fill: 'hsla(var(--background), 0.5)' }}
+                      content={<ChartTooltipContent indicator="dot" />}
+                    />
+                    {isComparing ? (
+                      <>
+                        <Bar dataKey="p1" fill="var(--color-p1)" radius={4} barSize={10} />
+                        <Bar dataKey="p2" fill="var(--color-p2)" radius={4} barSize={10} />
+                      </>
+                    ) : (
+                      <Bar dataKey="value" fill="var(--color-value)" radius={4} barSize={12} />
+                    )}
+                  </BarChart>
+                </ChartContainer>
               </CardContent>
             </Card>
             
@@ -256,35 +271,45 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               <CardHeader className='p-2'>
                 <CardTitle className="text-foreground text-sm">{t.regionalDist}</CardTitle>
               </CardHeader>
-              <CardContent className='p-2 pt-0 -mt-2'>
-                 <ResponsiveContainer width="100%" height={180}>
-                    <PieChart>
-                       <Tooltip content={<CustomTooltip language={language} />} />
-                       {isComparing ? (
-                         <>
-                            <Pie data={data.pieData} dataKey="p1" nameKey={nameKey} cx="50%" cy="50%" outerRadius={50} fill="hsl(var(--chart-1))" stroke="none" />
-                            <Pie data={data.pieData} dataKey="p2" nameKey={nameKey} cx="50%" cy="50%" innerRadius={60} outerRadius={70} fill="hsl(var(--chart-2))" stroke="none" />
-                         </>
-                       ) : (
-                        <Pie data={data.pieData} dataKey="value" nameKey={nameKey} cx="50%" cy="50%" innerRadius={40} outerRadius={60} fill="#8884d8" stroke="none" label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
-                          const RADIAN = Math.PI / 180;
-                          const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                          const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                          const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                          return (
-                            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={10}>
-                              {`${(percent * 100).toFixed(0)}%`}
-                            </text>
-                          );
-                        }}>
-                            {data.pieData.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                       )}
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{fontSize: "10px", paddingTop: '10px'}} formatter={(value, entry) => <span className="text-muted-foreground">{value}</span>} />
-                    </PieChart>
-                </ResponsiveContainer>
+              <CardContent className='p-2 pt-0'>
+                 {isComparing ? (
+                    <ChartContainer config={pieChartConfig} className="h-[180px] w-full">
+                        <BarChart layout="vertical" data={data.pieData} margin={{ left: 0, top: 20, right: 10 }}>
+                        <YAxis
+                            dataKey={nameKey}
+                            type="category"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={5}
+                            fontSize={10}
+                            width={language === 'th' ? 60 : 50}
+                        />
+                        <XAxis type="number" hide />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                        <ChartLegend content={<ChartLegendContent verticalAlign="top" />} />
+                        <Bar dataKey="p1" name={t.project1} layout="vertical" fill="var(--color-p1)" radius={4} barSize={12} />
+                        <Bar dataKey="p2" name={t.project2} layout="vertical" fill="var(--color-p2)" radius={4} barSize={12} />
+                        </BarChart>
+                    </ChartContainer>
+                 ) : (
+                    <div className="relative">
+                        <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[180px]">
+                            <PieChart>
+                                <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
+                                <Pie data={data.pieData} dataKey="value" nameKey={nameKey} innerRadius={50} outerRadius={70} strokeWidth={2} >
+                                    {data.pieData.map((entry: any) => (
+                                        <Cell key={entry.name} fill={`var(--color-${entry.name})`} className="stroke-background" />
+                                    ))}
+                                </Pie>
+                                <ChartLegend content={<ChartLegendContent nameKey="name" className="-mt-4 flex-wrap" />} />
+                            </PieChart>
+                        </ChartContainer>
+                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                            <span className="text-lg font-bold">{totalPieValue.toLocaleString()}</span>
+                            <span className="text-xs text-muted-foreground">Total</span>
+                        </div>
+                    </div>
+                 )}
               </CardContent>
             </Card>
 
@@ -296,9 +321,9 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                 <TooltipProvider>
                     <ShadTooltip>
                         <TooltipTrigger asChild>
-                            <div className="flex justify-between items-center cursor-pointer">
-                                <span className="text-muted-foreground">{t.landPriceTrend}</span>
-                                <span className="font-bold text-green-400">{isComparing ? `${data.landPriceTrend.p1}% / ${data.landPriceTrend.p2}%` : `+${data.landPriceTrend}%`} <span className="text-xs font-normal text-muted-foreground">{t.landPriceUnit}</span></span>
+                            <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
+                                <span className="text-muted-foreground flex items-center gap-2"><TrendingUp className="h-4 w-4" /> {t.landPriceTrend}</span>
+                                <span className="font-bold text-green-400">{isComparing ? `${data.landPriceTrend.p1}% / ${data.landPriceTrend.p2}%` : `+${data.landPriceTrend}%`}</span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -307,9 +332,9 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                     </ShadTooltip>
                     <ShadTooltip>
                         <TooltipTrigger asChild>
-                            <div className="flex justify-between items-center cursor-pointer">
-                                <span className="text-muted-foreground">{t.businessReg}</span>
-                                <span className="font-bold text-foreground">{isComparing ? `${data.businessReg.p1} / ${data.businessReg.p2}` : data.businessReg} <span className="text-xs font-normal text-muted-foreground">{t.businessRegUnit}</span></span>
+                            <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
+                                <span className="text-muted-foreground flex items-center gap-2"><Building className="h-4 w-4" />{t.businessReg}</span>
+                                <span className="font-bold text-foreground">{isComparing ? `${data.businessReg.p1} / ${data.businessReg.p2}` : data.businessReg}</span>
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -318,8 +343,8 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                     </ShadTooltip>
                     <ShadTooltip>
                         <TooltipTrigger asChild>
-                            <div className="flex justify-between items-center cursor-pointer">
-                                <span className="text-muted-foreground">{t.skilledLabor}</span>
+                            <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
+                                <span className="text-muted-foreground flex items-center gap-2"><Briefcase className="h-4 w-4" />{t.skilledLabor}</span>
                                 <span className="font-bold text-foreground">{isComparing ? `${data.skilledLabor.p1}k / ${data.skilledLabor.p2}k` : `${data.skilledLabor}k`}</span>
                             </div>
                         </TooltipTrigger>
@@ -335,5 +360,3 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </aside>
   );
 }
-
-    
