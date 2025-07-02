@@ -100,20 +100,21 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
             <TabsTrigger value="info"><Info className="mr-2 h-4 w-4" />{t.layerInfo}</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="appearance" className="space-y-4 py-4">
+          <TabsContent value="appearance" className="space-y-3 py-4">
             <div>
               <Label>{t.fillColor}</Label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-1.5 items-center">
                 {colorSwatches.map(color => (
-                  <Button key={color} className="h-8 w-8 rounded-full border-2 border-transparent focus:border-primary" style={{ backgroundColor: color }} />
+                  <Button key={color} className="h-7 w-7 rounded-full border-2 border-transparent focus:border-primary p-0" style={{ backgroundColor: color }} />
                 ))}
+                <Button className="h-7 w-7 rounded-full border-2 border-transparent focus:border-primary p-0" style={{ background: 'conic-gradient(from 180deg at 50% 50%, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF, #FF0000)' }} />
               </div>
             </div>
             <div>
               <Label>{t.colorRamps}</Label>
-              <div className="flex flex-col gap-2 mt-2">
+              <div className="flex flex-col gap-1.5 mt-1.5">
                 {colorRamps.map((ramp, index) => (
-                  <Button key={index} className="h-6 w-full rounded-md border-2 border-transparent focus:border-primary p-0" style={{ background: ramp }} />
+                  <Button key={index} className="h-5 w-full rounded-md border-2 border-transparent focus:border-primary p-0" style={{ background: ramp }} />
                 ))}
               </div>
             </div>
@@ -124,7 +125,7 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
                 max={1}
                 step={0.1}
                 onValueChange={setOpacity}
-                className="mt-2"
+                className="mt-1.5"
               />
             </div>
              <div>
@@ -134,22 +135,28 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
                 max={5}
                 step={0.5}
                 onValueChange={setBorderWidth}
-                className="mt-2"
+                className="mt-1.5"
               />
             </div>
             <div>
               <Label>{t.displayType}</Label>
-               <RadioGroup className="mt-2 grid grid-cols-2 gap-2">
+               <RadioGroup className="mt-1.5 grid grid-cols-3 gap-2">
                   <div>
                     <RadioGroupItem value="choropleth" id="choropleth" className="peer sr-only" />
-                    <Label htmlFor="choropleth" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-xs">
+                    <Label htmlFor="choropleth" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-1.5 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-[11px] h-full">
                      {t.choropleth}
                     </Label>
                   </div>
                   <div>
                     <RadioGroupItem value="heatmap" id="heatmap" className="peer sr-only" />
-                     <Label htmlFor="heatmap" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-xs">
+                     <Label htmlFor="heatmap" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-1.5 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-[11px] h-full">
                      {t.heatmap}
+                    </Label>
+                  </div>
+                   <div>
+                    <RadioGroupItem value="clustered" id="clustered" className="peer sr-only" />
+                     <Label htmlFor="clustered" className="flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-1.5 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-[11px] h-full">
+                     {t.clusteredPoints}
                     </Label>
                   </div>
                </RadioGroup>
