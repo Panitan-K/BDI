@@ -239,12 +239,11 @@ interface NliRightSidebarProps {
     selectedRegion: string | null; 
     onClearRegion: () => void; 
     language: string; 
-    isMaximized: boolean;
-    onMaximizeToggle: () => void;
     activeParameters?: string[];
+    style?: React.CSSProperties;
 }
 
-export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language, isMaximized, onMaximizeToggle, activeParameters = [] }: NliRightSidebarProps) {
+export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language, activeParameters = [], style }: NliRightSidebarProps) {
   const data = React.useMemo(() => {
     if (isComparing) {
       return comparisonData;
@@ -296,18 +295,15 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
 
   return (
     <aside
+      style={style}
       className={cn(
-        'p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
-        isMaximized ? 'w-[550px]' : 'w-96'
+        'p-2 flex flex-col glass-panel !rounded-lg z-10 shrink-0'
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
             <h2 className="text-base font-bold text-foreground">{title}</h2>
             <div className="flex items-center">
               {selectedRegion && <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onClearRegion}><XIcon className='h-4 w-4'/></Button>}
-              <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onMaximizeToggle}>
-                {isMaximized ? <Minimize2 className='h-4 w-4' /> : <Maximize2 className='h-4 w-4' />}
-              </Button>
             </div>
         </div>
         <ScrollArea className="flex-1 -mr-2 pr-2">
@@ -320,7 +316,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                   </CardHeader>
                   <CardContent className="p-2 pt-0">
                     <div className="text-lg font-bold text-foreground">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
-                    <p className="text-xs text-green-400">{t.gdpForecast}</p>
+                    <div className="text-xs text-green-400">{t.gdpForecast}</div>
                     <SmallSparkline 
                       data={data.gdpData} 
                       dataKey={isComparing ? 'p1' : 'v'} 
@@ -338,7 +334,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                   </CardHeader>
                   <CardContent className="p-2 pt-0">
                     <div className="text-lg font-bold text-foreground">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
-                    <p className="text-xs text-green-400">{t.freightVolume}</p>
+                    <div className="text-xs text-green-400">{t.freightVolume}</div>
                     <SmallSparkline 
                       data={data.freightData} 
                       dataKey={isComparing ? 'p1' : 'v'} 

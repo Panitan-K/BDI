@@ -97,17 +97,17 @@ interface NliLeftSidebarProps {
   activeLayers: Record<string, boolean>;
   onLayerToggle: (layerName: string, isActive: boolean) => void;
   language: string;
-  isCompact?: boolean;
+  style?: React.CSSProperties;
 }
 
-export function NliLeftSidebar({ activeLayers, onLayerToggle, language, isCompact }: NliLeftSidebarProps) {
+export function NliLeftSidebar({ activeLayers, onLayerToggle, language, style }: NliLeftSidebarProps) {
   const t = translations[language as keyof typeof translations] || translations.en;
   
   return (
     <aside
+      style={style}
       className={cn(
-        'w-64 p-3 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
-        isCompact && 'w-48'
+        'p-3 flex flex-col glass-panel !rounded-lg z-10 shrink-0'
       )}
     >
         <h2 className="text-base font-bold text-foreground mb-3 px-1">{t.dataLayers}</h2>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { NliHeader } from '@/components/nli-header';
 import { NliLeftSidebar } from '@/components/nli-left-sidebar';
@@ -147,11 +147,16 @@ export default function NliPlatformPage() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [basemapStyle, setBasemapStyle] = useState('https://api.maptiler.com/maps/dataviz-dark/style.json');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isRightSidebarMaximized, setRightSidebarMaximized] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [theme, setTheme] = useState('dark');
   const [language, setLanguage] = useState('en');
   const [activeParameters, setActiveParameters] = useState<string[]>([]);
+  
+  const mainContainerRef = useRef<HTMLDivElement>(null);
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(256);
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(384);
+  const [isResizingLeft, setIsResizingLeft] = useState(false);
+  const [isResizingRight, setIsResizingRight] = useState(false);
 
   const [activeLayers, setActiveLayers] = useState<Record<string, boolean>>({
     'Roads': false,
@@ -187,6 +192,58 @@ export default function NliPlatformPage() {
     localStorage.setItem('nli-theme', theme);
   }, [theme]);
 
+  const handleMouseDownLeft = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingLeft(true);
+    document.body.style.cursor = 'col-resize';
+  }, []);
+
+  const handleMouseDownRight = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingRight(true);
+    document.body.style.cursor = 'col-resize';
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizingLeft(false);
+    setIsResizingRight(false);
+    document.body.style.cursor = 'default';
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isResizingLeft) {
+      const containerRect = mainContainerRef.current?.getBoundingClientRect();
+      if (containerRect) {
+        const newWidth = e.clientX - containerRect.left;
+        if (newWidth >= 192 && newWidth <= 400) {
+          setLeftSidebarWidth(newWidth);
+        }
+      }
+    }
+    if (isResizingRight) {
+      const containerRect = mainContainerRef.current?.getBoundingClientRect();
+       if (containerRect) {
+        const newWidth = containerRect.right - e.clientX;
+        if (newWidth >= 384 && newWidth <= 700) {
+          setRightSidebarWidth(newWidth);
+        }
+       }
+    }
+  }, [isResizingLeft, isResizingRight]);
+
+  useEffect(() => {
+    if (isResizingLeft || isResizingRight) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingLeft, isResizingRight, handleMouseMove, handleMouseUp]);
+
+
   const t = translations[language as keyof typeof translations] || translations.en;
 
   const handleLayerToggle = (layerName: string, isActive: boolean) => {
@@ -204,7 +261,6 @@ export default function NliPlatformPage() {
   const handleProjectChange = (project: string) => {
     if (isComparing) {
       setIsComparing(false);
-      setRightSidebarMaximized(false);
     }
     setActiveProject(project);
   }
@@ -212,7 +268,6 @@ export default function NliPlatformPage() {
   const handleCompareToggle = () => {
     if (isComparing) {
       setIsComparing(false);
-      setRightSidebarMaximized(false);
       setSelectedRegion(null);
     } else {
       setCompareOpen(true);
@@ -237,7 +292,6 @@ export default function NliPlatformPage() {
     // For this demo, we'll just enable the mock comparison view in the right sidebar.
     setCompareOpen(false);
     setIsComparing(true);
-    setRightSidebarMaximized(true);
     setSelectedRegion(null); // Ensure no single region is focused during comparison
   };
 
@@ -395,14 +449,20 @@ export default function NliPlatformPage() {
           </div>
       )}
 
-      <div className={cn("flex flex-1 p-2 gap-2 min-h-0 transition-all duration-300", isFullscreen ? "p-0" : "p-2 gap-2")}>
+      <div ref={mainContainerRef} className={cn("flex flex-1 p-2 gap-2 min-h-0", isFullscreen ? "p-0 gap-0" : "p-2 gap-2")}>
         {!isFullscreen && (
-          <NliLeftSidebar 
-            activeLayers={activeLayers}
-            onLayerToggle={handleLayerToggle}
-            language={language}
-            isCompact={isRightSidebarMaximized}
-          />
+          <>
+            <NliLeftSidebar
+              style={{ width: `${leftSidebarWidth}px` }}
+              activeLayers={activeLayers}
+              onLayerToggle={handleLayerToggle}
+              language={language}
+            />
+            <div
+              className="w-1 cursor-col-resize rounded-full bg-transparent hover:bg-border transition-colors self-stretch my-2"
+              onMouseDown={handleMouseDownLeft}
+            />
+          </>
         )}
         
         <main className="flex-1 flex flex-col relative rounded-lg overflow-hidden border border-border/20">
@@ -439,16 +499,21 @@ export default function NliPlatformPage() {
         </main>
         
         {!isFullscreen && (
-          <NliRightSidebar 
-            activeProject={activeProject} 
-            isComparing={isComparing} 
-            selectedRegion={selectedRegion}
-            onClearRegion={() => setSelectedRegion(null)}
-            language={language}
-            isMaximized={isRightSidebarMaximized}
-            onMaximizeToggle={() => setRightSidebarMaximized(prev => !prev)}
-            activeParameters={activeParameters}
-          />
+          <>
+            <div
+              className="w-1 cursor-col-resize rounded-full bg-transparent hover:bg-border transition-colors self-stretch my-2"
+              onMouseDown={handleMouseDownRight}
+            />
+            <NliRightSidebar
+              style={{ width: `${rightSidebarWidth}px` }}
+              activeProject={activeProject}
+              isComparing={isComparing}
+              selectedRegion={selectedRegion}
+              onClearRegion={() => setSelectedRegion(null)}
+              language={language}
+              activeParameters={activeParameters}
+            />
+          </>
         )}
       </div>
       <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} />
