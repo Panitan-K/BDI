@@ -547,29 +547,38 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   const handleCardClick = (key: string) => {
     const sidebarEl = sidebarRef.current;
     if (!sidebarEl) return;
-
+  
     if (activePopover?.key === key) {
       setActivePopover(null);
       return;
     }
-
+  
     const sidebarRect = sidebarEl.getBoundingClientRect();
     const popoverWidth = 320;
     const gap = 16;
-    
+  
     // Position the panel to the left of the sidebar with a gap.
     const x = sidebarRect.left - popoverWidth - gap;
-    // Position it slightly down from the top of the sidebar.
-    let y = sidebarRect.top + gap;
-
-    // Ensure it doesn't go off the bottom of the screen
-    const popoverHeight = 320 + 70; // approx height
-    if (y + popoverHeight > window.innerHeight) {
-        y = window.innerHeight - popoverHeight - gap;
+  
+    // Start with a position aligned with the top of the sidebar.
+    let y = sidebarRect.top;
+  
+    // Define panel height for collision detection.
+    const popoverHeight = 380; // Approximate height of the draggable panel
+  
+    // If the panel would go off-screen at the bottom, adjust its position upwards.
+    if (y + popoverHeight > window.innerHeight - gap) {
+      y = window.innerHeight - popoverHeight - gap;
     }
-
+  
+    // Ensure the panel doesn't go off the top of the screen if the window is very short.
+    if (y < gap) {
+      y = gap;
+    }
+  
     setActivePopover({ key, position: { x, y } });
   };
+  
 
   const popoverDataForKey = useMemo(() => {
     if (!activePopover || !detailData) return null;
@@ -1054,4 +1063,5 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </>
   );
 }
+
 
