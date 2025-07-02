@@ -5,10 +5,10 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis } from 'recharts';
+import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Cell } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Building, Briefcase, TrendingUp, XIcon } from 'lucide-react';
+import { Building, Briefcase, TrendingUp, XIcon, Maximize2, Minimize2 } from 'lucide-react';
 import {
     Tooltip as ShadTooltip,
     TooltipContent,
@@ -177,7 +177,18 @@ const SmallSparkline = ({
   )
 }
 
-export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language }: { isOpen?: boolean; activeProject: string; isComparing: boolean; selectedRegion: string | null; onClearRegion: () => void; language: string; }) {
+interface NliRightSidebarProps {
+    isOpen?: boolean; 
+    activeProject: string; 
+    isComparing: boolean; 
+    selectedRegion: string | null; 
+    onClearRegion: () => void; 
+    language: string; 
+    isMaximized: boolean;
+    onMaximizeToggle: () => void;
+}
+
+export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language, isMaximized, onMaximizeToggle }: NliRightSidebarProps) {
   const [data, setData] = useState<any>(project1Data);
   const [title, setTitle] = useState(project1Data.name);
   const t = translations[language as keyof typeof translations] || translations.en;
@@ -224,12 +235,18 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   return (
     <aside
       className={cn(
-        'w-72 p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0'
+        'p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
+        isMaximized ? 'flex-1 h-full' : 'w-72'
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
             <h2 className="text-base font-bold text-foreground">{title}</h2>
-            {selectedRegion && <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onClearRegion}><XIcon className='h-4 w-4'/></Button>}
+            <div className="flex items-center">
+              {selectedRegion && <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onClearRegion}><XIcon className='h-4 w-4'/></Button>}
+              <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onMaximizeToggle}>
+                {isMaximized ? <Minimize2 className='h-4 w-4' /> : <Maximize2 className='h-4 w-4' />}
+              </Button>
+            </div>
         </div>
         <ScrollArea className="flex-1 -mr-2 pr-2">
           <div className="space-y-2 px-1">
@@ -268,15 +285,26 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               </Card>
             </div>
 
-            <Card className="glass-panel border-none">
-              <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
-                <CardTitle className="text-xs font-medium text-muted-foreground">{t.envScore}</CardTitle>
-                <span className="font-bold text-lg text-chart-3">{isComparing ? `${data.environmentalScore.p1}/${data.environmentalScore.p2}` : data.environmentalScore}</span>
-              </CardHeader>
-              <CardContent className="p-2 pt-0">
-                <Progress value={isComparing ? (data.environmentalScore.p1 + data.environmentalScore.p2)/2 : data.environmentalScore} className="h-1.5 [&>div]:bg-chart-3" />
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-2 gap-2">
+                <Card className="glass-panel border-none">
+                <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
+                    <CardTitle className="text-xs font-medium text-muted-foreground">{t.envScore}</CardTitle>
+                    <span className="font-bold text-lg text-chart-3">{isComparing ? `${data.environmentalScore.p1}/${data.environmentalScore.p2}` : data.environmentalScore}</span>
+                </CardHeader>
+                <CardContent className="p-2 pt-0">
+                    <Progress value={isComparing ? (data.environmentalScore.p1 + data.environmentalScore.p2)/2 : data.environmentalScore} className="h-1.5 [&>div]:bg-chart-3" />
+                </CardContent>
+                </Card>
+                <Card className="glass-panel border-none">
+                <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
+                    <CardTitle className="text-xs font-medium text-muted-foreground">{t.investSuitability}</CardTitle>
+                    <span className="font-bold text-lg text-chart-4">{isComparing ? `${data.investmentSuitability.p1}/${data.investmentSuitability.p2}` : data.investmentSuitability}</span>
+                </CardHeader>
+                <CardContent className="p-2 pt-0">
+                    <Progress value={isComparing ? (data.investmentSuitability.p1 + data.investmentSuitability.p2)/2 : data.investmentSuitability} className="h-1.5 [&>div]:bg-chart-4" />
+                </CardContent>
+                </Card>
+            </div>
 
             <Card className="glass-panel border-none">
               <CardHeader className="p-2 pb-2">
@@ -336,7 +364,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                         </BarChart>
                     </ChartContainer>
                  ) : (
-                    <ChartContainer config={regionalChartConfig} className="h-[180px] w-full">
+                    <ChartContainer config={regionalChartConfig} className="h-[100px] w-full">
                         <BarChart
                             accessibilityLayer
                             data={data.pieData}

@@ -9,7 +9,7 @@ import { NliRightSidebar } from '@/components/nli-right-sidebar';
 import { NliMap } from '@/components/nli-map';
 import { NliMapToolbar } from '@/components/nli-map-toolbar';
 import { AiChatModal } from '@/components/nli-ai-chat';
-import { Share2, Copy, Upload, Settings, SlidersHorizontal, Download, Layers, BookText, Table2, History, StickyNote, Bot, Minimize } from 'lucide-react';
+import { Share2, Copy, Upload, Settings, SlidersHorizontal, Download, Layers, BookText, Table2, History, StickyNote, Bot, Minimize, Maximize2, Minimize2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -143,6 +143,7 @@ export default function NliPlatformPage() {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [basemapStyle, setBasemapStyle] = useState('https://api.maptiler.com/maps/dataviz-dark/style.json');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isRightSidebarMaximized, setRightSidebarMaximized] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [theme, setTheme] = useState('dark');
   const [language, setLanguage] = useState('en');
@@ -227,7 +228,7 @@ export default function NliPlatformPage() {
         />
       )}
 
-      {!isFullscreen && (
+      {!isFullscreen && !isRightSidebarMaximized && (
           <div className="relative z-20 flex items-center justify-between px-2 py-1 border-b border-border/50 bg-secondary/20 shrink-0">
               <div className="flex items-center gap-1 w-auto">
                     <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
@@ -361,52 +362,60 @@ export default function NliPlatformPage() {
       )}
 
       <div className={cn("flex flex-1 p-2 gap-2 min-h-0 transition-all duration-300", isFullscreen ? "p-0" : "p-2 gap-2")}>
-        {!isFullscreen && <NliLeftSidebar 
-          activeLayers={activeLayers}
-          onLayerToggle={handleLayerToggle}
-          language={language}
-        />}
-
-        <main className="flex-1 flex flex-col relative rounded-lg overflow-hidden border border-border/20">
-          {isFullscreen && (
-            <Button 
-                variant="secondary"
-                size="sm"
-                className="absolute top-4 left-4 z-20"
-                onClick={() => setIsFullscreen(false)}>
-                <Minimize className="mr-2 h-4 w-4" />
-                {t.exitFullscreen}
-            </Button>
-          )}
-
-          <NliMap 
-            is3D={is3D} 
-            activeLayers={activeLayers} 
-            basemapStyle={basemapStyle} 
-            activeTool={activeTool}
-            onRegionClick={handleRegionSelect}
-            selectedRegion={selectedRegion}
+        {!isFullscreen && !isRightSidebarMaximized && (
+          <NliLeftSidebar 
+            activeLayers={activeLayers}
+            onLayerToggle={handleLayerToggle}
+            language={language}
           />
-
-            <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
-              <Button
-                size="icon"
-                className="bg-primary hover:bg-primary/90 rounded-full h-11 w-11 shadow-lg"
-                onClick={() => setAiChatOpen(true)}
-                title={t.askAiTitle}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-primary-foreground h-5 w-5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-              </Button>
-            </div>
-        </main>
+        )}
         
-        {!isFullscreen && <NliRightSidebar 
-          activeProject={activeProject} 
-          isComparing={isComparing} 
-          selectedRegion={selectedRegion}
-          onClearRegion={() => setSelectedRegion(null)}
-          language={language}
-        />}
+        {!isRightSidebarMaximized && (
+          <main className="flex-1 flex flex-col relative rounded-lg overflow-hidden border border-border/20">
+            {isFullscreen && (
+              <Button 
+                  variant="secondary"
+                  size="sm"
+                  className="absolute top-4 left-4 z-20"
+                  onClick={() => setIsFullscreen(false)}>
+                  <Minimize className="mr-2 h-4 w-4" />
+                  {t.exitFullscreen}
+              </Button>
+            )}
+
+            <NliMap 
+              is3D={is3D} 
+              activeLayers={activeLayers} 
+              basemapStyle={basemapStyle} 
+              activeTool={activeTool}
+              onRegionClick={handleRegionSelect}
+              selectedRegion={selectedRegion}
+            />
+
+              <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+                <Button
+                  size="icon"
+                  className="bg-primary hover:bg-primary/90 rounded-full h-11 w-11 shadow-lg"
+                  onClick={() => setAiChatOpen(true)}
+                  title={t.askAiTitle}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-sparkles text-primary-foreground h-5 w-5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+                </Button>
+              </div>
+          </main>
+        )}
+        
+        {!isFullscreen && (
+          <NliRightSidebar 
+            activeProject={activeProject} 
+            isComparing={isComparing} 
+            selectedRegion={selectedRegion}
+            onClearRegion={() => setSelectedRegion(null)}
+            language={language}
+            isMaximized={isRightSidebarMaximized}
+            onMaximizeToggle={() => setRightSidebarMaximized(prev => !prev)}
+          />
+        )}
       </div>
       <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} />
       <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} language={language} />
