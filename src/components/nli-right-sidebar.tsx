@@ -555,25 +555,21 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   
     const sidebarRect = sidebarEl.getBoundingClientRect();
     const popoverWidth = 320;
+    const popoverHeight = 380; // Approximate height of the draggable panel
     const gap = 16;
   
     // Position the panel to the left of the sidebar with a gap.
     const x = sidebarRect.left - popoverWidth - gap;
   
-    // Start with a position aligned with the top of the sidebar.
-    let y = sidebarRect.top;
-  
-    // Define panel height for collision detection.
-    const popoverHeight = 380; // Approximate height of the draggable panel
-  
-    // If the panel would go off-screen at the bottom, adjust its position upwards.
-    if (y + popoverHeight > window.innerHeight - gap) {
-      y = window.innerHeight - popoverHeight - gap;
-    }
-  
-    // Ensure the panel doesn't go off the top of the screen if the window is very short.
+    // Calculate the 'y' position to center the panel vertically in the viewport.
+    let y = (window.innerHeight - popoverHeight) / 2;
+
+    // Ensure the panel doesn't go off-screen at the top or bottom.
     if (y < gap) {
       y = gap;
+    }
+    if (y + popoverHeight > window.innerHeight - gap) {
+        y = window.innerHeight - popoverHeight - gap;
     }
   
     setActivePopover({ key, position: { x, y } });
@@ -1063,5 +1059,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </>
   );
 }
+
 
 
