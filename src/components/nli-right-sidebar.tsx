@@ -616,13 +616,18 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   
     const x = sidebarRect.left - popoverWidth - gap;
   
-    let y = (window.innerHeight - popoverHeight) / 2;
+    // Align popover top with the sidebar top. This should visually align
+    // with the top of the map content area.
+    let y = sidebarRect.top;
 
-    if (y < gap) {
-        y = gap;
-    }
+    // Ensure the panel doesn't go off-screen at the bottom.
     if (y + popoverHeight > window.innerHeight - gap) {
         y = window.innerHeight - popoverHeight - gap;
+    }
+
+    // Ensure the panel doesn't go off-screen at the top (in case of scrolling).
+    if (y < gap) {
+        y = gap;
     }
   
     setActivePopover({ key, position: { x, y } });
@@ -1112,7 +1117,3 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </>
   );
 }
-
-
-
-
