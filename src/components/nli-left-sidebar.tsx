@@ -106,7 +106,7 @@ export function NliLeftSidebar({ activeLayers, onLayerToggle, language, isCompac
   return (
     <aside
       className={cn(
-        'w-72 p-3 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
+        'w-64 p-3 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
         isCompact && 'w-48'
       )}
     >
@@ -137,5 +137,3 @@ export function NliLeftSidebar({ activeLayers, onLayerToggle, language, isCompac
     </aside>
   );
 }
-
-    

@@ -305,7 +305,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     <aside
       className={cn(
         'p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
-        isMaximized ? 'w-[500px]' : 'w-80'
+        isMaximized ? 'w-[550px]' : 'w-80'
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
