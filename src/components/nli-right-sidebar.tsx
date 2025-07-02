@@ -499,21 +499,25 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     position: { x: number; y: number };
   } | null>(null);
 
-  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   const handleCardClick = (key: string) => {
-    const cardEl = cardRefs.current[key];
-    if (!cardEl) return;
+    const sidebarEl = sidebarRef.current;
+    if (!sidebarEl) return;
 
     if (activePopover?.key === key) {
       setActivePopover(null);
       return;
     }
 
-    const cardRect = cardEl.getBoundingClientRect();
-    const x = cardRect.left - 320 - 16;
-    const y = Math.max(16, cardRect.top); // Ensure it doesn't render off-screen at the top
+    const sidebarRect = sidebarEl.getBoundingClientRect();
+    const popoverWidth = 320;
+    const gap = 16;
+    
+    // Position the panel to the left of the sidebar with a gap.
+    const x = sidebarRect.left - popoverWidth - gap;
+    // Position it slightly down from the top of the sidebar.
+    const y = sidebarRect.top + gap;
 
     setActivePopover({ key, position: { x, y } });
   };
@@ -564,14 +568,12 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   const shouldShow = (param: string) => showAllParams || activeParameters.includes(param);
   
   const CardWrapper = ({ popoverKey, children }: { popoverKey: string, children: React.ReactNode }) => (
-    <div ref={(el) => (cardRefs.current[popoverKey] = el)}>
-      <Card
-        className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50"
-        onClick={() => handleCardClick(popoverKey)}
-      >
-        {children}
-      </Card>
-    </div>
+    <Card
+      className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50"
+      onClick={() => handleCardClick(popoverKey)}
+    >
+      {children}
+    </Card>
   );
 
   return (
