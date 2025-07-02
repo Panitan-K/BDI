@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Cell, LabelList, Legend } from 'recharts';
+import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Cell, LabelList, Legend, PieChart, Pie, ComposedChart, Line } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Building, Briefcase, TrendingUp, XIcon, Maximize2, Minimize2, PiggyBank, Landmark } from 'lucide-react';
@@ -82,9 +82,13 @@ const comparisonData = {
     totalCost: {p1: 150, p2: 350},
     roi: {p1: 12.5, p2: 9.8},
     paybackPeriod: {p1: 8, p2: 12},
-    sources: [
-        { name: 'Government', name_th: 'ภาครัฐ', p1: 60, p2: 45 },
-        { name: 'Private', name_th: 'เอกชน', p1: 40, p2: 55 },
+    sourcesP1: [
+        { name: 'Government', name_th: 'ภาครัฐ', value: 60, fill: 'hsl(var(--chart-1))' },
+        { name: 'Private', name_th: 'เอกชน', value: 40, fill: 'hsl(var(--chart-2))' }
+    ],
+    sourcesP2: [
+        { name: 'Government', name_th: 'ภาครัฐ', value: 45, fill: 'hsl(var(--chart-1))' },
+        { name: 'Private', name_th: 'เอกชน', value: 55, fill: 'hsl(var(--chart-2))' }
     ]
   },
   socioEconomic: {
@@ -118,9 +122,9 @@ const translations = {
     project2: 'Project 2',
     jobs: 'Jobs',
     financingCosts: 'Financing & Costs',
-    totalCost: 'Total Cost (THB)',
+    totalCost: 'Total Cost (B-THB)',
     fundingSources: 'Funding Sources',
-    roi: 'Return on Investment',
+    roi: 'Return on Investment (%)',
     paybackPeriod: 'Payback Period (Yrs)',
     socioEconomic: 'Socio-Economic Impact',
     povertyReduction: 'Poverty Reduction',
@@ -146,7 +150,7 @@ const translations = {
     financingCosts: 'การเงินและต้นทุน',
     totalCost: 'ต้นทุนรวม (พันล้านบาท)',
     fundingSources: 'แหล่งเงินทุน',
-    roi: 'ผลตอบแทนจากการลงทุน',
+    roi: 'ผลตอบแทนจากการลงทุน (%)',
     paybackPeriod: 'ระยะเวลาคืนทุน (ปี)',
     socioEconomic: 'ผลกระทบทางเศรษฐกิจและสังคม',
     povertyReduction: 'การลดความยากจน',
@@ -243,7 +247,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   const nameKey = language === 'en' ? 'name' : 'name_th';
 
   useEffect(() => {
-    if (selectedRegion) {
+    if (selectedRegion && !isComparing) {
         setData(regionalMockData[selectedRegion] || project1Data);
         setTitle(language === 'en' ? (regionalMockData[selectedRegion]?.name || "Region Analysis") : (regionalMockData[selectedRegion]?.name_th || "การวิเคราะห์ภูมิภาค"));
     } else if (isComparing) {
@@ -261,6 +265,13 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     p2: { label: t.project2, color: "hsl(var(--chart-2))" },
     value: { label: t.jobs, color: "hsl(var(--chart-2))" },
   } satisfies ChartConfig;
+  
+  const fundingSourcesChartConfig = {
+    p1: { label: t.project1, color: "hsl(var(--chart-1))" },
+    p2: { label: t.project2, color: "hsl(var(--chart-2))" },
+    Government: { label: language === 'en' ? 'Government' : 'ภาครัฐ', color: "hsl(var(--chart-1))" },
+    Private: { label: language === 'en' ? 'Private' : 'เอกชน', color: "hsl(var(--chart-2))" },
+  } satisfies ChartConfig;
 
   const renderComparisonValue = (val: any, unit: string = '%') => (
       <div className="flex items-baseline gap-2">
@@ -274,7 +285,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     <aside
       className={cn(
         'p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
-        isMaximized ? 'flex-1 h-full' : 'w-72'
+        isMaximized ? 'w-[500px]' : 'w-72'
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
@@ -287,7 +298,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             </div>
         </div>
         <ScrollArea className="flex-1 -mr-2 pr-2">
-          <div className="space-y-2 px-1">
+          <div className="space-y-3 px-1">
             <div className="grid grid-cols-2 gap-2">
               <Card className="glass-panel border-none">
                 <CardHeader className="p-2 pb-1">
@@ -325,32 +336,66 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
 
             <div className="grid grid-cols-2 gap-2">
                 <Card className="glass-panel border-none">
-                <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
+                <CardHeader className="p-2 pb-1">
                     <CardTitle className="text-xs font-medium text-muted-foreground">{t.envScore}</CardTitle>
-                    <span className="font-bold text-lg text-chart-3">{isComparing ? `${data.environmentalScore.p1}/${data.environmentalScore.p2}` : data.environmentalScore}</span>
                 </CardHeader>
                 <CardContent className="p-2 pt-0">
-                    <Progress value={isComparing ? (data.environmentalScore.p1 + data.environmentalScore.p2)/2 : data.environmentalScore} className="h-1.5 [&>div]:bg-chart-3" />
+                    {isComparing ? (
+                         <div className="flex flex-col gap-1.5 mt-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-chart-1 font-medium w-12">{t.project1}</span>
+                                <Progress value={data.environmentalScore.p1} className="h-2 [&>div]:bg-chart-1" />
+                                <span className="text-xs font-bold w-8 text-right">{data.environmentalScore.p1}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-chart-2 font-medium w-12">{t.project2}</span>
+                                <Progress value={data.environmentalScore.p2} className="h-2 [&>div]:bg-chart-2" />
+                                <span className="text-xs font-bold w-8 text-right">{data.environmentalScore.p2}</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="font-bold text-lg text-chart-3">{data.environmentalScore}</span>
+                            <Progress value={data.environmentalScore} className="h-1.5 [&>div]:bg-chart-3 mt-2" />
+                        </>
+                    )}
                 </CardContent>
                 </Card>
                 <Card className="glass-panel border-none">
-                <CardHeader className="p-2 pb-2 flex-row items-center justify-between">
+                <CardHeader className="p-2 pb-1">
                     <CardTitle className="text-xs font-medium text-muted-foreground">{t.investSuitability}</CardTitle>
-                    <span className="font-bold text-lg text-chart-4">{isComparing ? `${data.investmentSuitability.p1}/${data.investmentSuitability.p2}` : data.investmentSuitability}</span>
                 </CardHeader>
                 <CardContent className="p-2 pt-0">
-                    <Progress value={isComparing ? (data.investmentSuitability.p1 + data.investmentSuitability.p2)/2 : data.investmentSuitability} className="h-1.5 [&>div]:bg-chart-4" />
+                    {isComparing ? (
+                         <div className="flex flex-col gap-1.5 mt-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-chart-4 font-medium w-12">{t.project1}</span>
+                                <Progress value={data.investmentSuitability.p1} className="h-2 [&>div]:bg-chart-4" />
+                                <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p1}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-chart-5 font-medium w-12">{t.project2}</span>
+                                <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-5" />
+                                <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p2}</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="font-bold text-lg text-chart-4">{data.investmentSuitability}</span>
+                            <Progress value={data.investmentSuitability} className="h-1.5 [&>div]:bg-chart-4 mt-2" />
+                        </>
+                    )}
                 </CardContent>
                 </Card>
             </div>
 
             <Card className="glass-panel border-none">
               <CardHeader className="p-2 pb-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">{t.jobsCreated}</CardTitle>
+                <CardTitle className="text-sm font-medium text-foreground">{t.jobsCreated}</CardTitle>
               </CardHeader>
               <CardContent className="p-2 pt-0">
-                <ChartContainer config={barChartConfig} className="h-[120px] w-full">
-                  <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: -10 }}>
+                <ChartContainer config={barChartConfig} className="h-[150px] w-full">
+                  <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: -10 }} barGap={4}>
                     <XAxis
                       dataKey={nameKey}
                       tickLine={false}
@@ -366,10 +411,10 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                     {isComparing && <ChartLegend verticalAlign="top" height={30} />}
                     {isComparing ? (
                       <>
-                        <Bar dataKey="p1" fill="var(--color-p1)" radius={4} barSize={10}>
+                        <Bar dataKey="p1" fill="var(--color-p1)" radius={4} barSize={isMaximized ? 15 : 10}>
                             <LabelList dataKey="p1" position="top" className="fill-foreground" fontSize={10}/>
                         </Bar>
-                        <Bar dataKey="p2" fill="var(--color-p2)" radius={4} barSize={10}>
+                        <Bar dataKey="p2" fill="var(--color-p2)" radius={4} barSize={isMaximized ? 15 : 10}>
                             <LabelList dataKey="p2" position="top" className="fill-foreground" fontSize={10}/>
                         </Bar>
                       </>
@@ -413,9 +458,9 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                         />
                         {isComparing ? (
                             <>
-                                <Bar dataKey="p1" name={t.project1} fill="hsl(var(--chart-1))" radius={4} barSize={12} />
-                                <Bar dataKey="p2" name={t.project2} fill="hsl(var(--chart-2))" radius={4} barSize={12} />
                                 <Legend verticalAlign="top" height={30} />
+                                <Bar dataKey="p1" name={t.project1} fill="hsl(var(--chart-1))" radius={4} barSize={isMaximized ? 15 : 12} />
+                                <Bar dataKey="p2" name={t.project2} fill="hsl(var(--chart-2))" radius={4} barSize={isMaximized ? 15 : 12} />
                             </>
                         ) : (
                             <Bar
@@ -433,28 +478,86 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               </CardContent>
             </Card>
 
-            <Card className="glass-panel border-none">
-                <CardHeader className="p-2 flex flex-row items-center gap-2">
-                    <PiggyBank className="h-5 w-5 text-primary"/>
-                    <CardTitle className="text-foreground text-sm">{t.financingCosts}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-2 pt-0 space-y-2">
-                    {isComparing ? (
-                        <div className="grid grid-cols-3 gap-2 text-center">
-                            <div>
-                                <p className="text-xs text-muted-foreground">{t.totalCost}</p>
-                                <p className="font-bold">{renderComparisonValue(data.funding.totalCost, '')}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">{t.roi}</p>
-                                <p className="font-bold">{renderComparisonValue(data.funding.roi)}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-muted-foreground">{t.paybackPeriod}</p>
-                                <p className="font-bold">{renderComparisonValue(data.funding.paybackPeriod, '')}</p>
-                            </div>
+            {isComparing ? (
+              <div className="space-y-3">
+                 <Card className="glass-panel border-none">
+                    <CardHeader className="p-2 flex flex-row items-center gap-2">
+                        <PiggyBank className="h-5 w-5 text-primary"/>
+                        <CardTitle className="text-foreground text-sm">{t.financingCosts}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 pt-0 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-center text-muted-foreground">{t.totalCost}</p>
+                        <ChartContainer config={barChartConfig} className="h-[80px] w-full">
+                          <BarChart layout="vertical" data={[{name: 'Cost', p1: data.funding.totalCost.p1, p2: data.funding.totalCost.p2}]} margin={{left: -10}}>
+                             <YAxis dataKey="name" type="category" hide/>
+                             <XAxis type="number" hide />
+                             <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                             <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={15}>
+                                <LabelList dataKey="p1" position="right" className="fill-foreground" fontSize={10}/>
+                             </Bar>
+                             <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={15}>
+                                <LabelList dataKey="p2" position="right" className="fill-foreground" fontSize={10}/>
+                             </Bar>
+                          </BarChart>
+                        </ChartContainer>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-center text-muted-foreground">{t.fundingSources}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                            <ChartContainer config={fundingSourcesChartConfig} className="h-[80px] w-full">
+                                <PieChart>
+                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                    <Pie data={data.funding.sourcesP1} dataKey="value" nameKey={nameKey} innerRadius={20}>
+                                        {data.funding.sourcesP1.map((entry:any) => <Cell key={entry.name} fill={entry.fill} />)}
+                                    </Pie>
+                                </PieChart>
+                            </ChartContainer>
+                            <ChartContainer config={fundingSourcesChartConfig} className="h-[80px] w-full">
+                                <PieChart>
+                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                    <Pie data={data.funding.sourcesP2} dataKey="value" nameKey={nameKey} innerRadius={20}>
+                                         {data.funding.sourcesP2.map((entry:any) => <Cell key={entry.name} fill={entry.fill} />)}
+                                    </Pie>
+                                </PieChart>
+                            </ChartContainer>
                         </div>
-                    ) : (
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-center text-muted-foreground">{t.roi}</p>
+                        <ChartContainer config={barChartConfig} className="h-[80px] w-full">
+                           <ComposedChart data={[{name: 'ROI', p1: data.funding.roi.p1, p2: data.funding.roi.p2}]}>
+                             <XAxis dataKey="name" hide/>
+                             <YAxis hide/>
+                             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                             <Bar dataKey="p1" name={t.project1} barSize={30} fill="var(--color-p1)" />
+                             <Bar dataKey="p2" name={t.project2} barSize={30} fill="var(--color-p2)" />
+                           </ComposedChart>
+                        </ChartContainer>
+                      </div>
+                       <div className="space-y-2">
+                        <p className="text-xs font-medium text-center text-muted-foreground">{t.paybackPeriod}</p>
+                        <ChartContainer config={barChartConfig} className="h-[80px] w-full">
+                           <ComposedChart data={[{name: 'Payback', p1: data.funding.paybackPeriod.p1, p2: data.funding.paybackPeriod.p2}]}>
+                             <XAxis dataKey="name" hide/>
+                             <YAxis hide/>
+                             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                             <Line dataKey="p1" name={t.project1} stroke="var(--color-p1)" strokeWidth={3} dot={false}/>
+                             <Line dataKey="p2" name={t.project2} stroke="var(--color-p2)" strokeWidth={3} dot={false}/>
+                           </ComposedChart>
+                        </ChartContainer>
+                      </div>
+                    </CardContent>
+                </Card>
+
+              </div>
+            ) : (
+                <Card className="glass-panel border-none">
+                    <CardHeader className="p-2 flex flex-row items-center gap-2">
+                        <PiggyBank className="h-5 w-5 text-primary"/>
+                        <CardTitle className="text-foreground text-sm">{t.financingCosts}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 pt-0 space-y-2">
                         <div className="grid grid-cols-3 gap-2 text-center">
                             <div>
                                 <p className="text-xs text-muted-foreground">{t.totalCost}</p>
@@ -469,31 +572,24 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                                 <p className="font-bold">{data.funding.paybackPeriod}</p>
                             </div>
                         </div>
-                    )}
-                    <div>
-                        <p className="text-xs text-center text-muted-foreground mb-1">{t.fundingSources}</p>
-                        <ChartContainer config={{}} className="h-[80px] w-full">
-                            <BarChart layout="vertical" data={data.funding.sources} margin={{left: language === 'th' ? 30 : 20}}>
-                                <XAxis type="number" hide domain={[0, 100]} />
-                                <YAxis dataKey={nameKey} type="category" tickLine={false} axisLine={false} fontSize={10} width={language === 'en' ? 70 : 60}/>
-                                <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
-                                {isComparing ? (
-                                    <>
-                                        <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={10}/>
-                                        <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={10}/>
-                                        <Legend verticalAlign="top" height={30} iconSize={10}/>
-                                    </>
-                                ) : (
+                        <div>
+                            <p className="text-xs text-center text-muted-foreground mb-1">{t.fundingSources}</p>
+                            <ChartContainer config={{}} className="h-[80px] w-full">
+                                <BarChart layout="vertical" data={data.funding.sources} margin={{left: language === 'th' ? 30 : 20}}>
+                                    <XAxis type="number" hide domain={[0, 100]} />
+                                    <YAxis dataKey={nameKey} type="category" tickLine={false} axisLine={false} fontSize={10} width={language === 'en' ? 70 : 60}/>
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
                                     <Bar dataKey="value" radius={4} barSize={10}>
                                         {data.funding.sources.map((s:any) => <Cell key={s.name} fill={s.fill}/>)}
                                         <LabelList dataKey="value" position="right" formatter={(v:any) => `${v}%`} fontSize={10} className="fill-foreground"/>
                                     </Bar>
-                                )}
-                            </BarChart>
-                        </ChartContainer>
-                    </div>
-                </CardContent>
-            </Card>
+                                </BarChart>
+                            </ChartContainer>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
 
             <Card className="glass-panel border-none">
                 <CardHeader className="p-2 flex flex-row items-center gap-2">
