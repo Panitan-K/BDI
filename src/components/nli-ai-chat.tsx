@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -20,10 +21,29 @@ interface Message {
   text: string;
 }
 
-export function AiChatModal({ isOpen, onOpenChange }: { isOpen: boolean; onOpenChange: (open: boolean) => void; }) {
+const translations = {
+  en: {
+    description: "Ask about infrastructure investments and their potential impacts.",
+    placeholder: "e.g., What is the economic impact of building a high-speed rail from Bangkok to Chon Buri?",
+    title: "AI Assistant (Typhoon LLM)",
+    send: "Send",
+    error: "Sorry, I encountered an error. Please try again."
+  },
+  th: {
+    description: "สอบถามเกี่ยวกับการลงทุนโครงสร้างพื้นฐานและผลกระทบที่อาจเกิดขึ้น",
+    placeholder: "เช่น การสร้างรถไฟความเร็วสูงจากกรุงเทพฯ ไปชลบุรีมีผลกระทบทางเศรษฐกิจอย่างไร?",
+    title: "ผู้ช่วย AI (ไต้ฝุ่น LLM)",
+    send: "ส่ง",
+    error: "ขออภัย เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง"
+  }
+};
+
+
+export function AiChatModal({ isOpen, onOpenChange, language = 'en' }: { isOpen: boolean; onOpenChange: (open: boolean) => void; language: string; }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const t = translations[language as keyof typeof translations] || translations.en;
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
@@ -34,12 +54,12 @@ export function AiChatModal({ isOpen, onOpenChange }: { isOpen: boolean; onOpenC
     setIsLoading(true);
 
     try {
-      const result = await askGisAssistant({ query: input });
+      const result = await askGisAssistant({ query: input, language });
       const botMessage: Message = { sender: 'bot', text: result.response };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error('AI assistant error:', error);
-      const errorMessage: Message = { sender: 'bot', text: 'Sorry, I encountered an error. Please try again.' };
+      const errorMessage: Message = { sender: 'bot', text: t.error };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -52,10 +72,10 @@ export function AiChatModal({ isOpen, onOpenChange }: { isOpen: boolean; onOpenC
         <DialogHeader className="p-6 pb-2">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="text-primary" />
-            AI Assistant (Typhoon LLM)
+            {t.title}
           </DialogTitle>
           <DialogDescription>
-            Ask about infrastructure investments and their potential impacts.
+            {t.description}
           </DialogDescription>
         </DialogHeader>
 
@@ -84,7 +104,7 @@ export function AiChatModal({ isOpen, onOpenChange }: { isOpen: boolean; onOpenC
         <DialogFooter className="p-6 pt-2 border-t border-white/10">
           <div className="w-full flex items-center gap-2">
             <Textarea
-              placeholder="e.g., What is the economic impact of building a high-speed rail from Bangkok to Chon Buri?"
+              placeholder={t.placeholder}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -97,7 +117,7 @@ export function AiChatModal({ isOpen, onOpenChange }: { isOpen: boolean; onOpenC
               rows={1}
             />
             <Button onClick={handleSendMessage} disabled={isLoading}>
-              Send
+              {t.send}
             </Button>
           </div>
         </DialogFooter>

@@ -516,7 +516,7 @@ export default function NliPlatformPage() {
           </>
         )}
       </div>
-      <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} />
+      <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} language={language} />
       <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} language={language} />
       <NewProjectDialog isOpen={isNewProjectOpen} onOpenChange={setNewProjectOpen} />
       <CompareProjectsDialog isOpen={isCompareOpen} onOpenChange={setCompareOpen} onCompare={handleStartComparison} />

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A GIS assistant AI agent for NLI-Thai.
@@ -12,6 +13,7 @@ import {z} from 'genkit';
 
 const GisAssistantInputSchema = z.object({
   query: z.string().describe('The user\'s natural language query about GIS data and infrastructure impact.'),
+  language: z.string().describe("The language for the AI's response, e.g., 'en' for English or 'th' for Thai."),
 });
 export type GisAssistantInput = z.infer<typeof GisAssistantInputSchema>;
 
@@ -34,6 +36,8 @@ You will receive a query from a user. Based on this query, you must provide a de
 
 Your response should be clear, concise, and structured. Use markdown for formatting, including bullet points, bold text, and tables where appropriate to present data effectively.
 
+IMPORTANT: You must generate your entire response in the language specified by the 'language' code: {{{language}}}. For example, if the code is 'th', your response must be in Thai.
+
 User Query:
 "{{{query}}}"
 
@@ -53,7 +57,29 @@ const gisAssistantFlow = ai.defineFlow(
     // return output!;
 
     // Mock Response for Demonstration
-    if (input.query.toLowerCase().includes("high-speed rail")) {
+    if (input.query.toLowerCase().includes("high-speed rail") || input.query.includes("รถไฟความเร็วสูง")) {
+        if (input.language === 'th') {
+            return {
+                response: `### การวิเคราะห์สำหรับรถไฟความเร็วสูง: กรุงเทพฯ - ชลบุรี
+
+จากข้อเสนอโครงการรถไฟความเร็วสูงเชื่อมต่อระหว่างกรุงเทพฯ และชลบุรี สรุปผลกระทบที่คาดการณ์ได้ดังนี้:
+
+**ผลกระทบทางเศรษฐกิจ:**
+*   **การเติบโตของ GDP:** คาดว่าจะเพิ่มขึ้น **+0.8%** สำหรับภูมิภาคระเบียงเศรษฐกิจภาคตะวันออก (EEC) ภายใน 5 ปีของการดำเนินงาน
+*   **มูลค่าที่ดิน:** คาดการณ์ว่าราคาที่ดินจะเพิ่มขึ้น **+15-25%** รอบสถานีหลัก (เช่น ฉะเชิงเทรา, ชลบุรี, ศรีราชา)
+*   **การสร้างงาน:** ประมาณ **15,000** ตำแหน่งงานใหม่ในช่วงก่อสร้าง และ **4,500** ตำแหน่งงานถาวรในการดำเนินงาน, การท่องเที่ยว และบริการที่เกี่ยวข้อง
+
+**การปรับปรุงการไหลของโลจิสติกส์:**
+*   **การลดระยะเวลาเดินทาง:** เวลาเดินทางของผู้โดยสารระหว่างกรุงเทพฯ และชลบุรีลดลงจาก ~2 ชั่วโมง เหลือ **45 นาที**
+*   **การเปลี่ยนแปลงรูปแบบการขนส่งสินค้า:** มีศักยภาพในการเปลี่ยนการขนส่งสินค้ามูลค่าสูงที่ต้องการความรวดเร็ว **10%** จากถนนสู่ระบบราง ซึ่งช่วยลดความแออัดบนทางหลวง
+
+**คะแนนด้านสิ่งแวดล้อม:**
+*   **คะแนนเริ่มต้น:** 65/100
+*   **ข้อควรพิจารณา:** คะแนนโครงการได้รับผลกระทบจากการก่อสร้างผ่านพื้นที่ชายฝั่งที่ละเอียดอ่อน แนะนำให้ใช้กลยุทธ์การบรรเทาผลกระทบ เช่น รางยกระดับและทางเชื่อมสำหรับสัตว์ป่า เพื่อปรับปรุงคะแนนนี้
+
+การจำลองนี้บ่งชี้ถึงแนวโน้มทางเศรษฐกิจที่เป็นบวกอย่างมาก แต่ต้องมีการจัดการด้านสิ่งแวดล้อมอย่างรอบคอบ`,
+            };
+        }
        return {
          response: `### Analysis for High-Speed Rail: Bangkok to Chon Buri
 
@@ -76,6 +102,11 @@ This simulation indicates a strong positive economic outlook but requires carefu
        };
     }
 
+    if (input.language === 'th') {
+        return {
+          response: "ฉันพร้อมที่จะวิเคราะห์คำถามเกี่ยวกับการลงทุนในโครงสร้างพื้นฐานของคุณแล้ว โปรดให้รายละเอียดเกี่ยวกับโครงการที่คุณต้องการจำลอง เช่น 'การสร้างรถไฟความเร็วสูงจากกรุงเทพฯ ไปชลบุรีมีผลกระทบทางเศรษฐกิจอย่างไร?'"
+        };
+    }
     return {
       response: "I am ready to analyze your infrastructure investment query. Please provide details on the project you would like to simulate, for example: 'What is the economic impact of building a high-speed rail from Bangkok to Chon Buri?'"
     };
