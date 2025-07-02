@@ -9,7 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { BarChart, Bar, AreaChart, Area, Cell, LabelList, PieChart, Pie, ComposedChart, Line, LineChart, XAxis, YAxis } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Building, Briefcase, TrendingUp, XIcon, Maximize2, PiggyBank, Landmark, Bot, LayoutList, Lightbulb, CheckCircle2, Scaling, ShieldCheck, Split, CircleDollarSign, Target, List } from 'lucide-react';
+import { Building, Briefcase, TrendingUp, XIcon, Maximize2, PiggyBank, Landmark, Bot, LayoutList, Lightbulb, CheckCircle2, Scaling, ShieldCheck, Split, CircleDollarSign, Target, List, Info, Users, Flag, AreaChart as AreaChartIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
     Tooltip as ShadTooltip,
@@ -113,31 +113,10 @@ const popoverDetailData = {
     logisticFlow: {
       title: 'Enhanced Freight & Transit Capabilities',
       sections: [
-        {
-          heading: 'Increased Capacity',
-          text: "The high-speed rail will handle an additional 4.5 million tons of freight annually, marking a +15% increase in the region's total freight volume.",
-        },
-        {
-          heading: 'Time Savings',
-          timeSavings: [
-            {
-              location: 'Bangkok to Rayong',
-              detail: 'Transit time for goods will be reduced from 4-6 hours by truck to just 90 minutes by rail.',
-            },
-            {
-              location: 'Laem Chabang Port to Industrial Estates',
-              detail: 'Connectivity will be reduced to under 60 minutes.',
-            },
-          ],
-        },
-        {
-          heading: 'Key Commodities',
-          text: 'Primary goods expected to shift to rail include agricultural products (fruits, rubber), automotive parts, electronics, and consumer goods.',
-        },
-        {
-          heading: 'Cost Efficiency',
-          text: 'Shifting to rail is projected to reduce logistics costs by 12-18% compared to road transport, enhancing the competitiveness of Thai exports.',
-        },
+        { heading: 'Increased Capacity', text: "The high-speed rail will handle an additional 4.5 million tons of freight annually, marking a +15% increase in the region's total freight volume." },
+        { heading: 'Time Savings', timeSavings: [ { location: 'Bangkok to Rayong', detail: 'Transit time for goods will be reduced from 4-6 hours by truck to just 90 minutes by rail.' }, { location: 'Laem Chabang Port to Industrial Estates', detail: 'Connectivity will be reduced to under 60 minutes.' } ] },
+        { heading: 'Key Commodities', text: 'Primary goods expected to shift to rail include agricultural products (fruits, rubber), automotive parts, electronics, and consumer goods.' },
+        { heading: 'Cost Efficiency', text: 'Shifting to rail is projected to reduce logistics costs by 12-18% compared to road transport, enhancing the competitiveness of Thai exports.' },
       ],
     },
     environmentalScore: {
@@ -191,9 +170,8 @@ const popoverDetailData = {
           { heading: 'Skilled Labor Demand (38.2k)', text: 'A projected demand for 38,200 skilled workers will be created over the project\'s first decade.' },
         ],
     }
-  }
-  // NOTE: In a real app, this would be distinct data. For this demo, we'll reuse and slightly modify P1's data.
-  ,project2: {
+  },
+  project2: {
     economicImpact: {
         title: 'Detailed Economic Outlook (P2)',
         sections: [
@@ -203,19 +181,8 @@ const popoverDetailData = {
       logisticFlow: {
         title: 'Enhanced Freight & Transit Capabilities (P2)',
         sections: [
-          {
-            heading: 'Increased Capacity',
-            text: "The land bridge will handle an additional 8 million tons of freight annually, marking a +8% increase in the region's total freight volume.",
-          },
-          {
-            heading: 'Time Savings',
-            timeSavings: [
-              {
-                location: 'Gulf of Thailand to Andaman Sea',
-                detail: 'Maritime transit time reduced from 2-3 days (via Strait of Malacca) to under 12 hours via the land bridge.',
-              },
-            ],
-          },
+          { heading: 'Increased Capacity', text: "The land bridge will handle an additional 8 million tons of freight annually, marking a +8% increase in the region's total freight volume." },
+          { heading: 'Time Savings', timeSavings: [ { location: 'Gulf of Thailand to Andaman Sea', detail: 'Maritime transit time reduced from 2-3 days (via Strait of Malacca) to under 12 hours via the land bridge.' } ] },
         ],
       },
       environmentalScore: {
@@ -263,6 +230,75 @@ const popoverDetailData = {
   }
 };
 
+const comparisonPopoverDetailData = {
+    economicImpact: {
+        title: 'Comparative Economic Forecast',
+        sections: [
+            { heading: 'Overview', text: 'This comparison shows two different approaches to economic stimulation. Project 1 focuses on high-intensity industrial growth, while Project 2 emphasizes broader, community-level economic uplift.' },
+            { heading: 'Project 1: EEC High-Speed Rail (GDP Forecast: +2.8%)', text: 'Strategy: Maximizes economic impact by connecting major industrial estates, deep-sea ports, and airports. This high-speed, high-capacity link is designed to supercharge the core industrial economy.\n\nDriver: Primarily driven by massive gains in industrial logistics, export efficiency, and high-value business travel.' },
+            { heading: 'Project 2: Green Community Rail (GDP Forecast: +1.2%)', text: 'Strategy: Focuses on connecting smaller towns and agricultural centers to the main economic corridors. The impact is less intense but more widely distributed.\n\nDriver: Growth is driven by empowering small and medium-sized enterprises (SMEs), reducing transport costs for communities, and stimulating local tourism.' }
+        ]
+    },
+    logisticFlow: {
+        title: 'Freight Strategy Comparison',
+        sections: [
+            { heading: 'Project 1: EEC High-Speed Rail (Freight Volume: +15%)', text: 'Focus: Heavy freight and time-sensitive industrial goods. Designed for maximum throughput between major manufacturing hubs and international ports like Laem Chabang.\n\nAdvantage: Unlocks significant capacity for the export sector.' },
+            { heading: 'Project 2: Green Community Rail (Freight Volume: +8%)', text: 'Focus: Light-to-medium freight, including agricultural products, consumer goods, and parcel delivery. It serves as a feeder network for communities.\n\nAdvantage: Reduces road congestion in provincial areas and provides reliable market access for local producers.' },
+        ]
+    },
+    environmentalScore: {
+        title: 'Comparative Environmental Approach',
+        sections: [
+            { heading: 'Project 1: Score 72', text: 'Profile: A strong score for a major industrial infrastructure project. While it significantly reduces CO₂ by shifting freight from road to rail, its score is impacted by the scale of construction and land use in a dense economic corridor.\n\nMitigation: Focuses on noise barriers, modern emission standards, and EIA-approved offsets.' },
+            { heading: 'Project 2: Score 85', text: 'Profile: An exceptional score reflecting a core focus on sustainability. This project likely utilizes a less disruptive route and incorporates next-generation green technology.\n\nMitigation: May employ hydrogen or battery-electric trains, feature stations with green building certifications, and prioritize elevated tracks to minimize habitat disruption, justifying its higher cost.' },
+        ]
+    },
+    investmentSuitability: {
+        title: 'Investor Profile Analysis',
+        sections: [
+            { heading: 'Project 1: Score 79', text: 'Appeal: Highly suitable for traditional infrastructure investors seeking strong, predictable returns based on proven demand from industrial and passenger traffic. Lower risk profile due to clear economic drivers.\n\nModel: Backed by high-volume commercial activity.' },
+            { heading: 'Project 2: Score 68', text: 'Appeal: More suitable for ESG (Environmental, Social, and Governance) investors and development funds. The lower suitability score reflects a longer payback period and less certain commercial revenue.\n\nModel: Relies on a value proposition of long-term social and environmental benefits, attracting a different class of private partners who may have access to green financing.' },
+        ]
+    },
+    jobsCreated: {
+        title: 'Employment Generation Strategy',
+        sections: [
+            { heading: 'Project 1: EEC High-Speed Rail', text: 'Pattern: Peaks in Construction and Logistics. This reflects a massive initial build-out phase followed by jobs centered on operating a high-capacity freight and passenger system.\n\nType: Creates a high concentration of jobs in specific industrial and transport hubs.' },
+            { heading: 'Project 2: Green Community Rail', text: 'Pattern: Job creation is lower in construction but more sustained across Services and Manufacturing. This indicates a focus on long-term, community-embedded employment.\n\nType: Fosters a wider distribution of jobs in local tourism, retail at numerous smaller stations, and SME manufacturing.' },
+        ]
+    },
+    regionalDistribution: {
+        title: 'Comparative Regional Impact',
+        sections: [
+            { heading: 'Project 1: EEC High-Speed Rail', text: 'Curve: Shows a sharp peak in the East and South, aligning directly with the primary industrial zones and tourist centers (Rayong, Chonburi, Pattaya). It is a strategy of concentrated power.\n\nGoal: To amplify the strength of existing economic centers.' },
+            { heading: 'Project 2: Green Community Rail', text: 'Curve: Shows a flatter, more distributed curve. While still serving the East, it provides more equitable benefits to the North and West, suggesting it connects outlying towns.\n\nGoal: To reduce regional disparity by spreading infrastructure benefits more broadly.' },
+        ]
+    },
+    financing: {
+        title: 'Comparative Financial Breakdown',
+        sections: [
+            { heading: 'Total Cost', text: 'P1 (฿150B): Cost-efficient design focused on a primary high-speed corridor.\nP2 (฿250B): Higher cost is likely due to advanced green technology (e.g., hydrogen power), a wider network with more stations, and potentially more complex land acquisition across varied terrain.' },
+            { heading: 'Return & Payback', text: 'P1 (12.5% ROI, 8yr Payback): Higher ROI and faster payback driven by high-revenue industrial freight and premium passenger fares. A more attractive proposition for private investors.\nP2 (9.8% ROI, 12yr Payback): Lower financial ROI reflects a focus on social benefits over pure profit. The longer payback period is typical for projects with a strong public service component.' },
+            { heading: 'Funding Mix', text: 'P1 (60% Gov / 40% Private): A standard PPP model where the government takes a majority stake to steer a project of national strategic importance.\nP2 (45% Gov / 55% Private): The higher private share, despite lower ROI, suggests specialized funding from green investment funds or partners who are incentivized by the project\'s high ESG score and long-term, stable returns.' },
+        ]
+    },
+    socioEconomic: {
+        title: 'Social Benefit Analysis',
+        sections: [
+            { heading: 'Overview', text: 'This metric reveals the core philosophy of each project.' },
+            { heading: 'Poverty Reduction & Household Income', text: 'P1 (+1.5% Poverty Reduction, +3.2% Income): Delivers solid social benefits as a secondary effect of large-scale industrial growth.\nP2 (+2.1% Poverty Reduction, +4.5% Income): Delivers superior social outcomes as a primary goal. By directly connecting less-developed communities, it provides more impactful access to jobs, markets, and services, leading to a greater increase in household income and a stronger reduction in poverty.' },
+            { heading: 'Regional Disparity', text: 'Both projects aim to reduce regional disparity, but P2\'s flatter distribution of infrastructure suggests it would be more effective at closing the economic gap between urban centers and rural areas.' },
+        ]
+    },
+    predictive: {
+        title: 'Comparative Future Outlook',
+        sections: [
+            { heading: 'Land Price Trend', text: 'P1 (+2.1%): Drives higher land value spikes concentrated around its few, major commercial stations.\nP2 (+1.3%): Creates a more moderate but widespread appreciation of land values across a larger number of smaller towns.' },
+            { heading: 'Business Registration', text: 'P1 (425/yr): Generates a high number of new businesses clustered around its industrial and logistics hubs.\nP2 (210/yr): Fosters the growth of smaller, community-focused businesses over a wider geographic area.' },
+            { heading: 'Skilled Labor Demand', text: 'P1 (38.2k): High demand for specialized labor to operate and maintain a complex, high-speed system.\nP2 (25.6k): Demand is likely focused on "green" technology skills (hydrogen fuel cell maintenance, etc.) and community-based service roles.' },
+        ]
+    }
+};
 
 const translations = {
   en: {
@@ -405,12 +441,10 @@ const sectionIcons: { [key: string]: React.ElementType } = {
     'Economic Multiplier Effect': Scaling,
     'Methodology': Lightbulb,
     'Increased Capacity': Maximize2,
-    'Time Savings': CheckCircle2,
     'Key Commodities': List,
     'Cost Efficiency': CircleDollarSign,
     'Overall Score': Target,
     'Scoring Breakdown': LayoutList,
-    'Investment Profile & Risk Assessment': ShieldCheck,
     'Political & Regulatory Stability': Landmark,
     'Market Demand': TrendingUp,
     'Financial Viability': CircleDollarSign,
@@ -426,6 +460,25 @@ const sectionIcons: { [key: string]: React.ElementType } = {
     'Skilled Labor Demand': Briefcase,
     'Community & Social Development': Landmark,
     'Impact Metrics': TrendingUp,
+    'Time Savings': CheckCircle2,
+    // Comparison Icons
+    'Overview': Info,
+    'Project 1: EEC High-Speed Rail (GDP Forecast: +2.8%)': TrendingUp,
+    'Project 2: Green Community Rail (GDP Forecast: +1.2%)': TrendingUp,
+    'Project 1: EEC High-Speed Rail (Freight Volume: +15%)': Briefcase,
+    'Project 2: Green Community Rail (Freight Volume: +8%)': Briefcase,
+    'Project 1: Score 72': ShieldCheck,
+    'Project 2: Score 85': ShieldCheck,
+    'Project 1: Score 79': CircleDollarSign,
+    'Project 2: Score 68': CircleDollarSign,
+    'Project 1: EEC High-Speed Rail': Users,
+    'Project 2: Green Community Rail': Users,
+    'Total Cost': PiggyBank,
+    'Return & Payback': TrendingUp,
+    'Funding Mix': Split,
+    'Poverty Reduction & Household Income': Landmark,
+    'Regional Disparity': AreaChartIcon,
+    'Business Registration': Building,
 };
 
 const DraggablePanel = ({
@@ -467,7 +520,7 @@ const DraggablePanel = ({
                         <Icon className="h-4 w-4 text-primary" />
                         <h4 className="font-semibold text-foreground text-sm">{section.heading}</h4>
                       </div>
-                      {section.text && <p className="text-xs text-muted-foreground ml-6">{section.text}</p>}
+                      {section.text && <p className="text-xs text-muted-foreground ml-6 whitespace-pre-wrap">{section.text}</p>}
                       {section.list && (
                         <div className="ml-6 space-y-1.5">
                           {section.list.map((item: string, itemIndex: number) => {
@@ -533,7 +586,10 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   }, [isComparing, selectedRegion, activeProject]);
 
   const detailData = React.useMemo(() => {
-    if (isComparing || selectedRegion) return null; // Details not shown for comparison/region view yet
+    if (isComparing) {
+        return comparisonPopoverDetailData;
+    }
+    if (selectedRegion) return null;
     return activeProject === 'project1' ? popoverDetailData.project1 : popoverDetailData.project2;
   }, [isComparing, selectedRegion, activeProject]);
   
@@ -558,15 +614,12 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     const popoverHeight = 380; // Approximate height of the draggable panel
     const gap = 16;
   
-    // Position the panel to the left of the sidebar with a gap.
     const x = sidebarRect.left - popoverWidth - gap;
   
-    // Calculate the 'y' position to center the panel vertically in the viewport.
     let y = (window.innerHeight - popoverHeight) / 2;
 
-    // Ensure the panel doesn't go off-screen at the top or bottom.
     if (y < gap) {
-      y = gap;
+        y = gap;
     }
     if (y + popoverHeight > window.innerHeight - gap) {
         y = window.innerHeight - popoverHeight - gap;
@@ -1059,6 +1112,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </>
   );
 }
+
 
 
 
