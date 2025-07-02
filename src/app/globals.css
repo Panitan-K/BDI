@@ -87,7 +87,7 @@
     @apply bg-card/60 backdrop-blur-lg border border-border;
   }
 
-  .maplibregl-control-container .maplibregl-ctrl-attrib {
+  .maplibregl-ctrl-attrib {
     display: none !important;
   }
 }
