@@ -6,7 +6,7 @@ import Draggable from 'react-draggable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart, Bar, AreaChart, Area, Cell, LabelList, PieChart, Pie, ComposedChart, Line, LineChart } from 'recharts';
+import { BarChart, Bar, AreaChart, Area, Cell, LabelList, PieChart, Pie, ComposedChart, Line, LineChart, XAxis, YAxis } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Building, Briefcase, TrendingUp, XIcon, Maximize2, PiggyBank, Landmark, Bot, LayoutList, Lightbulb, CheckCircle2, Scaling, ShieldCheck, Split, CircleDollarSign, Target, List } from 'lucide-react';
