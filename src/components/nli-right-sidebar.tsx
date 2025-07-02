@@ -370,12 +370,12 @@ const PopoverContentDisplay = ({ popoverData }: { popoverData: any }) => {
     if (!popoverData) return null;
   
     return (
-      <PopoverContent side="left" align="start" className="w-[400px] glass-panel text-foreground p-0 border-primary/20">
+      <PopoverContent side="left" align="start" className="w-[240px] glass-panel text-foreground p-0 border-primary/20">
         <div className="p-4">
-          <h3 className="font-semibold text-lg text-primary mb-2">{popoverData.title}</h3>
+          <h3 className="font-semibold text-base text-primary mb-2">{popoverData.title}</h3>
           <Separator className="mb-4 bg-border/50"/>
         </div>
-        <ScrollArea className="h-[450px]">
+        <ScrollArea className="h-[270px]">
           <div className="p-4 pt-0 space-y-4">
             {popoverData.sections?.map((section: any, index: number) => (
               <div key={index}>
@@ -478,7 +478,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
         </div>
         <ScrollArea className="flex-1 -mr-2 pr-2">
           <div className="space-y-3 px-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {shouldShow('Economic Impact') && (
                 <Popover>
                     <PopoverTrigger asChild>
@@ -527,7 +527,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
                 {shouldShow('Environmental Score') && (
                   <Popover>
                     <PopoverTrigger asChild>
@@ -930,4 +930,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
 
 
     
+    
+
     
