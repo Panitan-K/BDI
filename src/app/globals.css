@@ -86,4 +86,8 @@
   .glass-panel {
     @apply bg-card/60 backdrop-blur-lg border border-border;
   }
+
+  .maptiler-logo {
+    display: none !important;
+  }
 }
