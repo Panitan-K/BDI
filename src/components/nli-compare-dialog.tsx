@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { GitCompare } from 'lucide-react';
+import { GitCompare, ListChecks } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 
 const projects = [
@@ -69,6 +69,17 @@ export function CompareProjectsDialog({ isOpen, onOpenChange, onCompare }: Compa
       parameters: [],
     },
   });
+
+  const watchedParameters = form.watch('parameters');
+  const allParametersSelected = analysisParameters.length > 0 && watchedParameters?.length === analysisParameters.length;
+
+  const handleToggleAllParameters = () => {
+    if (allParametersSelected) {
+      form.setValue('parameters', []);
+    } else {
+      form.setValue('parameters', analysisParameters);
+    }
+  };
 
   function onSubmit(values: z.infer<typeof compareSchema>) {
     onCompare(values);
@@ -198,11 +209,17 @@ export function CompareProjectsDialog({ isOpen, onOpenChange, onCompare }: Compa
                     name="parameters"
                     render={() => (
                       <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base font-semibold">3. Select Analysis Parameters</FormLabel>
-                          <FormDescription>
-                           Choose the key metrics for the comparison. (Optional)
-                          </FormDescription>
+                        <div className="mb-4 flex justify-between items-start">
+                            <div>
+                                <FormLabel className="text-base font-semibold">3. Select Analysis Parameters</FormLabel>
+                                <FormDescription>
+                                Choose the key metrics for the comparison. (Optional)
+                                </FormDescription>
+                            </div>
+                            <Button type="button" variant="ghost" size="sm" onClick={handleToggleAllParameters} className="shrink-0">
+                                <ListChecks className="mr-2 h-4 w-4" />
+                                {allParametersSelected ? 'Deselect All' : 'Select All'}
+                            </Button>
                         </div>
                         <div className="grid grid-cols-3 gap-4">
                           {analysisParameters.map((item) => (

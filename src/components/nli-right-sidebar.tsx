@@ -305,7 +305,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     <aside
       className={cn(
         'p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
-        isMaximized ? 'w-[500px]' : 'w-72'
+        isMaximized ? 'w-[500px]' : 'w-80'
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
@@ -569,17 +569,15 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                                       </BarChart>
                                   </ChartContainer>
                               </div>
-                              <div>
-                                  <p className="text-xs font-medium text-muted-foreground mb-1">{t.fundingSources}</p>
-                                  <div className="space-y-1 text-xs">
-                                      <div className="flex justify-between items-center text-muted-foreground">
-                                          <span>{language === 'th' ? 'ภาครัฐ / เอกชน' : 'Gov / Private'}</span>
-                                      </div>
-                                      <div className="flex justify-between items-center">
-                                          <span className="font-mono text-chart-1">{data.funding.sourcesP1[0].value}% / {data.funding.sourcesP1[1].value}%</span>
-                                          <span className="text-muted-foreground text-xs">vs</span>
-                                          <span className="font-mono text-chart-2">{data.funding.sourcesP2[0].value}% / {data.funding.sourcesP2[1].value}%</span>
-                                      </div>
+                              <div className="text-xs font-medium text-muted-foreground">
+                                  <p className="mb-1">{t.fundingSources}</p>
+                                  <div className="flex justify-between items-center text-xs">
+                                      <span className="text-muted-foreground">{language === 'th' ? 'ภาครัฐ / เอกชน' : 'Gov / Private'}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center">
+                                      <span className="font-mono text-chart-1">{data.funding.sourcesP1[0].value}% / {data.funding.sourcesP1[1].value}%</span>
+                                      <span className="text-muted-foreground text-xs">vs</span>
+                                      <span className="font-mono text-chart-2">{data.funding.sourcesP2[0].value}% / {data.funding.sourcesP2[1].value}%</span>
                                   </div>
                               </div>
                           </div>
