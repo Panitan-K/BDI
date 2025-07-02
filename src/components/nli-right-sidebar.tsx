@@ -345,7 +345,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             </div>
 
             <Card className="glass-panel border-none">
-              <CardHeader className="p-2 pb-2">
+              <CardHeader className="p-2 pb-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{t.jobsCreated}</CardTitle>
               </CardHeader>
               <CardContent className="p-2 pt-0">
