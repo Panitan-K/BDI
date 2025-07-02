@@ -155,7 +155,7 @@ export default function NliPlatformPage() {
     'Land Use Plan': false,
     'Forest Zones': false,
     'Agricultural Zones': false,
-    'Province': true,
+    'Province': false,
     'District': false,
     'Sub-district': false,
     'Industrial Zones': false,

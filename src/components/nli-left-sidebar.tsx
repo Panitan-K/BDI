@@ -124,7 +124,6 @@ export function NliLeftSidebar({ activeLayers, onLayerToggle, language }: NliLef
                       <Switch 
                         checked={activeLayers[layer.name]}
                         onCheckedChange={(checked) => onLayerToggle(layer.name, checked)}
-                        disabled={layer.name === 'Province'}
                       />
                     </div>
                   ))}
