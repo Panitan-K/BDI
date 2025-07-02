@@ -111,13 +111,34 @@ const popoverDetailData = {
       ],
     },
     logisticFlow: {
-        title: 'Enhanced Freight & Transit Capabilities',
-        sections: [
-          { heading: 'Increased Capacity', text: 'The high-speed rail will handle an additional 4.5 million tons of freight annually, marking a +15% increase in the region\'s total freight volume.' },
-          { heading: 'Time Savings', list: ['Bangkok to Rayong: Transit time for goods will be reduced from 4-6 hours by truck to just 90 minutes by rail.', 'Laem Chabang Port to Industrial Estates: Connectivity will be reduced to under 60 minutes.'] },
-          { heading: 'Key Commodities', text: 'Primary goods expected to shift to rail include agricultural products (fruits, rubber), automotive parts, electronics, and consumer goods.' },
-          { heading: 'Cost Efficiency', text: 'Shifting to rail is projected to reduce logistics costs by 12-18% compared to road transport, enhancing the competitiveness of Thai exports.' },
-        ],
+      title: 'Enhanced Freight & Transit Capabilities',
+      sections: [
+        {
+          heading: 'Increased Capacity',
+          text: "The high-speed rail will handle an additional 4.5 million tons of freight annually, marking a +15% increase in the region's total freight volume.",
+        },
+        {
+          heading: 'Time Savings',
+          timeSavings: [
+            {
+              location: 'Bangkok to Rayong',
+              detail: 'Transit time for goods will be reduced from 4-6 hours by truck to just 90 minutes by rail.',
+            },
+            {
+              location: 'Laem Chabang Port to Industrial Estates',
+              detail: 'Connectivity will be reduced to under 60 minutes.',
+            },
+          ],
+        },
+        {
+          heading: 'Key Commodities',
+          text: 'Primary goods expected to shift to rail include agricultural products (fruits, rubber), automotive parts, electronics, and consumer goods.',
+        },
+        {
+          heading: 'Cost Efficiency',
+          text: 'Shifting to rail is projected to reduce logistics costs by 12-18% compared to road transport, enhancing the competitiveness of Thai exports.',
+        },
+      ],
     },
     environmentalScore: {
         title: 'Environmental Impact Analysis',
@@ -180,10 +201,22 @@ const popoverDetailData = {
         ],
       },
       logisticFlow: {
-          title: 'Enhanced Freight & Transit Capabilities (P2)',
-          sections: [
-            { heading: 'Increased Capacity', text: 'The land bridge will handle an additional 8 million tons of freight annually, marking a +8% increase in the region\'s total freight volume.' },
-          ],
+        title: 'Enhanced Freight & Transit Capabilities (P2)',
+        sections: [
+          {
+            heading: 'Increased Capacity',
+            text: "The land bridge will handle an additional 8 million tons of freight annually, marking a +8% increase in the region's total freight volume.",
+          },
+          {
+            heading: 'Time Savings',
+            timeSavings: [
+              {
+                location: 'Gulf of Thailand to Andaman Sea',
+                detail: 'Maritime transit time reduced from 2-3 days (via Strait of Malacca) to under 12 hours via the land bridge.',
+              },
+            ],
+          },
+        ],
       },
       environmentalScore: {
         title: 'Environmental Impact Analysis (P2)',
@@ -455,6 +488,16 @@ const DraggablePanel = ({
                           })}
                         </div>
                       )}
+                      {section.timeSavings && (
+                        <div className="ml-6 space-y-3">
+                          {section.timeSavings.map((item: any, itemIndex: number) => (
+                            <div key={itemIndex}>
+                              <p className="font-semibold text-foreground text-xs mb-0.5">{item.location}</p>
+                              <p className="text-xs text-muted-foreground">{item.detail}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -517,7 +560,13 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     // Position the panel to the left of the sidebar with a gap.
     const x = sidebarRect.left - popoverWidth - gap;
     // Position it slightly down from the top of the sidebar.
-    const y = sidebarRect.top + gap;
+    let y = sidebarRect.top + gap;
+
+    // Ensure it doesn't go off the bottom of the screen
+    const popoverHeight = 320 + 70; // approx height
+    if (y + popoverHeight > window.innerHeight) {
+        y = window.innerHeight - popoverHeight - gap;
+    }
 
     setActivePopover({ key, position: { x, y } });
   };
@@ -1005,3 +1054,4 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </>
   );
 }
+
