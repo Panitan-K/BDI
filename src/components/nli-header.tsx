@@ -175,7 +175,7 @@ export function NliHeader({
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Avatar className="h-8 w-8 cursor-pointer">
-                    <AvatarImage data-ai-hint="profile picture" src="https://placehold.co/40x40.png" alt="User Avatar" />
+                    <AvatarImage data-ai-hint="profile picture" src="" alt="User Avatar" />
                     <AvatarFallback><User /></AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
