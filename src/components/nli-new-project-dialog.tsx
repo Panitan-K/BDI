@@ -103,7 +103,7 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                             <SelectValue placeholder="Select a province" />
                                         </SelectTrigger>
                                     </FormControl>
-                                    <SelectContent>
+                                    <SelectContent className="max-h-72">
                                         {thaiProvinces.map((province) => (
                                             <SelectItem key={province} value={province}>{province}</SelectItem>
                                         ))}
