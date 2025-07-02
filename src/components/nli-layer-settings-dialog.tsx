@@ -152,15 +152,15 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
           <TabsContent value="info" className="space-y-3 py-4">
             <div>
               <Label htmlFor="layer-name">{t.layerName}</Label>
-              <Input id="layer-name" defaultValue={layerName} className="mt-2 bg-secondary" />
+              <Input id="layer-name" defaultValue={layerName} className="mt-1.5 bg-secondary" />
             </div>
             <div>
               <Label htmlFor="layer-attribution">{t.attribution}</Label>
-              <Input id="layer-attribution" placeholder="e.g., OpenStreetMap contributors" className="mt-2 bg-secondary" />
+              <Input id="layer-attribution" placeholder="e.g., OpenStreetMap contributors" className="mt-1.5 bg-secondary" />
             </div>
              <div>
               <Label>{t.layerActions}</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-1.5">
                 <Button variant="outline" size="sm"><Layers className="mr-2 h-4 w-4"/>{t.bringToFront}</Button>
                 <Button variant="outline" size="sm"><Layers className="mr-2 h-4 w-4"/>{t.sendToBack}</Button>
                 <Button variant="outline" size="sm"><RefreshCw className="mr-2 h-4 w-4"/>{t.reloadLayer}</Button>
