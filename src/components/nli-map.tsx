@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
@@ -59,6 +60,11 @@ const choroplethProvincePaint = {
 };
 
 const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circle' , paint: any, sourceData?: any, sourceLayer?: string }> = {
+    'Province': {
+        url: 'https://api.maptiler.com/data/thailand-administrative/features.json?key=lVz5lFRZJpi7sv6fXhdz',
+        type: 'fill',
+        paint: originalProvincePaint
+    },
     'Roads': {
         url: 'https://api.maptiler.com/data/transportation/features.json?key=lVz5lFRZJpi7sv6fXhdz',
         type: 'line',
@@ -69,10 +75,25 @@ const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circl
         type: 'line',
         paint: { 'line-color': '#888', 'line-width': 2, 'line-dasharray': [2, 2] }
     },
-    'Province': {
-        url: 'https://api.maptiler.com/data/thailand-administrative/features.json?key=lVz5lFRZJpi7sv6fXhdz',
-        type: 'fill',
-        paint: originalProvincePaint
+    'Ports': {
+        url: 'https://api.maptiler.com/data/port/features.json?key=lVz5lFRZJpi7sv6fXhdz',
+        type: 'circle',
+        paint: {
+            'circle-radius': 6,
+            'circle-color': '#2563eb', // a blue color
+            'circle-stroke-color': 'white',
+            'circle-stroke-width': 1.5
+        }
+    },
+    'Airports': {
+        url: 'https://api.maptiler.com/data/aerodrome/features.json?key=lVz5lFRZJpi7sv6fXhdz',
+        type: 'circle',
+        paint: {
+            'circle-radius': 6,
+            'circle-color': '#9333ea', // a purple color
+            'circle-stroke-color': 'white',
+            'circle-stroke-width': 1.5
+        }
     },
 };
 
