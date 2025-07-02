@@ -5,7 +5,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Cell, LabelList, Legend, PieChart, Pie, ComposedChart, Line } from 'recharts';
+import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Cell, LabelList, Legend, PieChart, Pie, ComposedChart, Line, LineChart } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Building, Briefcase, TrendingUp, XIcon, Maximize2, Minimize2, PiggyBank, Landmark } from 'lucide-react';
@@ -266,13 +266,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     value: { label: t.jobs, color: "hsl(var(--chart-2))" },
   } satisfies ChartConfig;
   
-  const fundingSourcesChartConfig = {
-    p1: { label: t.project1, color: "hsl(var(--chart-1))" },
-    p2: { label: t.project2, color: "hsl(var(--chart-2))" },
-    Government: { label: language === 'en' ? 'Government' : 'ภาครัฐ', color: "hsl(var(--chart-1))" },
-    Private: { label: language === 'en' ? 'Private' : 'เอกชน', color: "hsl(var(--chart-2))" },
-  } satisfies ChartConfig;
-
   const renderComparisonValue = (val: any, unit: string = '%') => (
       <div className="flex items-baseline justify-center gap-2">
         <span className="text-chart-1">{val.p1}{unit}</span>
@@ -285,7 +278,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     <aside
       className={cn(
         'p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
-        isMaximized ? 'w-[500px]' : 'w-80'
+        isMaximized ? 'w-[500px]' : 'w-72'
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
@@ -375,7 +368,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                             </div>
                             <div className="flex items-center gap-2">
                                 <span className="text-xs text-chart-2 font-medium w-12">{t.project2}</span>
-                                <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-2" />
+                                <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-5" />
                                 <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p2}</span>
                             </div>
                         </div>
@@ -395,35 +388,34 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               </CardHeader>
               <CardContent className="p-2 pt-0 h-[190px]">
                 <ChartContainer config={barChartConfig} className="w-full h-full">
-                  <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: 0 }} barGap={4}>
-                    <XAxis
-                      dataKey={nameKey}
-                      tickLine={false}
-                      axisLine={false}
-                      tickMargin={8}
-                      fontSize={10}
-                    />
-                    <YAxis tickLine={false} axisLine={false} fontSize={10} />
-                    <ChartTooltip
-                      cursor={{ fill: 'hsla(var(--background), 0.5)' }}
-                      content={<ChartTooltipContent indicator="dot" />}
-                    />
-                    {isComparing && <ChartLegend verticalAlign="top" height={30} />}
-                    {isComparing ? (
-                      <>
-                        <Bar dataKey="p1" fill="var(--color-p1)" radius={4} barSize={isMaximized ? 15 : 10}>
-                            <LabelList dataKey="p1" position="top" className="fill-foreground" fontSize={10}/>
-                        </Bar>
-                        <Bar dataKey="p2" fill="var(--color-p2)" radius={4} barSize={isMaximized ? 15 : 10}>
-                            <LabelList dataKey="p2" position="top" className="fill-foreground" fontSize={10}/>
-                        </Bar>
-                      </>
-                    ) : (
+                  {isComparing ? (
+                    <LineChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: 0 }}>
+                        <XAxis dataKey={nameKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={10} />
+                        <YAxis tickLine={false} axisLine={false} fontSize={10} />
+                        <ChartTooltip cursor={{ fill: 'hsla(var(--background), 0.5)' }} content={<ChartTooltipContent indicator="dot" />} />
+                        <ChartLegend verticalAlign="top" height={30} />
+                        <Line type="monotone" dataKey="p1" name={t.project1} stroke="var(--color-p1)" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="p2" name={t.project2} stroke="var(--color-p2)" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  ) : (
+                    <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: 0 }} barGap={4}>
+                      <XAxis
+                        dataKey={nameKey}
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        fontSize={10}
+                      />
+                      <YAxis tickLine={false} axisLine={false} fontSize={10} />
+                      <ChartTooltip
+                        cursor={{ fill: 'hsla(var(--background), 0.5)' }}
+                        content={<ChartTooltipContent indicator="dot" />}
+                      />
                       <Bar dataKey="value" fill="var(--color-value)" radius={4} barSize={12}>
                         <LabelList dataKey="value" position="top" className="fill-foreground" fontSize={10}/>
                       </Bar>
-                    )}
-                  </BarChart>
+                    </BarChart>
+                  )}
                 </ChartContainer>
               </CardContent>
             </Card>
@@ -434,6 +426,16 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               </CardHeader>
               <CardContent className='p-2 pt-0 h-[180px]'>
                  <ChartContainer config={barChartConfig} className="w-full h-full">
+                  {isComparing ? (
+                    <LineChart accessibilityLayer data={data.regionalData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                        <XAxis dataKey={nameKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={10} />
+                        <YAxis tickLine={false} axisLine={false} fontSize={10} domain={[0, 'dataMax + 100']} />
+                        <ChartTooltip cursor={{ fill: 'hsla(var(--background), 0.5)' }} content={<ChartTooltipContent indicator="dot" />} />
+                        <ChartLegend verticalAlign="top" height={30} />
+                        <Line type="monotone" dataKey="p1" name={t.project1} stroke="var(--color-p1)" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="p2" name={t.project2} stroke="var(--color-p2)" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  ) : (
                     <BarChart
                         accessibilityLayer
                         data={data.regionalData}
@@ -456,24 +458,17 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                             cursor={{ fill: 'hsla(var(--background), 0.5)' }}
                             content={<ChartTooltipContent indicator="dot" />}
                         />
-                        {isComparing && <ChartLegend verticalAlign="top" height={30} />}
-                        {isComparing ? (
-                            <>
-                                <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={isMaximized ? 15 : 12} />
-                                <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={isMaximized ? 15 : 12} />
-                            </>
-                        ) : (
-                            <Bar
-                                dataKey="value"
-                                radius={4}
-                                barSize={30}
-                            >
-                                {data.regionalData.map((entry: any) => (
-                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                                ))}
-                            </Bar>
-                        )}
+                        <Bar
+                            dataKey="value"
+                            radius={4}
+                            barSize={30}
+                        >
+                            {data.regionalData.map((entry: any) => (
+                                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                            ))}
+                        </Bar>
                     </BarChart>
+                  )}
                 </ChartContainer>
               </CardContent>
             </Card>
@@ -485,7 +480,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                 </CardHeader>
                 <CardContent className="p-2 pt-0 space-y-4">
                     {isComparing ? (
-                        <>
+                        <div className="space-y-3">
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground mb-1">{t.totalCost}</p>
                                 <ChartContainer config={barChartConfig} className="h-[50px] w-full">
@@ -536,17 +531,20 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                             </div>
                             <div>
                                 <p className="text-xs font-medium text-muted-foreground mb-1">{t.fundingSources}</p>
-                                <ChartContainer config={fundingSourcesChartConfig} className="h-[50px] w-full">
-                                    <BarChart layout="vertical" data={[...data.funding.sourcesP1.map((s, i) => ({ name: s[nameKey as 'name' | 'name_th'], p1: s.value, p2: data.funding.sourcesP2[i].value}))]} stackOffset="expand" margin={{left: language === 'th' ? 10 : 0}}>
-                                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} fontSize={10} width={language === 'en' ? 70 : 60}/>
-                                        <XAxis type="number" hide domain={[0, 100]}/>
-                                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator formatter={(v) => `${v}%`}/>} />
-                                        <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={12} stackId="a" />
-                                        <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={12} stackId="b" />
-                                    </BarChart>
-                                </ChartContainer>
+                                <div className="space-y-1 text-xs">
+                                    {data.funding.sourcesP1.map((source: any, index: number) => (
+                                        <div key={source.name} className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">{source[nameKey]}</span>
+                                            <div className="flex items-baseline justify-center gap-2 font-mono">
+                                                <span className="text-chart-1">{source.value}%</span>
+                                                <span className="text-muted-foreground text-xs">vs</span>
+                                                <span className="text-chart-2">{data.funding.sourcesP2[index].value}%</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </>
+                        </div>
                     ) : (
                       <div className="space-y-2">
                           <div className="grid grid-cols-3 gap-2 text-center">
@@ -600,7 +598,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                         </div>
                     </div>
                     <div>
-                         <p className="text-xs text-center text-muted-foreground">{t.regionalDisparity}</p>
+                         <div className="text-xs text-center text-muted-foreground">{t.regionalDisparity}</div>
                         <SmallSparkline 
                             data={data.socioEconomic.disparityData} 
                             dataKey={isComparing ? 'p1' : 'v'} 
