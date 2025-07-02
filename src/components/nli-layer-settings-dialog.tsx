@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -66,11 +65,6 @@ const translations = {
 };
 
 const colorSwatches = ['#4A69F6', '#FF6B6B', '#4ECDC4', '#FCE525', '#9B59B6'];
-const colorRamps = [
-  'linear-gradient(to right, #d73027, #fc8d59, #fee090, #e0f3f8, #91bfdb, #4575b4)',
-  'linear-gradient(to right, #40004b, #762a83, #9970ab, #c2a5cf, #e7d4e8, #f7f7f7, #d9f0d3, #a6dba0, #5aae61, #1b7837, #00441b)',
-  'linear-gradient(to right, #fde725, #5dc863, #21908d, #31688e, #443a83)',
-];
 
 interface NliLayerSettingsDialogProps {
   isOpen: boolean;
@@ -108,14 +102,6 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
                   <Button key={color} className="h-7 w-7 rounded-full border-2 border-transparent focus:border-primary p-0" style={{ backgroundColor: color }} />
                 ))}
                 <Button className="h-7 w-7 rounded-full border-2 border-transparent focus:border-primary p-0" style={{ background: 'conic-gradient(from 180deg at 50% 50%, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF, #FF0000)' }} />
-              </div>
-            </div>
-            <div>
-              <Label>{t.colorRamps}</Label>
-              <div className="flex flex-col gap-1.5 mt-1.5">
-                {colorRamps.map((ramp, index) => (
-                  <Button key={index} className="h-5 w-full rounded-md border-2 border-transparent focus:border-primary p-0" style={{ background: ramp }} />
-                ))}
               </div>
             </div>
             <div>
