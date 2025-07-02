@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Cell, LabelList, Legend, PieChart, Pie, ComposedChart, Line, LineChart } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Building, Briefcase, TrendingUp, XIcon, Maximize2, Minimize2, PiggyBank, Landmark, Bot } from 'lucide-react';
+import { Building, Briefcase, TrendingUp, XIcon, Maximize2, Minimize2, PiggyBank, Landmark, Bot, LayoutList, Lightbulb, CheckCircle2, Scaling, ShieldCheck, Split, CircleDollarSign, Target, List } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -137,14 +137,14 @@ const popoverDetailData = {
         title: 'Employment Generation Details',
         sections: [
           { heading: 'Total Jobs: 12,200', text: 'This project will create a significant number of both temporary and permanent jobs across various sectors.' },
-          { heading: 'Job Breakdown', list: ['Construction (4,500 jobs): 3-5 year contracts for engineers, surveyors, and laborers.', 'Services (3,200 jobs): Permanent roles in station management, retail, and tourism.', 'Logistics (2,700 jobs): Permanent roles for drivers, handlers, and technicians.', 'Manufacturing (1,800 jobs): Indirect, permanent jobs created in related industries.'] },
+          { heading: 'Job Breakdown', list: ['Construction (4,500 jobs): Primarily 3-5 year contracts for engineers, surveyors, and laborers.', 'Services (3,200 jobs): Permanent roles in station management, retail, and tourism.', 'Logistics (2,700 jobs): Permanent roles for drivers, handlers, and technicians.', 'Manufacturing (1,800 jobs): Indirect, permanent jobs created in related industries.'] },
         ],
     },
     regionalDistribution: {
         title: 'Allocation of Resources & Benefits',
         sections: [
             { heading: 'Objective', text: 'To ensure equitable growth and connect economic hubs with developing areas.' },
-            { heading: 'Benefit Distribution', list: ['South (40%): Focus on connecting U-Tapao airport and tourist hubs.', 'East (30%): Core of the project, linking deep-sea ports with industrial estates.', 'North (15%): Linking to Bangkok and future extensions.', 'West (15%): Improves connectivity to Bangkok\'s western suburbs.'] },
+            { heading: 'Benefit Distribution', list: ['South (40%): Focused on connecting U-Tapao airport and tourist hubs.', 'East (30%): Core of the project, linking deep-sea ports with industrial estates.', 'North (15%): Linking to Bangkok and future extensions.', 'West (15%): Improves connectivity to Bangkok\'s western suburbs.'] },
         ],
     },
     financing: {
@@ -366,33 +366,79 @@ const SmallSparkline = ({
   )
 }
 
+const sectionIcons: { [key: string]: React.ElementType } = {
+    'Overall Projection': TrendingUp,
+    'Sector-Specific Growth': LayoutList,
+    'Economic Multiplier Effect': Scaling,
+    'Methodology': Lightbulb,
+    'Increased Capacity': Maximize2,
+    'Time Savings': CheckCircle2,
+    'Key Commodities': List,
+    'Cost Efficiency': CircleDollarSign,
+    'Overall Score': Target,
+    'Scoring Breakdown': LayoutList,
+    'Investment Profile & Risk Assessment': ShieldCheck,
+    'Political & Regulatory Stability': Landmark,
+    'Market Demand': TrendingUp,
+    'Financial Viability': CircleDollarSign,
+    'Risk Mitigation': ShieldCheck,
+    'Total Jobs': Briefcase,
+    'Job Breakdown': Split,
+    'Objective': Target,
+    'Benefit Distribution': Split,
+    'Funding Model': Briefcase,
+    'Financial Metrics': TrendingUp,
+    'Land Price Trend': TrendingUp,
+    'New Business Registrations': Building,
+    'Skilled Labor Demand': Briefcase,
+    'Community & Social Development': Landmark,
+    'Impact Metrics': TrendingUp,
+};
+
 const PopoverContentDisplay = ({ popoverData }: { popoverData: any }) => {
     if (!popoverData) return null;
   
     return (
-      <PopoverContent side="left" align="start" className="w-[240px] glass-panel text-foreground p-0 border-primary/20">
-        <div className="p-4">
-          <h3 className="font-semibold text-base text-primary mb-2">{popoverData.title}</h3>
-          <Separator className="mb-4 bg-border/50"/>
-        </div>
-        <ScrollArea className="h-[270px]">
-          <div className="p-4 pt-0 space-y-4">
-            {popoverData.sections?.map((section: any, index: number) => (
-              <div key={index}>
-                <h4 className="font-semibold text-foreground mb-1">{section.heading}</h4>
-                {section.text && <p className="text-sm text-muted-foreground">{section.text}</p>}
-                {section.list && (
-                  <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 mt-1">
-                    {section.list.map((item: string, itemIndex: number) => (
-                      <li key={itemIndex}>{item}</li>
-                    ))}
-                  </ul>
-                )}
+        <PopoverContent 
+            side="left" 
+            align="start" 
+            className="w-[280px] glass-panel text-foreground p-0 border-primary/20"
+            collisionPadding={16}
+        >
+            <div className="p-4">
+              <h3 className="font-semibold text-sm text-primary mb-2">{popoverData.title}</h3>
+              <Separator className="mb-4 bg-border/50"/>
+            </div>
+            <ScrollArea className="h-[320px]">
+              <div className="px-4 pt-0 pb-4 space-y-4">
+                {popoverData.sections?.map((section: any, index: number) => {
+                  const Icon = sectionIcons[section.heading] || CheckCircle2;
+                  return (
+                  <div key={index}>
+                    <div className="flex items-center gap-2 mb-2">
+                        <Icon className="h-4 w-4 text-primary" />
+                        <h4 className="font-semibold text-foreground text-sm">{section.heading}</h4>
+                    </div>
+                    {section.text && <p className="text-xs text-muted-foreground ml-6">{section.text}</p>}
+                    {section.list && (
+                      <div className="ml-6 space-y-1.5">
+                        {section.list.map((item: string, itemIndex: number) => {
+                           const parts = item.split(':');
+                           const hasColon = parts.length > 1;
+                           return (
+                            <div key={itemIndex} className="flex justify-between items-start text-xs gap-2">
+                              <span className="text-muted-foreground">{hasColon ? parts[0] : item}</span>
+                              {hasColon && <span className="font-medium text-foreground text-right shrink-0">{parts.slice(1).join(':').trim()}</span>}
+                            </div>
+                           )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )})}
               </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </PopoverContent>
+            </ScrollArea>
+        </PopoverContent>
     );
 };
   
