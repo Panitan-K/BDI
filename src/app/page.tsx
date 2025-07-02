@@ -89,9 +89,27 @@ const translations = {
 };
 
 
-function ShareDialog({ isOpen, onOpenChange, language }: { isOpen: boolean, onOpenChange: (open: boolean) => void, language: string }) {
+function ShareDialog({ isOpen, onOpenChange, language, activeProject, isComparing }: { 
+  isOpen: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  language: string;
+  activeProject: string;
+  isComparing: boolean;
+}) {
   const { toast } = useToast()
-  const url = typeof window !== 'undefined' ? window.location.href : '';
+  
+  let url = '';
+  if (typeof window !== 'undefined') {
+    const baseUrl = `${window.location.origin}${window.location.pathname}`;
+    const params = new URLSearchParams();
+    if (isComparing) {
+      params.set('view', 'compare');
+    } else {
+      params.set('project', activeProject);
+    }
+    url = `${baseUrl}?${params.toString()}`;
+  }
+
   const t = translations[language as keyof typeof translations] || translations.en;
 
   const copyToClipboard = () => {
@@ -517,7 +535,7 @@ export default function NliPlatformPage() {
         )}
       </div>
       <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} language={language} />
-      <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} language={language} />
+      <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} language={language} activeProject={activeProject} isComparing={isComparing} />
       <NewProjectDialog isOpen={isNewProjectOpen} onOpenChange={setNewProjectOpen} />
       <CompareProjectsDialog isOpen={isCompareOpen} onOpenChange={setCompareOpen} onCompare={handleStartComparison} />
     </div>
