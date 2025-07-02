@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -80,6 +79,7 @@ const translations = {
     project1: 'Project 1',
     project2: 'Project 2',
     jobs: 'Jobs',
+    completed: 'Completed',
   },
   th: {
     economicImpact: 'ผลกระทบทางเศรษฐกิจ',
@@ -89,7 +89,7 @@ const translations = {
     envScore: 'คะแนนสิ่งแวดล้อม',
     investSuitability: 'ความเหมาะสมในการลงทุน',
     jobsCreated: 'จำนวนงานที่สร้าง (พัน)',
-    regionalDist: 'การกระจายตัวในภูมิภาค',
+    regionalDist: 'การกระจายตัวตามภูมิภาค',
     predictiveTools: 'เครื่องมือคาดการณ์',
     landPriceTrend: 'แนวโน้มราคาที่ดิน',
     landPriceUnit: 'ต่อปี',
@@ -102,6 +102,7 @@ const translations = {
     project1: 'โปรเจกต์ 1',
     project2: 'โปรเจกต์ 2',
     jobs: 'จำนวนงาน',
+    completed: 'เสร็จสมบูรณ์',
   }
 };
 
@@ -211,11 +212,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     West: { label: language === 'en' ? 'West' : 'ตะวันตก', color: "hsl(var(--chart-4))" },
   } satisfies ChartConfig;
 
-  const totalPieValue = React.useMemo(() => {
-    if (isComparing || !data.pieData) return 0;
-    return data.pieData.reduce((acc: number, curr: any) => acc + curr.value, 0);
-  }, [data.pieData, isComparing]);
-
   const renderComparisonValue = (val: any) => (
       <div className="flex items-baseline gap-2">
         <span className="text-chart-1">{val.p1}%</span>
@@ -287,7 +283,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               </CardHeader>
               <CardContent className="p-2 pt-0">
                 <ChartContainer config={barChartConfig} className="h-[120px] w-full">
-                  <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -25, top: 10 }}>
+                  <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 10, right: 10 }}>
                     <XAxis
                       dataKey={nameKey}
                       tickLine={false}
@@ -300,6 +296,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                       cursor={{ fill: 'hsla(var(--background), 0.5)' }}
                       content={<ChartTooltipContent indicator="dot" />}
                     />
+                    {isComparing && <ChartLegend verticalAlign="top" height={30} />}
                     {isComparing ? (
                       <>
                         <Bar dataKey="p1" fill="var(--color-p1)" radius={4} barSize={10} />
@@ -339,20 +336,33 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                     </ChartContainer>
                  ) : (
                     <div className="relative">
-                        <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[180px]">
+                        <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[220px]">
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-                                <Pie data={data.pieData} dataKey="value" nameKey={nameKey} innerRadius={50} outerRadius={70} strokeWidth={2} >
+                                <Pie 
+                                  data={data.pieData} 
+                                  dataKey="value" 
+                                  nameKey={nameKey} 
+                                  innerRadius={60} 
+                                  outerRadius={80}
+                                  strokeWidth={2}
+                                  paddingAngle={3}
+                                >
                                     {data.pieData.map((entry: any) => (
-                                        <Cell key={entry.name} fill={`var(--color-${entry.name})`} className="stroke-background" />
+                                        <Cell key={entry.name} fill={`var(--color-${entry.name})`} className="stroke-background focus:outline-none" />
                                     ))}
                                 </Pie>
-                                <ChartLegend content={<ChartLegendContent nameKey="name" className="-mt-4 flex-wrap" />} />
+                                <ChartLegend
+                                    content={<ChartLegendContent 
+                                        nameKey="name" 
+                                        className="grid grid-cols-2 gap-x-6 gap-y-1 mt-4 text-xs" 
+                                    />}
+                                />
                             </PieChart>
                         </ChartContainer>
-                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-lg font-bold">{totalPieValue.toLocaleString()}</span>
-                            <span className="text-xs text-muted-foreground">Total</span>
+                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-20px]">
+                            <span className="text-3xl font-bold">{data.investmentSuitability}%</span>
+                            <span className="text-xs text-muted-foreground">{t.completed}</span>
                         </div>
                     </div>
                  )}
