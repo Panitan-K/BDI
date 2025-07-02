@@ -81,6 +81,7 @@ interface NliHeaderProps {
   isComparing: boolean;
   onCompareToggle: () => void;
   onShare: () => void;
+  onNewProject: () => void;
   onFullscreenToggle: () => void;
   theme: string;
   onThemeChange: (theme: string) => void;
@@ -94,6 +95,7 @@ export function NliHeader({
   isComparing,
   onCompareToggle,
   onShare,
+  onNewProject,
   onFullscreenToggle,
   theme,
   onThemeChange,
@@ -139,7 +141,7 @@ export function NliHeader({
           </Tabs>
           <Tooltip>
               <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" title={t.addProject}>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" title={t.addProject} onClick={onNewProject}>
                       <Plus className="h-4 w-4" />
                   </Button>
               </TooltipTrigger>

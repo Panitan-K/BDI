@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { NewProjectDialog } from '@/components/nli-new-project-dialog';
 
 const translations = {
   en: {
@@ -139,6 +140,7 @@ export default function NliPlatformPage() {
   const [isComparing, setIsComparing] = useState(false);
   const [isAiChatOpen, setAiChatOpen] = useState(false);
   const [isShareOpen, setShareOpen] = useState(false);
+  const [isNewProjectOpen, setNewProjectOpen] = useState(false);
   const [is3D, setIs3D] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [basemapStyle, setBasemapStyle] = useState('https://api.maptiler.com/maps/dataviz-dark/style.json');
@@ -220,6 +222,7 @@ export default function NliPlatformPage() {
           isComparing={isComparing}
           onCompareToggle={handleCompareToggle}
           onShare={() => setShareOpen(true)}
+          onNewProject={() => setNewProjectOpen(true)}
           onFullscreenToggle={() => setIsFullscreen(prev => !prev)}
           theme={theme}
           onThemeChange={setTheme}
@@ -419,6 +422,7 @@ export default function NliPlatformPage() {
       </div>
       <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} />
       <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} language={language} />
+      <NewProjectDialog isOpen={isNewProjectOpen} onOpenChange={setNewProjectOpen} />
     </div>
   );
 }

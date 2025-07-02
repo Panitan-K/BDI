@@ -118,7 +118,7 @@ const translations = {
     project2: 'Project 2',
     jobs: 'Jobs',
     financingCosts: 'Financing & Costs',
-    totalCost: 'Total Cost (B THB)',
+    totalCost: 'Total Cost (THB)',
     fundingSources: 'Funding Sources',
     roi: 'Return on Investment',
     paybackPeriod: 'Payback Period (Yrs)',
