@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Building, Briefcase, TrendingUp, XIcon } from 'lucide-react';
@@ -105,29 +105,75 @@ const translations = {
   }
 };
 
-const SmallSparkline = ({ data, dataKey, dataKey2, strokeColor, strokeColor2 }: { data: any[], dataKey: string, dataKey2?: string, strokeColor: string, strokeColor2?: string }) => (
-  <ResponsiveContainer width="100%" height={40}>
-    <AreaChart data={data}>
-      <defs>
-        <linearGradient id={`sparkline-${strokeColor}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={strokeColor} stopOpacity={0.4} />
-          <stop offset="100%" stopColor={strokeColor} stopOpacity={0} />
-        </linearGradient>
-        {strokeColor2 && <linearGradient id={`sparkline-${strokeColor2}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={strokeColor2} stopOpacity={0.4} />
-          <stop offset="100%" stopColor={strokeColor2} stopOpacity={0} />
-        </linearGradient>}
-      </defs>
-      <ChartTooltip
-        cursor={false}
-        content={<ChartTooltipContent indicator="line" hideLabel />}
-      />
-      <Area type="monotone" dataKey={dataKey} stroke={strokeColor} strokeWidth={2} fill={`url(#sparkline-${strokeColor})`} />
-      {dataKey2 && strokeColor2 && <Area type="monotone" dataKey={dataKey2} stroke={strokeColor2} strokeWidth={2} fill={`url(#sparkline-${strokeColor2})`} />}
-      <YAxis domain={['dataMin - 1', 'dataMax + 1']} hide />
-    </AreaChart>
-  </ResponsiveContainer>
-);
+const SmallSparkline = ({
+  data,
+  dataKey,
+  dataKey2,
+  strokeColor,
+  strokeColor2,
+}: {
+  data: any[]
+  dataKey: string
+  dataKey2?: string
+  strokeColor: string
+  strokeColor2?: string
+}) => {
+  const chartConfig = {
+    [dataKey]: {
+      color: strokeColor,
+    },
+    ...(dataKey2 && { [dataKey2]: { color: strokeColor2 } }),
+  } satisfies ChartConfig
+
+  return (
+    <ChartContainer config={chartConfig} className="h-[40px] w-full">
+      <AreaChart
+        accessibilityLayer
+        data={data}
+        margin={{
+          top: 0,
+          right: 0,
+          left: 0,
+          bottom: 0,
+        }}
+      >
+        <defs>
+          <linearGradient id={`sparkline-${strokeColor}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={strokeColor} stopOpacity={0.4} />
+            <stop offset="100%" stopColor={strokeColor} stopOpacity={0} />
+          </linearGradient>
+          {strokeColor2 && (
+            <linearGradient id={`sparkline-${strokeColor2}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={strokeColor2} stopOpacity={0.4} />
+              <stop offset="100%" stopColor={strokeColor2} stopOpacity={0} />
+            </linearGradient>
+          )}
+        </defs>
+        <ChartTooltip
+          cursor={false}
+          content={<ChartTooltipContent indicator="line" hideLabel />}
+        />
+        <Area
+          type="monotone"
+          dataKey={dataKey}
+          stroke={strokeColor}
+          strokeWidth={2}
+          fill={`url(#sparkline-${strokeColor})`}
+        />
+        {dataKey2 && strokeColor2 && (
+          <Area
+            type="monotone"
+            dataKey={dataKey2}
+            stroke={strokeColor2}
+            strokeWidth={2}
+            fill={`url(#sparkline-${strokeColor2})`}
+          />
+        )}
+        <YAxis domain={['dataMin - 1', 'dataMax + 1']} hide />
+      </AreaChart>
+    </ChartContainer>
+  )
+}
 
 export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language }: { isOpen?: boolean; activeProject: string; isComparing: boolean; selectedRegion: string | null; onClearRegion: () => void; language: string; }) {
   const [data, setData] = useState<any>(project1Data);
