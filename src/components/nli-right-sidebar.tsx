@@ -242,6 +242,7 @@ const comparisonPopoverDetailData = {
     logisticFlow: {
         title: 'Freight Strategy Comparison',
         sections: [
+            { heading: 'Overview', text: 'This comparison shows two different approaches to freight strategy.' },
             { heading: 'Project 1: EEC High-Speed Rail (Freight Volume: +15%)', text: 'Focus: Heavy freight and time-sensitive industrial goods. Designed for maximum throughput between major manufacturing hubs and international ports like Laem Chabang.\n\nAdvantage: Unlocks significant capacity for the export sector.' },
             { heading: 'Project 2: Green Community Rail (Freight Volume: +8%)', text: 'Focus: Light-to-medium freight, including agricultural products, consumer goods, and parcel delivery. It serves as a feeder network for communities.\n\nAdvantage: Reduces road congestion in provincial areas and provides reliable market access for local producers.' },
         ]
@@ -611,23 +612,20 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   
     const sidebarRect = sidebarEl.getBoundingClientRect();
     const popoverWidth = 320;
-    const popoverHeight = 380; // Approximate height of the draggable panel
+    const popoverHeight = 380;
     const gap = 16;
   
     const x = sidebarRect.left - popoverWidth - gap;
   
-    // Align popover top with the sidebar top. This should visually align
-    // with the top of the map content area.
-    let y = sidebarRect.top;
-
-    // Ensure the panel doesn't go off-screen at the bottom.
-    if (y + popoverHeight > window.innerHeight - gap) {
-        y = window.innerHeight - popoverHeight - gap;
-    }
-
-    // Ensure the panel doesn't go off-screen at the top (in case of scrolling).
+    // Center the panel vertically in the viewport
+    let y = (window.innerHeight - popoverHeight) / 2;
+  
+    // Ensure it doesn't go off-screen (though with centering it's less likely)
     if (y < gap) {
-        y = gap;
+      y = gap;
+    }
+    if (y + popoverHeight > window.innerHeight - gap) {
+      y = window.innerHeight - popoverHeight - gap;
     }
   
     setActivePopover({ key, position: { x, y } });
