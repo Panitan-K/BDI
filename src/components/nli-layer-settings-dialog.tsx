@@ -27,6 +27,7 @@ const translations = {
     layerName: 'Layer Name',
     attribution: 'Attribution',
     fillColor: 'Fill Color',
+    colorRamps: 'Color Ramps',
     opacity: 'Opacity',
     borderWidth: 'Border Width',
     displayType: 'Display Type',
@@ -48,6 +49,7 @@ const translations = {
     layerName: 'ชื่อชั้นข้อมูล',
     attribution: 'ที่มา',
     fillColor: 'สีเติม',
+    colorRamps: 'ชุดสีไล่ระดับ',
     opacity: 'ความทึบ',
     borderWidth: 'ความกว้างเส้นขอบ',
     displayType: 'ประเภทการแสดงผล',
@@ -64,6 +66,11 @@ const translations = {
 };
 
 const colorSwatches = ['#4A69F6', '#FF6B6B', '#4ECDC4', '#FCE525', '#9B59B6'];
+const colorRamps = [
+  'linear-gradient(to right, #d73027, #fc8d59, #fee090, #e0f3f8, #91bfdb, #4575b4)',
+  'linear-gradient(to right, #40004b, #762a83, #9970ab, #c2a5cf, #e7d4e8, #f7f7f7, #d9f0d3, #a6dba0, #5aae61, #1b7837, #00441b)',
+  'linear-gradient(to right, #fde725, #5dc863, #21908d, #31688e, #443a83)',
+];
 
 interface NliLayerSettingsDialogProps {
   isOpen: boolean;
@@ -103,6 +110,14 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
               </div>
             </div>
             <div>
+              <Label>{t.colorRamps}</Label>
+              <div className="flex flex-col gap-2 mt-2">
+                {colorRamps.map((ramp, index) => (
+                  <Button key={index} className="h-6 w-full rounded-md border-2 border-transparent focus:border-primary p-0" style={{ background: ramp }} />
+                ))}
+              </div>
+            </div>
+            <div>
               <Label>{t.opacity}</Label>
               <Slider
                 defaultValue={opacity}
@@ -124,7 +139,7 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
             </div>
             <div>
               <Label>{t.displayType}</Label>
-               <RadioGroup defaultValue="choropleth" className="mt-2 grid grid-cols-2 gap-2">
+               <RadioGroup className="mt-2 grid grid-cols-2 gap-2">
                   <div>
                     <RadioGroupItem value="choropleth" id="choropleth" className="peer sr-only" />
                     <Label htmlFor="choropleth" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary text-xs">
@@ -152,7 +167,7 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
             </div>
              <div>
               <Label>{t.layerActions}</Label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 <Button variant="outline" size="sm"><Layers className="mr-2 h-4 w-4"/>{t.bringToFront}</Button>
                 <Button variant="outline" size="sm"><Layers className="mr-2 h-4 w-4"/>{t.sendToBack}</Button>
                 <Button variant="outline" size="sm"><RefreshCw className="mr-2 h-4 w-4"/>{t.reloadLayer}</Button>
