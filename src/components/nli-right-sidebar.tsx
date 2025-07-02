@@ -319,7 +319,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
         </div>
         <ScrollArea className="flex-1 -mr-2 pr-2">
           <div className="space-y-3 px-1">
-            <div className="grid grid-cols-2 gap-2">
+            <div className={cn("grid gap-2", isMaximized || isComparing ? 'grid-cols-2' : 'grid-cols-1')}>
               {shouldShow('Economic Impact') && (
                 <Card className="glass-panel border-none">
                   <CardHeader className="p-2 pb-1">
@@ -358,7 +358,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className={cn("grid gap-2", isMaximized || isComparing ? 'grid-cols-2' : 'grid-cols-1')}>
                 {shouldShow('Environmental Score') && (
                   <Card className="glass-panel border-none">
                     <CardHeader className="p-2 pb-1">
@@ -401,8 +401,8 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                                     <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p1}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-chart-5 font-medium w-12">{t.project2}</span>
-                                    <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-5" />
+                                    <span className="text-xs text-chart-3 font-medium w-12">{t.project2}</span>
+                                    <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-3" />
                                     <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p2}</span>
                                 </div>
                             </div>
