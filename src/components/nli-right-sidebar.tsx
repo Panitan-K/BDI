@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -241,24 +241,24 @@ interface NliRightSidebarProps {
 }
 
 export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language, isMaximized, onMaximizeToggle }: NliRightSidebarProps) {
-  const [data, setData] = useState<any>(project1Data);
-  const [title, setTitle] = useState(project1Data.name);
-  const t = translations[language as keyof typeof translations] || translations.en;
-  const nameKey = language === 'en' ? 'name' : 'name_th';
-
-  useEffect(() => {
-    if (selectedRegion && !isComparing) {
-        setData(regionalMockData[selectedRegion] || project1Data);
-        setTitle(language === 'en' ? (regionalMockData[selectedRegion]?.name || "Region Analysis") : (regionalMockData[selectedRegion]?.name_th || "การวิเคราะห์ภูมิภาค"));
-    } else if (isComparing) {
-      setData(comparisonData);
-      setTitle(language === 'en' ? comparisonData.name : comparisonData.name_th);
-    } else {
-      const projectData = activeProject === 'project1' ? project1Data : project2Data;
-      setData(projectData);
-      setTitle(language === 'en' ? projectData.name : projectData.name_th);
+  const data = React.useMemo(() => {
+    if (isComparing) {
+      return comparisonData;
     }
-  }, [activeProject, isComparing, selectedRegion, language]);
+    if (selectedRegion) {
+      return regionalMockData[selectedRegion] || project1Data;
+    }
+    return activeProject === 'project1' ? project1Data : project2Data;
+  }, [isComparing, selectedRegion, activeProject]);
+
+  const t = translations[language as keyof typeof translations] || translations.en;
+  
+  const title = React.useMemo(() => {
+    const nameKey = language === 'en' ? 'name' : 'name_th';
+    return data[nameKey as keyof typeof data] || data.name
+  }, [data, language]);
+
+  const nameKey = language === 'en' ? 'name' : 'name_th';
 
   const barChartConfig = {
     p1: { label: t.project1, color: "hsl(var(--chart-1))" },
