@@ -1,15 +1,15 @@
 
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState, useRef } from 'react';
+import Draggable from 'react-draggable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Cell, LabelList, Legend, PieChart, Pie, ComposedChart, Line, LineChart } from 'recharts';
+import { BarChart, Bar, AreaChart, Area, Cell, LabelList, PieChart, Pie, ComposedChart, Line, LineChart } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Building, Briefcase, TrendingUp, XIcon, Maximize2, Minimize2, PiggyBank, Landmark, Bot, LayoutList, Lightbulb, CheckCircle2, Scaling, ShieldCheck, Split, CircleDollarSign, Target, List } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Building, Briefcase, TrendingUp, XIcon, Maximize2, PiggyBank, Landmark, Bot, LayoutList, Lightbulb, CheckCircle2, Scaling, ShieldCheck, Split, CircleDollarSign, Target, List } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
     Tooltip as ShadTooltip,
@@ -123,28 +123,28 @@ const popoverDetailData = {
         title: 'Environmental Impact Analysis',
         sections: [
           { heading: 'Overall Score: 72/100', text: 'This score reflects a strong commitment to sustainability, balanced against the unavoidable impacts of large-scale construction. The project has received full approval from the Environmental Impact Assessment (EIA) board.' },
-          { heading: 'Scoring Breakdown', list: ['Carbon Emissions Reduction (Positive - 85/100): Expected to reduce CO₂ emissions by 120,000 metric tons annually.', 'Land Use Impact (Negative - 55/100): Requires acquisition of 850 hectares. Reforestation programs are in place.', 'Noise & Vibration (Neutral - 70/100): Noise barriers and advanced track technology will be used.', 'Biodiversity Protection (Positive - 78/100): Construction avoids key wildlife corridors.'] },
+          { heading: 'Scoring Breakdown', list: ['Carbon Emissions Reduction: +85/100', 'Land Use Impact: -55/100', 'Noise & Vibration: 70/100', 'Biodiversity Protection: +78/100'] },
         ],
     },
     investmentSuitability: {
         title: 'Investment Profile & Risk Assessment',
         sections: [
           { heading: 'Overall Score: 79/100', text: 'Indicates a highly favorable investment climate, supported by strong government backing and robust economic fundamentals.' },
-          { heading: 'Scoring Breakdown', list: ['Political & Regulatory Stability (88/100): Cornerstone of the national 20-Year Strategic Plan.', 'Market Demand (82/100): Demand studies show utilization rates exceeding 90% within 5 years.', 'Financial Viability (75/100): Strong ROI and a clear Public-Private Partnership (PPP) framework.', 'Risk Mitigation (71/100): Risks are mitigated through fixed-price contracts and government guarantees.'] },
+          { heading: 'Scoring Breakdown', list: ['Political & Regulatory Stability: 88/100', 'Market Demand: 82/100', 'Financial Viability: 75/100', 'Risk Mitigation: 71/100'] },
         ],
     },
     jobsCreated: {
         title: 'Employment Generation Details',
         sections: [
           { heading: 'Total Jobs: 12,200', text: 'This project will create a significant number of both temporary and permanent jobs across various sectors.' },
-          { heading: 'Job Breakdown', list: ['Construction (4,500 jobs): Primarily 3-5 year contracts for engineers, surveyors, and laborers.', 'Services (3,200 jobs): Permanent roles in station management, retail, and tourism.', 'Logistics (2,700 jobs): Permanent roles for drivers, handlers, and technicians.', 'Manufacturing (1,800 jobs): Indirect, permanent jobs created in related industries.'] },
+          { heading: 'Job Breakdown', list: ['Construction: 4,500 jobs', 'Services: 3,200 jobs', 'Logistics: 2,700 jobs', 'Manufacturing: 1,800 jobs'] },
         ],
     },
     regionalDistribution: {
         title: 'Allocation of Resources & Benefits',
         sections: [
             { heading: 'Objective', text: 'To ensure equitable growth and connect economic hubs with developing areas.' },
-            { heading: 'Benefit Distribution', list: ['South (40%): Focused on connecting U-Tapao airport and tourist hubs.', 'East (30%): Core of the project, linking deep-sea ports with industrial estates.', 'North (15%): Linking to Bangkok and future extensions.', 'West (15%): Improves connectivity to Bangkok\'s western suburbs.'] },
+            { heading: 'Benefit Distribution', list: ['South: 40%', 'East: 30%', 'North: 15%', 'West: 15%'] },
         ],
     },
     financing: {
@@ -159,7 +159,7 @@ const popoverDetailData = {
         title: 'Community & Social Development',
         sections: [
           { heading: 'Objective', text: 'To improve quality of life and reduce inequality across the Eastern Economic Corridor.' },
-          { heading: 'Impact Metrics', list: ['Household Income (+3.2%): Due to new job opportunities and lower commuting costs.', 'Poverty Reduction (+1.5%): Expected to lift ~50,000 people out of poverty.', 'Regional Disparity (Decreasing): Gini coefficient projected to decrease by 0.05 points.'] },
+          { heading: 'Impact Metrics', list: ['Household Income: +3.2%', 'Poverty Reduction: +1.5%', 'Regional Disparity: Decreasing'] },
         ],
     },
     predictive: {
@@ -395,52 +395,76 @@ const sectionIcons: { [key: string]: React.ElementType } = {
     'Impact Metrics': TrendingUp,
 };
 
-const PopoverContentDisplay = ({ popoverData }: { popoverData: any }) => {
+const DraggablePanel = ({
+    popoverData,
+    onClose,
+    initialPosition,
+  }: {
+    popoverData: any;
+    onClose: () => void;
+    initialPosition: { x: number; y: number };
+  }) => {
     if (!popoverData) return null;
   
+    const nodeRef = React.useRef(null);
+  
     return (
-        <PopoverContent 
-            side="left" 
-            align="start" 
-            className="w-[280px] glass-panel text-foreground p-0 border-primary/20"
-            collisionPadding={16}
+      <Draggable nodeRef={nodeRef} handle=".drag-handle" defaultPosition={initialPosition} bounds="body">
+        <div
+          ref={nodeRef}
+          className="fixed z-50"
         >
-            <div className="p-4">
-              <h3 className="font-semibold text-sm text-primary mb-2">{popoverData.title}</h3>
-              <Separator className="mb-4 bg-border/50"/>
+          <div className="w-[320px] glass-panel text-foreground p-0 border border-primary/20 rounded-lg shadow-2xl flex flex-col">
+            <div className="drag-handle p-4 cursor-move bg-card/50 rounded-t-lg">
+              <div className="flex justify-between items-center">
+                <h3 className="font-semibold text-sm text-primary">{popoverData.title}</h3>
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onClose}>
+                  <XIcon className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
+            <Separator className="bg-border/50" />
             <ScrollArea className="h-[320px]">
-              <div className="px-4 pt-0 pb-4 space-y-4">
+              <div className="px-4 py-4 space-y-4">
                 {popoverData.sections?.map((section: any, index: number) => {
                   const Icon = sectionIcons[section.heading] || CheckCircle2;
                   return (
-                  <div key={index}>
-                    <div className="flex items-center gap-2 mb-2">
+                    <div key={index}>
+                      <div className="flex items-center gap-2 mb-2">
                         <Icon className="h-4 w-4 text-primary" />
                         <h4 className="font-semibold text-foreground text-sm">{section.heading}</h4>
-                    </div>
-                    {section.text && <p className="text-xs text-muted-foreground ml-6">{section.text}</p>}
-                    {section.list && (
-                      <div className="ml-6 space-y-1.5">
-                        {section.list.map((item: string, itemIndex: number) => {
-                           const parts = item.split(':');
-                           const hasColon = parts.length > 1;
-                           return (
-                            <div key={itemIndex} className="flex justify-between items-start text-xs gap-2">
-                              <span className="text-muted-foreground">{hasColon ? parts[0] : item}</span>
-                              {hasColon && <span className="font-medium text-foreground text-right shrink-0">{parts.slice(1).join(':').trim()}</span>}
-                            </div>
-                           )
-                        })}
                       </div>
-                    )}
-                  </div>
-                )})}
+                      {section.text && <p className="text-xs text-muted-foreground ml-6">{section.text}</p>}
+                      {section.list && (
+                        <div className="ml-6 space-y-1.5">
+                          {section.list.map((item: string, itemIndex: number) => {
+                            const parts = item.split(':');
+                            const hasColon = parts.length > 1;
+                            return (
+                              <div key={itemIndex} className="flex items-baseline text-xs gap-2">
+                                {hasColon ? (
+                                  <>
+                                    <p className="text-muted-foreground">{parts[0]}:</p>
+                                    <p className="flex-1 text-right font-medium text-foreground">{parts.slice(1).join(':').trim()}</p>
+                                  </>
+                                ) : (
+                                  <p className="text-muted-foreground">{item}</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </ScrollArea>
-        </PopoverContent>
+          </div>
+        </div>
+      </Draggable>
     );
-};
+  };
   
 
 interface NliRightSidebarProps {
@@ -469,6 +493,36 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     if (isComparing || selectedRegion) return null; // Details not shown for comparison/region view yet
     return activeProject === 'project1' ? popoverDetailData.project1 : popoverDetailData.project2;
   }, [isComparing, selectedRegion, activeProject]);
+  
+  const [activePopover, setActivePopover] = useState<{
+    key: string;
+    position: { x: number; y: number };
+  } | null>(null);
+
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  const handleCardClick = (key: string) => {
+    const cardEl = cardRefs.current[key];
+    if (!cardEl) return;
+
+    if (activePopover?.key === key) {
+      setActivePopover(null);
+      return;
+    }
+
+    const cardRect = cardEl.getBoundingClientRect();
+    const x = cardRect.left - 320 - 16;
+    const y = Math.max(16, cardRect.top); // Ensure it doesn't render off-screen at the top
+
+    setActivePopover({ key, position: { x, y } });
+  };
+
+  const popoverDataForKey = useMemo(() => {
+    if (!activePopover || !detailData) return null;
+    return detailData[activePopover.key as keyof typeof detailData] || null;
+  }, [activePopover, detailData]);
+
 
   const t = translations[language as keyof typeof translations] || translations.en;
   
@@ -508,9 +562,22 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
 
   const showAllParams = !isComparing || !activeParameters || activeParameters.length === 0;
   const shouldShow = (param: string) => showAllParams || activeParameters.includes(param);
+  
+  const CardWrapper = ({ popoverKey, children }: { popoverKey: string, children: React.ReactNode }) => (
+    <div ref={(el) => (cardRefs.current[popoverKey] = el)}>
+      <Card
+        className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50"
+        onClick={() => handleCardClick(popoverKey)}
+      >
+        {children}
+      </Card>
+    </div>
+  );
 
   return (
+    <>
     <aside
+      ref={sidebarRef}
       style={style}
       className={cn(
         'p-2 flex flex-col glass-panel !rounded-lg z-10 shrink-0'
@@ -526,421 +593,376 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
           <div className="space-y-3 px-1">
             <div className="grid grid-cols-2 gap-2">
               {shouldShow('Economic Impact') && (
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
-                            <CardHeader className="p-2 pb-1">
-                                <CardTitle className="text-xs font-medium text-muted-foreground">{t.economicImpact}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-2 pt-0">
-                                <div className="text-lg font-bold text-foreground">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
-                                <div className="text-xs text-green-400">{t.gdpForecast}</div>
-                                <SmallSparkline 
-                                data={data.gdpData} 
-                                dataKey={isComparing ? 'p1' : 'v'} 
-                                dataKey2={isComparing ? 'p2' : undefined}
-                                strokeColor="hsl(var(--chart-1))"
-                                strokeColor2={isComparing ? "hsl(var(--chart-2))" : undefined}
-                                />
-                            </CardContent>
-                        </Card>
-                    </PopoverTrigger>
-                    <PopoverContentDisplay popoverData={detailData?.economicImpact} />
-                </Popover>
+                <CardWrapper popoverKey='economicImpact'>
+                    <CardHeader className="p-2 pb-1">
+                        <CardTitle className="text-xs font-medium text-muted-foreground">{t.economicImpact}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 pt-0">
+                        <div className="text-lg font-bold text-foreground">{isComparing ? renderComparisonValue(data.economicImpact) : `+${data.economicImpact}%`}</div>
+                        <div className="text-xs text-green-400">{t.gdpForecast}</div>
+                        <SmallSparkline 
+                        data={data.gdpData} 
+                        dataKey={isComparing ? 'p1' : 'v'} 
+                        dataKey2={isComparing ? 'p2' : undefined}
+                        strokeColor="hsl(var(--chart-1))"
+                        strokeColor2={isComparing ? "hsl(var(--chart-2))" : undefined}
+                        />
+                    </CardContent>
+                </CardWrapper>
               )}
               {shouldShow('Logistic Flow') && (
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
-                            <CardHeader className="p-2 pb-1">
-                                <CardTitle className="text-xs font-medium text-muted-foreground">{t.logisticFlow}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-2 pt-0">
-                                <div className="text-lg font-bold text-foreground">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
-                                <div className="text-xs text-green-400">{t.freightVolume}</div>
-                                <SmallSparkline 
-                                data={data.freightData} 
-                                dataKey={isComparing ? 'p1' : 'v'} 
-                                dataKey2={isComparing ? 'p2' : undefined}
-                                strokeColor="hsl(var(--chart-4))"
-                                strokeColor2={isComparing ? "hsl(var(--chart-5))" : undefined}
-                                />
-                            </CardContent>
-                        </Card>
-                    </PopoverTrigger>
-                    <PopoverContentDisplay popoverData={detailData?.logisticFlow} />
-                </Popover>
+                <CardWrapper popoverKey='logisticFlow'>
+                    <CardHeader className="p-2 pb-1">
+                        <CardTitle className="text-xs font-medium text-muted-foreground">{t.logisticFlow}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 pt-0">
+                        <div className="text-lg font-bold text-foreground">{isComparing ? renderComparisonValue(data.logisticFlow) : `+${data.logisticFlow}%`}</div>
+                        <div className="text-xs text-green-400">{t.freightVolume}</div>
+                        <SmallSparkline 
+                        data={data.freightData} 
+                        dataKey={isComparing ? 'p1' : 'v'} 
+                        dataKey2={isComparing ? 'p2' : undefined}
+                        strokeColor="hsl(var(--chart-4))"
+                        strokeColor2={isComparing ? "hsl(var(--chart-5))" : undefined}
+                        />
+                    </CardContent>
+                </CardWrapper>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                 {shouldShow('Environmental Score') && (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
+                  <CardWrapper popoverKey='environmentalScore'>
+                      <CardHeader className="p-2 pb-1">
+                          <CardTitle className="text-xs font-medium text-muted-foreground">{t.envScore}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-2 pt-0">
+                          {isComparing ? (
+                              <div className="flex flex-col gap-1.5 mt-1">
+                                  <div className="flex items-center gap-2">
+                                      <span className="text-xs text-chart-1 font-medium w-12">{t.project1}</span>
+                                      <Progress value={data.environmentalScore.p1} className="h-2 [&>div]:bg-chart-1" />
+                                      <span className="text-xs font-bold w-8 text-right">{data.environmentalScore.p1}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                      <span className="text-xs text-chart-2 font-medium w-12">{t.project2}</span>
+                                      <Progress value={data.environmentalScore.p2} className="h-2 [&>div]:bg-chart-2" />
+                                      <span className="text-xs font-bold w-8 text-right">{data.environmentalScore.p2}</span>
+                                  </div>
+                              </div>
+                          ) : (
+                              <>
+                                  <span className="font-bold text-lg text-chart-3">{data.environmentalScore}</span>
+                                  <Progress value={data.environmentalScore} className="h-1.5 [&>div]:bg-chart-3 mt-2" />
+                              </>
+                          )}
+                      </CardContent>
+                  </CardWrapper>
+                )}
+                {shouldShow('Investment Suitability') && (
+                    <CardWrapper popoverKey='investmentSuitability'>
                         <CardHeader className="p-2 pb-1">
-                            <CardTitle className="text-xs font-medium text-muted-foreground">{t.envScore}</CardTitle>
+                            <CardTitle className="text-xs font-medium text-muted-foreground">{t.investSuitability}</CardTitle>
                         </CardHeader>
                         <CardContent className="p-2 pt-0">
                             {isComparing ? (
                                 <div className="flex flex-col gap-1.5 mt-1">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs text-chart-1 font-medium w-12">{t.project1}</span>
-                                        <Progress value={data.environmentalScore.p1} className="h-2 [&>div]:bg-chart-1" />
-                                        <span className="text-xs font-bold w-8 text-right">{data.environmentalScore.p1}</span>
+                                        <span className="text-xs text-chart-4 font-medium w-12">{t.project1}</span>
+                                        <Progress value={data.investmentSuitability.p1} className="h-2 [&>div]:bg-chart-4" />
+                                        <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p1}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs text-chart-2 font-medium w-12">{t.project2}</span>
-                                        <Progress value={data.environmentalScore.p2} className="h-2 [&>div]:bg-chart-2" />
-                                        <span className="text-xs font-bold w-8 text-right">{data.environmentalScore.p2}</span>
+                                        <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-2" />
+                                        <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p2}</span>
                                     </div>
                                 </div>
                             ) : (
                                 <>
-                                    <span className="font-bold text-lg text-chart-3">{data.environmentalScore}</span>
-                                    <Progress value={data.environmentalScore} className="h-1.5 [&>div]:bg-chart-3 mt-2" />
+                                    <span className="font-bold text-lg text-chart-4">{data.investmentSuitability}</span>
+                                    <Progress value={data.investmentSuitability} className="h-1.5 [&>div]:bg-chart-4 mt-2" />
                                 </>
                             )}
                         </CardContent>
-                      </Card>
-                    </PopoverTrigger>
-                    <PopoverContentDisplay popoverData={detailData?.environmentalScore} />
-                  </Popover>
-                )}
-                {shouldShow('Investment Suitability') && (
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
-                                <CardHeader className="p-2 pb-1">
-                                    <CardTitle className="text-xs font-medium text-muted-foreground">{t.investSuitability}</CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-2 pt-0">
-                                    {isComparing ? (
-                                        <div className="flex flex-col gap-1.5 mt-1">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-chart-4 font-medium w-12">{t.project1}</span>
-                                                <Progress value={data.investmentSuitability.p1} className="h-2 [&>div]:bg-chart-4" />
-                                                <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p1}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-chart-2 font-medium w-12">{t.project2}</span>
-                                                <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-2" />
-                                                <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p2}</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <span className="font-bold text-lg text-chart-4">{data.investmentSuitability}</span>
-                                            <Progress value={data.investmentSuitability} className="h-1.5 [&>div]:bg-chart-4 mt-2" />
-                                        </>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </PopoverTrigger>
-                        <PopoverContentDisplay popoverData={detailData?.investmentSuitability} />
-                    </Popover>
+                    </CardWrapper>
                 )}
             </div>
             
             {shouldShow('Jobs Created') && (
-              <Popover>
-                <PopoverTrigger asChild>
-                    <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
-                        <CardHeader className="p-2 pb-0">
-                        <CardTitle className="text-sm font-medium text-foreground">{t.jobsCreated}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2 pt-0 h-[190px]">
-                        <ChartContainer config={barChartConfig} className="w-full h-full">
-                            {isComparing ? (
-                            <LineChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: 0 }}>
-                                <XAxis dataKey={nameKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={10} />
-                                <YAxis tickLine={false} axisLine={false} fontSize={10} />
-                                <ChartTooltip cursor={{ fill: 'hsla(var(--background), 0.5)' }} content={<ChartTooltipContent indicator="dot" />} />
-                                <ChartLegend verticalAlign="top" height={30} />
-                                <Line type="monotone" dataKey="p1" name={t.project1} stroke="var(--color-p1)" strokeWidth={2} dot={false} />
-                                <Line type="monotone" dataKey="p2" name={t.project2} stroke="var(--color-p2)" strokeWidth={2} dot={false} />
-                            </LineChart>
-                            ) : (
-                            <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: 0 }} barGap={4}>
-                                <XAxis
+              <CardWrapper popoverKey='jobsCreated'>
+                    <CardHeader className="p-2 pb-0">
+                    <CardTitle className="text-sm font-medium text-foreground">{t.jobsCreated}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 pt-0 h-[190px]">
+                    <ChartContainer config={barChartConfig} className="w-full h-full">
+                        {isComparing ? (
+                        <LineChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: 0 }}>
+                            <XAxis dataKey={nameKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={10} />
+                            <YAxis tickLine={false} axisLine={false} fontSize={10} />
+                            <ChartTooltip cursor={{ fill: 'hsla(var(--background), 0.5)' }} content={<ChartTooltipContent indicator="dot" />} />
+                            <ChartLegend verticalAlign="top" height={30} />
+                            <Line type="monotone" dataKey="p1" name={t.project1} stroke="var(--color-p1)" strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="p2" name={t.project2} stroke="var(--color-p2)" strokeWidth={2} dot={false} />
+                        </LineChart>
+                        ) : (
+                        <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: 0 }} barGap={4}>
+                            <XAxis
+                            dataKey={nameKey}
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            fontSize={10}
+                            />
+                            <YAxis tickLine={false} axisLine={false} fontSize={10} />
+                            <ChartTooltip
+                            cursor={{ fill: 'hsla(var(--background), 0.5)' }}
+                            content={<ChartTooltipContent indicator="dot" />}
+                            />
+                            <Bar dataKey="value" fill="var(--color-value)" radius={4} barSize={12}>
+                            <LabelList dataKey="value" position="top" className="fill-foreground" fontSize={10}/>
+                            </Bar>
+                        </BarChart>
+                        )}
+                    </ChartContainer>
+                    </CardContent>
+              </CardWrapper>
+            )}
+            
+            {shouldShow('Regional Distribution') && (
+              <CardWrapper popoverKey='regionalDistribution'>
+                    <CardHeader className='p-2'>
+                    <CardTitle className="text-foreground text-sm">{t.regionalDist}</CardTitle>
+                    </CardHeader>
+                    <CardContent className='p-2 pt-0 h-[180px]'>
+                    <ChartContainer config={barChartConfig} className="w-full h-full">
+                        {isComparing ? (
+                        <LineChart accessibilityLayer data={data.regionalData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+                            <XAxis dataKey={nameKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={10} />
+                            <YAxis tickLine={false} axisLine={false} fontSize={10} domain={[0, 'dataMax + 100']} />
+                            <ChartTooltip cursor={{ fill: 'hsla(var(--background), 0.5)' }} content={<ChartTooltipContent indicator="dot" />} />
+                            <ChartLegend verticalAlign="top" height={30} />
+                            <Line type="monotone" dataKey="p1" name={t.project1} stroke="var(--color-p1)" strokeWidth={2} dot={false} />
+                            <Line type="monotone" dataKey="p2" name={t.project2} stroke="var(--color-p2)" strokeWidth={2} dot={false} />
+                        </LineChart>
+                        ) : (
+                        <BarChart
+                            accessibilityLayer
+                            data={data.regionalData}
+                            margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
+                        >
+                            <XAxis
                                 dataKey={nameKey}
                                 tickLine={false}
                                 axisLine={false}
                                 tickMargin={8}
                                 fontSize={10}
-                                />
-                                <YAxis tickLine={false} axisLine={false} fontSize={10} />
-                                <ChartTooltip
+                            />
+                            <YAxis
+                                tickLine={false}
+                                axisLine={false}
+                                fontSize={10}
+                                domain={[0, 'dataMax + 100']}
+                            />
+                            <ChartTooltip
                                 cursor={{ fill: 'hsla(var(--background), 0.5)' }}
                                 content={<ChartTooltipContent indicator="dot" />}
-                                />
-                                <Bar dataKey="value" fill="var(--color-value)" radius={4} barSize={12}>
-                                <LabelList dataKey="value" position="top" className="fill-foreground" fontSize={10}/>
-                                </Bar>
-                            </BarChart>
-                            )}
-                        </ChartContainer>
-                        </CardContent>
-                    </Card>
-                </PopoverTrigger>
-                <PopoverContentDisplay popoverData={detailData?.jobsCreated} />
-              </Popover>
-            )}
-            
-            {shouldShow('Regional Distribution') && (
-              <Popover>
-                <PopoverTrigger asChild>
-                    <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
-                        <CardHeader className='p-2'>
-                        <CardTitle className="text-foreground text-sm">{t.regionalDist}</CardTitle>
-                        </CardHeader>
-                        <CardContent className='p-2 pt-0 h-[180px]'>
-                        <ChartContainer config={barChartConfig} className="w-full h-full">
-                            {isComparing ? (
-                            <LineChart accessibilityLayer data={data.regionalData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                                <XAxis dataKey={nameKey} tickLine={false} axisLine={false} tickMargin={8} fontSize={10} />
-                                <YAxis tickLine={false} axisLine={false} fontSize={10} domain={[0, 'dataMax + 100']} />
-                                <ChartTooltip cursor={{ fill: 'hsla(var(--background), 0.5)' }} content={<ChartTooltipContent indicator="dot" />} />
-                                <ChartLegend verticalAlign="top" height={30} />
-                                <Line type="monotone" dataKey="p1" name={t.project1} stroke="var(--color-p1)" strokeWidth={2} dot={false} />
-                                <Line type="monotone" dataKey="p2" name={t.project2} stroke="var(--color-p2)" strokeWidth={2} dot={false} />
-                            </LineChart>
-                            ) : (
-                            <BarChart
-                                accessibilityLayer
-                                data={data.regionalData}
-                                margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
+                            />
+                            <Bar
+                                dataKey="value"
+                                radius={4}
+                                barSize={30}
                             >
-                                <XAxis
-                                    dataKey={nameKey}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={8}
-                                    fontSize={10}
-                                />
-                                <YAxis
-                                    tickLine={false}
-                                    axisLine={false}
-                                    fontSize={10}
-                                    domain={[0, 'dataMax + 100']}
-                                />
-                                <ChartTooltip
-                                    cursor={{ fill: 'hsla(var(--background), 0.5)' }}
-                                    content={<ChartTooltipContent indicator="dot" />}
-                                />
-                                <Bar
-                                    dataKey="value"
-                                    radius={4}
-                                    barSize={30}
-                                >
-                                    {data.regionalData.map((entry: any) => (
-                                        <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                            )}
-                        </ChartContainer>
-                        </CardContent>
-                    </Card>
-                </PopoverTrigger>
-                <PopoverContentDisplay popoverData={detailData?.regionalDistribution} />
-              </Popover>
+                                {data.regionalData.map((entry: any) => (
+                                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                        )}
+                    </ChartContainer>
+                    </CardContent>
+              </CardWrapper>
             )}
 
             {shouldShow('Financing & Costs') && (
-              <Popover>
-                <PopoverTrigger asChild>
-                    <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
-                        <CardHeader className="p-2 flex flex-row items-center gap-2">
-                            <PiggyBank className="h-5 w-5 text-primary"/>
-                            <CardTitle className="text-foreground text-sm">{t.financingCosts}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2 pt-0 space-y-4">
-                            {isComparing ? (
-                                <div className="space-y-3">
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-1">{t.totalCost}</p>
-                                        <ChartContainer config={barChartConfig} className="h-[50px] w-full">
-                                            <BarChart layout="vertical" data={[{name: 'Cost', p1: data.funding.totalCost.p1, p2: data.funding.totalCost.p2}]} margin={{left: 0, right: 30, top: 0, bottom: 0}} barGap={4}>
-                                                <YAxis dataKey="name" type="category" tick={false} axisLine={false} width={0}/>
-                                                <XAxis type="number" hide />
-                                                <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
-                                                <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={12}>
-                                                    <LabelList dataKey="p1" position="right" offset={4} className="fill-foreground" fontSize={10}/>
-                                                </Bar>
-                                                <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={12}>
-                                                    <LabelList dataKey="p2" position="right" offset={4} className="fill-foreground" fontSize={10}/>
-                                                </Bar>
-                                            </BarChart>
-                                        </ChartContainer>
+              <CardWrapper popoverKey='financing'>
+                    <CardHeader className="p-2 flex flex-row items-center gap-2">
+                        <PiggyBank className="h-5 w-5 text-primary"/>
+                        <CardTitle className="text-foreground text-sm">{t.financingCosts}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 pt-0 space-y-4">
+                        {isComparing ? (
+                            <div className="space-y-3">
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">{t.totalCost}</p>
+                                    <ChartContainer config={barChartConfig} className="h-[50px] w-full">
+                                        <BarChart layout="vertical" data={[{name: 'Cost', p1: data.funding.totalCost.p1, p2: data.funding.totalCost.p2}]} margin={{left: 0, right: 30, top: 0, bottom: 0}} barGap={4}>
+                                            <YAxis dataKey="name" type="category" tick={false} axisLine={false} width={0}/>
+                                            <XAxis type="number" hide />
+                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
+                                            <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={12}>
+                                                <LabelList dataKey="p1" position="right" offset={4} className="fill-foreground" fontSize={10}/>
+                                            </Bar>
+                                            <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={12}>
+                                                <LabelList dataKey="p2" position="right" offset={4} className="fill-foreground" fontSize={10}/>
+                                            </Bar>
+                                        </BarChart>
+                                    </ChartContainer>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">{t.roi}</p>
+                                    <ChartContainer config={barChartConfig} className="h-[50px] w-full">
+                                        <BarChart layout="vertical" data={[{name: 'ROI', p1: data.funding.roi.p1, p2: data.funding.roi.p2}]} margin={{left: 0, right: 30, top: 0, bottom: 0}} barGap={4}>
+                                            <YAxis dataKey="name" type="category" tick={false} axisLine={false} width={0}/>
+                                            <XAxis type="number" hide />
+                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
+                                            <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={12}>
+                                                <LabelList dataKey="p1" position="right" offset={4} className="fill-foreground" fontSize={10} formatter={(v: number) => `${v}%`}/>
+                                            </Bar>
+                                            <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={12}>
+                                                <LabelList dataKey="p2" position="right" offset={4} className="fill-foreground" fontSize={10} formatter={(v: number) => `${v}%`}/>
+                                            </Bar>
+                                        </BarChart>
+                                    </ChartContainer>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-medium text-muted-foreground mb-1">{t.paybackPeriod}</p>
+                                    <ChartContainer config={barChartConfig} className="h-[50px] w-full">
+                                        <BarChart layout="vertical" data={[{name: 'Payback', p1: data.funding.paybackPeriod.p1, p2: data.funding.paybackPeriod.p2}]} margin={{left: 0, right: 30, top: 0, bottom: 0}} barGap={4}>
+                                            <YAxis dataKey="name" type="category" tick={false} axisLine={false} width={0}/>
+                                            <XAxis type="number" hide />
+                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
+                                            <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={12}>
+                                                <LabelList dataKey="p1" position="right" offset={4} className="fill-foreground" fontSize={10} formatter={(v: number) => `${v}y`}/>
+                                            </Bar>
+                                            <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={12}>
+                                                <LabelList dataKey="p2" position="right" offset={4} className="fill-foreground" fontSize={10} formatter={(v: number) => `${v}y`}/>
+                                            </Bar>
+                                        </BarChart>
+                                    </ChartContainer>
+                                </div>
+                                <div className="text-xs font-medium text-muted-foreground">
+                                    <p className="mb-1">{t.fundingSources}</p>
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-muted-foreground">{language === 'th' ? 'ภาครัฐ / เอกชน' : 'Gov / Private'}</span>
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-1">{t.roi}</p>
-                                        <ChartContainer config={barChartConfig} className="h-[50px] w-full">
-                                            <BarChart layout="vertical" data={[{name: 'ROI', p1: data.funding.roi.p1, p2: data.funding.roi.p2}]} margin={{left: 0, right: 30, top: 0, bottom: 0}} barGap={4}>
-                                                <YAxis dataKey="name" type="category" tick={false} axisLine={false} width={0}/>
-                                                <XAxis type="number" hide />
-                                                <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
-                                                <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={12}>
-                                                    <LabelList dataKey="p1" position="right" offset={4} className="fill-foreground" fontSize={10} formatter={(v: number) => `${v}%`}/>
-                                                </Bar>
-                                                <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={12}>
-                                                    <LabelList dataKey="p2" position="right" offset={4} className="fill-foreground" fontSize={10} formatter={(v: number) => `${v}%`}/>
-                                                </Bar>
-                                            </BarChart>
-                                        </ChartContainer>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-1">{t.paybackPeriod}</p>
-                                        <ChartContainer config={barChartConfig} className="h-[50px] w-full">
-                                            <BarChart layout="vertical" data={[{name: 'Payback', p1: data.funding.paybackPeriod.p1, p2: data.funding.paybackPeriod.p2}]} margin={{left: 0, right: 30, top: 0, bottom: 0}} barGap={4}>
-                                                <YAxis dataKey="name" type="category" tick={false} axisLine={false} width={0}/>
-                                                <XAxis type="number" hide />
-                                                <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
-                                                <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={12}>
-                                                    <LabelList dataKey="p1" position="right" offset={4} className="fill-foreground" fontSize={10} formatter={(v: number) => `${v}y`}/>
-                                                </Bar>
-                                                <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={12}>
-                                                    <LabelList dataKey="p2" position="right" offset={4} className="fill-foreground" fontSize={10} formatter={(v: number) => `${v}y`}/>
-                                                </Bar>
-                                            </BarChart>
-                                        </ChartContainer>
-                                    </div>
-                                    <div className="text-xs font-medium text-muted-foreground">
-                                        <p className="mb-1">{t.fundingSources}</p>
-                                        <div className="flex justify-between items-center text-xs">
-                                            <span className="text-muted-foreground">{language === 'th' ? 'ภาครัฐ / เอกชน' : 'Gov / Private'}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-mono text-chart-1">{data.funding.sources.p1.gov}% / {data.funding.sources.p1.priv}%</span>
-                                            <span className="text-muted-foreground text-xs">vs</span>
-                                            <span className="font-mono text-chart-2">{data.funding.sources.p2.gov}% / {data.funding.sources.p2.priv}%</span>
-                                        </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-mono text-chart-1">{data.funding.sources.p1.gov}% / {data.funding.sources.p1.priv}%</span>
+                                        <span className="text-muted-foreground text-xs">vs</span>
+                                        <span className="font-mono text-chart-2">{data.funding.sources.p2.gov}% / {data.funding.sources.p2.priv}%</span>
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    <div className="grid grid-cols-3 gap-2 text-center">
-                                        <div>
-                                            <p className="text-xs text-muted-foreground">{t.totalCost}</p>
-                                            <p className="font-bold">{data.funding.totalCost}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-muted-foreground">{t.roi}</p>
-                                            <p className="font-bold">{data.funding.roi}%</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-muted-foreground">{t.paybackPeriod}</p>
-                                            <p className="font-bold">{data.funding.paybackPeriod}</p>
-                                        </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">{t.totalCost}</p>
+                                        <p className="font-bold">{data.funding.totalCost}</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-center text-muted-foreground mb-1">{t.fundingSources}</p>
-                                        <ChartContainer config={{}} className="h-[80px] w-full">
-                                            <BarChart layout="vertical" data={data.funding.sources} margin={{left: language === 'th' ? 30 : 20}}>
-                                                <XAxis type="number" hide domain={[0, 100]} />
-                                                <YAxis dataKey={nameKey} type="category" tickLine={false} axisLine={false} fontSize={10} width={language === 'en' ? 70 : 60}/>
-                                                <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
-                                                <Bar dataKey="value" radius={4} barSize={10}>
-                                                    {data.funding.sources.map((s:any) => <Cell key={s.name} fill={s.fill}/>)}
-                                                    <LabelList dataKey="value" position="right" formatter={(v:any) => `${v}%`} fontSize={10} className="fill-foreground"/>
-                                                </Bar>
-                                            </BarChart>
-                                        </ChartContainer>
+                                        <p className="text-xs text-muted-foreground">{t.roi}</p>
+                                        <p className="font-bold">{data.funding.roi}%</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">{t.paybackPeriod}</p>
+                                        <p className="font-bold">{data.funding.paybackPeriod}</p>
                                     </div>
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </PopoverTrigger>
-                <PopoverContentDisplay popoverData={detailData?.financing} />
-              </Popover>
+                                <div>
+                                    <p className="text-xs text-center text-muted-foreground mb-1">{t.fundingSources}</p>
+                                    <ChartContainer config={{}} className="h-[80px] w-full">
+                                        <BarChart layout="vertical" data={data.funding.sources} margin={{left: language === 'th' ? 30 : 20}}>
+                                            <XAxis type="number" hide domain={[0, 100]} />
+                                            <YAxis dataKey={nameKey} type="category" tickLine={false} axisLine={false} fontSize={10} width={language === 'en' ? 70 : 60}/>
+                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator hideLabel />} />
+                                            <Bar dataKey="value" radius={4} barSize={10}>
+                                                {data.funding.sources.map((s:any) => <Cell key={s.name} fill={s.fill}/>)}
+                                                <LabelList dataKey="value" position="right" formatter={(v:any) => `${v}%`} fontSize={10} className="fill-foreground"/>
+                                            </Bar>
+                                        </BarChart>
+                                    </ChartContainer>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+              </CardWrapper>
             )}
 
             {shouldShow('Socio-Economic Impact') && (
-              <Popover>
-                <PopoverTrigger asChild>
-                    <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
-                        <CardHeader className="p-2 flex flex-row items-center gap-2">
-                            <Landmark className="h-5 w-5 text-primary"/>
-                            <CardTitle className="text-foreground text-sm">{t.socioEconomic}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2 pt-0 space-y-2 text-xs">
-                            <div className="grid grid-cols-2 gap-2 text-center">
-                                <div className="flex flex-col items-center">
-                                    <p className="text-xs text-muted-foreground">{t.povertyReduction}</p>
-                                    <div className="font-bold text-green-400 h-5 flex items-center justify-center">{isComparing ? renderComparisonValue(data.socioEconomic.povertyReduction) : `+${data.socioEconomic.povertyReduction}%`}</div>
-                                </div>
-                                <div className="flex flex-col items-center">
-                                    <p className="text-xs text-muted-foreground">{t.householdIncome}</p>
-                                    <div className="font-bold text-green-400 h-5 flex items-center justify-center">{isComparing ? renderComparisonValue(data.socioEconomic.householdIncome) : `+${data.socioEconomic.householdIncome}%`}</div>
-                                </div>
+              <CardWrapper popoverKey='socioEconomic'>
+                    <CardHeader className="p-2 flex flex-row items-center gap-2">
+                        <Landmark className="h-5 w-5 text-primary"/>
+                        <CardTitle className="text-foreground text-sm">{t.socioEconomic}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 pt-0 space-y-2 text-xs">
+                        <div className="grid grid-cols-2 gap-2 text-center">
+                            <div className="flex flex-col items-center">
+                                <p className="text-xs text-muted-foreground">{t.povertyReduction}</p>
+                                <div className="font-bold text-green-400 h-5 flex items-center justify-center">{isComparing ? renderComparisonValue(data.socioEconomic.povertyReduction) : `+${data.socioEconomic.povertyReduction}%`}</div>
                             </div>
-                            <div>
-                                <div className="text-xs text-center text-muted-foreground">{t.regionalDisparity}</div>
-                                <SmallSparkline 
-                                    data={data.socioEconomic.disparityData} 
-                                    dataKey={isComparing ? 'p1' : 'v'} 
-                                    dataKey2={isComparing ? 'p2' : undefined}
-                                    strokeColor="hsl(var(--chart-3))"
-                                    strokeColor2={isComparing ? "hsl(var(--chart-5))" : undefined}
-                                />
+                            <div className="flex flex-col items-center">
+                                <p className="text-xs text-muted-foreground">{t.householdIncome}</p>
+                                <div className="font-bold text-green-400 h-5 flex items-center justify-center">{isComparing ? renderComparisonValue(data.socioEconomic.householdIncome) : `+${data.socioEconomic.householdIncome}%`}</div>
                             </div>
-                        </CardContent>
-                    </Card>
-                </PopoverTrigger>
-                <PopoverContentDisplay popoverData={detailData?.socioEconomic} />
-              </Popover>
+                        </div>
+                        <div>
+                            <div className="text-xs text-center text-muted-foreground">{t.regionalDisparity}</div>
+                            <SmallSparkline 
+                                data={data.socioEconomic.disparityData} 
+                                dataKey={isComparing ? 'p1' : 'v'} 
+                                dataKey2={isComparing ? 'p2' : undefined}
+                                strokeColor="hsl(var(--chart-3))"
+                                strokeColor2={isComparing ? "hsl(var(--chart-5))" : undefined}
+                            />
+                        </div>
+                    </CardContent>
+              </CardWrapper>
             )}
 
             {shouldShow('Predictive Tools') && (
-              <Popover>
-                <PopoverTrigger asChild>
-                    <Card className="glass-panel border-none cursor-pointer transition-all hover:ring-2 hover:ring-primary/50">
-                        <CardHeader className='p-2'>
-                        <CardTitle className="text-foreground text-sm">{t.predictiveTools}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2 pt-0 space-y-2 text-xs">
-                        <TooltipProvider>
-                            <ShadTooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
-                                        <span className="text-muted-foreground flex items-center gap-2"><TrendingUp className="h-4 w-4" /> {t.landPriceTrend}</span>
-                                        <span className="font-bold text-green-400">{isComparing ? `${data.landPriceTrend.p1}% / ${data.landPriceTrend.p2}%` : `+${data.landPriceTrend}%`}</span>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{t.landPriceTrend}</p>
-                                </TooltipContent>
-                            </ShadTooltip>
-                            <ShadTooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
-                                        <span className="text-muted-foreground flex items-center gap-2"><Building className="h-4 w-4" />{t.businessReg}</span>
-                                        <span className="font-bold text-foreground">{isComparing ? `${data.businessReg.p1} / ${data.businessReg.p2}` : data.businessReg}</span>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{t.businessReg}</p>
-                                </TooltipContent>
-                            </ShadTooltip>
-                            <ShadTooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
-                                        <span className="text-muted-foreground flex items-center gap-2"><Briefcase className="h-4 w-4" />{t.skilledLabor}</span>
-                                        <span className="font-bold text-foreground">{isComparing ? `${data.skilledLabor.p1}k / ${data.skilledLabor.p2}k` : `${data.skilledLabor}k`}</span>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>{t.skilledLabor}</p>
-                                </TooltipContent>
-                            </ShadTooltip>
-                        </TooltipProvider>
-                        </CardContent>
-                    </Card>
-                </PopoverTrigger>
-                <PopoverContentDisplay popoverData={detailData?.predictive} />
-              </Popover>
+              <CardWrapper popoverKey='predictive'>
+                    <CardHeader className='p-2'>
+                    <CardTitle className="text-foreground text-sm">{t.predictiveTools}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-2 pt-0 space-y-2 text-xs">
+                    <TooltipProvider>
+                        <ShadTooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
+                                    <span className="text-muted-foreground flex items-center gap-2"><TrendingUp className="h-4 w-4" /> {t.landPriceTrend}</span>
+                                    <span className="font-bold text-green-400">{isComparing ? `${data.landPriceTrend.p1}% / ${data.landPriceTrend.p2}%` : `+${data.landPriceTrend}%`}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{t.landPriceTrend}</p>
+                            </TooltipContent>
+                        </ShadTooltip>
+                        <ShadTooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
+                                    <span className="text-muted-foreground flex items-center gap-2"><Building className="h-4 w-4" />{t.businessReg}</span>
+                                    <span className="font-bold text-foreground">{isComparing ? `${data.businessReg.p1} / ${data.businessReg.p2}` : data.businessReg}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{t.businessReg}</p>
+                            </TooltipContent>
+                        </ShadTooltip>
+                        <ShadTooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex justify-between items-center cursor-pointer p-1 rounded-md hover:bg-accent">
+                                    <span className="text-muted-foreground flex items-center gap-2"><Briefcase className="h-4 w-4" />{t.skilledLabor}</span>
+                                    <span className="font-bold text-foreground">{isComparing ? `${data.skilledLabor.p1}k / ${data.skilledLabor.p2}k` : `${data.skilledLabor}k`}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{t.skilledLabor}</p>
+                            </TooltipContent>
+                        </ShadTooltip>
+                    </TooltipProvider>
+                    </CardContent>
+              </CardWrapper>
             )}
 
             {isComparing && (
@@ -971,11 +993,13 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
           </div>
         </ScrollArea>
     </aside>
+    {activePopover && popoverDataForKey && (
+        <DraggablePanel
+          popoverData={popoverDataForKey}
+          onClose={() => setActivePopover(null)}
+          initialPosition={activePopover.position}
+        />
+      )}
+    </>
   );
 }
-
-
-    
-    
-
-    
