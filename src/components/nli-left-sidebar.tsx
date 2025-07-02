@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -17,8 +17,11 @@ import {
   Factory, 
   LandPlot,
   LucideIcon,
-  Layers3
+  Layers3,
+  Settings,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { NliLayerSettingsDialog } from './nli-layer-settings-dialog';
 
 interface Layer {
   name: string;
@@ -45,7 +48,8 @@ const translations = {
       'Province': 'Province', 'District': 'District', 'Sub-district': 'Sub-district',
       'Industrial Zones': 'Industrial Zones', 'Special Economic Corridors': 'Special Economic Corridors',
       'Population Density': 'Population Density',
-    }
+    },
+    layerSettings: 'Layer Settings',
   },
   th: {
     dataLayers: 'ชั้นข้อมูล',
@@ -62,7 +66,8 @@ const translations = {
       'Province': 'จังหวัด', 'District': 'อำเภอ', 'Sub-district': 'ตำบล',
       'Industrial Zones': 'เขตอุตสาหกรรม', 'Special Economic Corridors': 'ระเบียงเศรษฐกิจพิเศษ',
       'Population Density': 'ความหนาแน่นของประชากร',
-    }
+    },
+    layerSettings: 'ตั้งค่าชั้นข้อมูล',
   }
 };
 
@@ -101,39 +106,66 @@ interface NliLeftSidebarProps {
 }
 
 export function NliLeftSidebar({ activeLayers, onLayerToggle, language, style }: NliLeftSidebarProps) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
+
   const t = translations[language as keyof typeof translations] || translations.en;
   
+  const openSettings = (layerName: string) => {
+    setSelectedLayer(layerName);
+    setIsSettingsOpen(true);
+  }
+
   return (
-    <aside
-      style={style}
-      className={cn(
-        'p-3 flex flex-col glass-panel !rounded-lg z-10 shrink-0'
-      )}
-    >
-        <h2 className="text-base font-bold text-foreground mb-3 px-1">{t.dataLayers}</h2>
-        <ScrollArea className="flex-1 -mr-3 pr-3">
-          <div className="space-y-4 px-1">
-            {Object.entries(dataLayerConfig).map(([category, layers]) => (
-              <div key={category}>
-                <h3 className="font-semibold text-muted-foreground mb-2 text-sm">{t.categories[category as keyof typeof t.categories]}</h3>
-                <div className="space-y-2">
-                  {layers.map((layer) => (
-                    <div key={layer.name} className="flex items-center justify-between p-1 rounded-md hover:bg-accent">
-                      <div className="flex items-center gap-3">
-                        <layer.icon className="h-4 w-4 text-primary" />
-                        <span className="text-xs text-foreground">{t.layers[layer.name as keyof typeof t.layers]}</span>
+    <>
+      <aside
+        style={style}
+        className={cn(
+          'p-3 flex flex-col glass-panel !rounded-lg z-10 shrink-0'
+        )}
+      >
+          <h2 className="text-base font-bold text-foreground mb-3 px-1">{t.dataLayers}</h2>
+          <ScrollArea className="flex-1 -mr-3 pr-3">
+            <div className="space-y-4 px-1">
+              {Object.entries(dataLayerConfig).map(([category, layers]) => (
+                <div key={category}>
+                  <h3 className="font-semibold text-muted-foreground mb-2 text-sm">{t.categories[category as keyof typeof t.categories]}</h3>
+                  <div className="space-y-2">
+                    {layers.map((layer) => (
+                      <div key={layer.name} className="flex items-center justify-between p-1 rounded-md hover:bg-accent group">
+                        <div className="flex items-center gap-3">
+                          <layer.icon className="h-4 w-4 text-primary" />
+                          <span className="text-xs text-foreground">{t.layers[layer.name as keyof typeof t.layers]}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                            onClick={() => openSettings(layer.name)}
+                            aria-label={t.layerSettings}
+                          >
+                              <Settings className="h-3 w-3" />
+                          </Button>
+                          <Switch 
+                            checked={activeLayers[layer.name]}
+                            onCheckedChange={(checked) => onLayerToggle(layer.name, checked)}
+                          />
+                        </div>
                       </div>
-                      <Switch 
-                        checked={activeLayers[layer.name]}
-                        onCheckedChange={(checked) => onLayerToggle(layer.name, checked)}
-                      />
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-    </aside>
+              ))}
+            </div>
+          </ScrollArea>
+      </aside>
+      <NliLayerSettingsDialog 
+        isOpen={isSettingsOpen}
+        onOpenChange={setIsSettingsOpen}
+        layerName={selectedLayer}
+        language={language}
+      />
+    </>
   );
 }

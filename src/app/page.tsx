@@ -471,7 +471,7 @@ export default function NliPlatformPage() {
         {!isFullscreen && (
           <>
             <NliLeftSidebar
-              style={{ width: `${leftSidebarWidth}px` }}
+              style={{ width: `${leftSidebarWidth}px`, minWidth: '192px', maxWidth: '400px' }}
               activeLayers={activeLayers}
               onLayerToggle={handleLayerToggle}
               language={language}
@@ -523,7 +523,7 @@ export default function NliPlatformPage() {
               onMouseDown={handleMouseDownRight}
             />
             <NliRightSidebar
-              style={{ width: `${rightSidebarWidth}px` }}
+              style={{ width: `${rightSidebarWidth}px`, minWidth: '384px', maxWidth: '700px' }}
               activeProject={activeProject}
               isComparing={isComparing}
               selectedRegion={selectedRegion}
