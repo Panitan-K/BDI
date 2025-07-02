@@ -82,14 +82,7 @@ const comparisonData = {
     totalCost: {p1: 150, p2: 350},
     roi: {p1: 12.5, p2: 9.8},
     paybackPeriod: {p1: 8, p2: 12},
-    sourcesP1: [
-        { name: 'Government', name_th: 'ภาครัฐ', value: 60, fill: 'hsl(var(--chart-1))' },
-        { name: 'Private', name_th: 'เอกชน', value: 40, fill: 'hsl(var(--chart-2))' }
-    ],
-    sourcesP2: [
-        { name: 'Government', name_th: 'ภาครัฐ', value: 45, fill: 'hsl(var(--chart-1))' },
-        { name: 'Private', name_th: 'เอกชน', value: 55, fill: 'hsl(var(--chart-2))' }
-    ]
+    sources: { p1: { gov: 60, priv: 40 }, p2: { gov: 45, priv: 55 } },
   },
   socioEconomic: {
       povertyReduction: {p1: 1.5, p2: 2.1},
@@ -305,7 +298,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     <aside
       className={cn(
         'p-2 flex flex-col glass-panel !rounded-lg transition-all duration-300 ease-in-out z-10 shrink-0',
-        isMaximized ? 'w-[550px]' : 'w-80'
+        isMaximized ? 'w-[550px]' : 'w-96'
       )}
     >
         <div className='flex justify-between items-center mb-2 px-1'>
@@ -319,7 +312,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
         </div>
         <ScrollArea className="flex-1 -mr-2 pr-2">
           <div className="space-y-3 px-1">
-            <div className={cn("grid gap-2", isMaximized || isComparing ? 'grid-cols-2' : 'grid-cols-1')}>
+            <div className="grid grid-cols-2 gap-2">
               {shouldShow('Economic Impact') && (
                 <Card className="glass-panel border-none">
                   <CardHeader className="p-2 pb-1">
@@ -358,7 +351,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               )}
             </div>
 
-            <div className={cn("grid gap-2", isMaximized || isComparing ? 'grid-cols-2' : 'grid-cols-1')}>
+            <div className="grid grid-cols-2 gap-2">
                 {shouldShow('Environmental Score') && (
                   <Card className="glass-panel border-none">
                     <CardHeader className="p-2 pb-1">
@@ -401,8 +394,8 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                                     <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p1}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs text-chart-3 font-medium w-12">{t.project2}</span>
-                                    <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-3" />
+                                    <span className="text-xs text-chart-2 font-medium w-12">{t.project2}</span>
+                                    <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-2" />
                                     <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p2}</span>
                                 </div>
                             </div>
@@ -575,9 +568,9 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                                       <span className="text-muted-foreground">{language === 'th' ? 'ภาครัฐ / เอกชน' : 'Gov / Private'}</span>
                                   </div>
                                   <div className="flex justify-between items-center">
-                                      <span className="font-mono text-chart-1">{data.funding.sourcesP1[0].value}% / {data.funding.sourcesP1[1].value}%</span>
+                                      <span className="font-mono text-chart-1">{data.funding.sources.p1.gov}% / {data.funding.sources.p1.priv}%</span>
                                       <span className="text-muted-foreground text-xs">vs</span>
-                                      <span className="font-mono text-chart-2">{data.funding.sourcesP2[0].value}% / {data.funding.sourcesP2[1].value}%</span>
+                                      <span className="font-mono text-chart-2">{data.funding.sources.p2.gov}% / {data.funding.sources.p2.priv}%</span>
                                   </div>
                               </div>
                           </div>
@@ -723,3 +716,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </aside>
   );
 }
+
+
+    
