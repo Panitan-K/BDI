@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -336,15 +337,15 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                     </ChartContainer>
                  ) : (
                     <div>
-                        <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[220px]">
+                        <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[180px]">
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
                                 <Pie 
                                   data={data.pieData} 
                                   dataKey="value" 
                                   nameKey={nameKey} 
-                                  innerRadius={60} 
-                                  outerRadius={80}
+                                  innerRadius={50} 
+                                  outerRadius={70}
                                   strokeWidth={2}
                                   paddingAngle={3}
                                 >
