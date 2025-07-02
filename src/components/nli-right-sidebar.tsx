@@ -335,7 +335,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                         </BarChart>
                     </ChartContainer>
                  ) : (
-                    <div className="relative">
+                    <div>
                         <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[220px]">
                             <PieChart>
                                 <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
@@ -360,10 +360,6 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                                 />
                             </PieChart>
                         </ChartContainer>
-                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-20px]">
-                            <span className="text-3xl font-bold">{data.investmentSuitability}%</span>
-                            <span className="text-xs text-muted-foreground">{t.completed}</span>
-                        </div>
                     </div>
                  )}
               </CardContent>
