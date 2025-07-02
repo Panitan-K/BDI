@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, Cell, LabelList, Legend, PieChart, Pie, ComposedChart, Line, LineChart } from 'recharts';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { Building, Briefcase, TrendingUp, XIcon, Maximize2, Minimize2, PiggyBank, Landmark } from 'lucide-react';
+import { Building, Briefcase, TrendingUp, XIcon, Maximize2, Minimize2, PiggyBank, Landmark, Bot } from 'lucide-react';
 import {
     Tooltip as ShadTooltip,
     TooltipContent,
@@ -130,6 +130,11 @@ const translations = {
     povertyReduction: 'Poverty Reduction',
     householdIncome: 'Household Income',
     regionalDisparity: 'Regional Disparity',
+    aiRecommendation: 'AI Investment Recommendation',
+    p1analysis: 'shows superior short-term economic impact and job creation. However, its lower environmental score requires careful mitigation planning.',
+    p2analysis: 'offers greater long-term strategic value for logistics and has a better environmental profile, but with a higher initial cost and longer payback period.',
+    recommendation: 'Recommendation:',
+    recommendationDetail: 'For immediate economic stimulus, Project 1 is favorable. For long-term national logistics strategy and sustainability, Project 2 presents a stronger case despite higher upfront investment.'
   },
   th: {
     economicImpact: 'ผลกระทบทางเศรษฐกิจ',
@@ -156,6 +161,11 @@ const translations = {
     povertyReduction: 'การลดความยากจน',
     householdIncome: 'รายได้ครัวเรือน',
     regionalDisparity: 'ความเหลื่อมล้ำในภูมิภาค',
+    aiRecommendation: 'คำแนะนำการลงทุนโดย AI',
+    p1analysis: 'แสดงผลกระทบทางเศรษฐกิจและการสร้างงานในระยะสั้นที่เหนือกว่า อย่างไรก็ตาม คะแนนด้านสิ่งแวดล้อมที่ต่ำกว่าจำเป็นต้องมีการวางแผนลดผลกระทบอย่างรอบคอบ',
+    p2analysis: 'มีคุณค่าเชิงกลยุทธ์ด้านโลจิสติกส์ในระยะยาวที่ดีกว่าและมีโปรไฟล์ด้านสิ่งแวดล้อมที่ดีกว่า แต่มีต้นทุนเริ่มต้นที่สูงกว่าและระยะเวลาคืนทุนนานกว่า',
+    recommendation: 'คำแนะนำ:',
+    recommendationDetail: 'สำหรับการกระตุ้นเศรษฐกิจในทันที โปรเจกต์ 1 มีความน่าสนใจมากกว่า สำหรับกลยุทธ์โลจิสติกส์ของประเทศในระยะยาวและความยั่งยืน โปรเจกต์ 2 เป็นกรณีที่แข็งแกร่งกว่าแม้จะมีการลงทุนเริ่มต้นที่สูงกว่า'
   }
 };
 
@@ -254,9 +264,16 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   const t = translations[language as keyof typeof translations] || translations.en;
   
   const title = React.useMemo(() => {
-    const nameKey = language === 'en' ? 'name' : 'name_th';
-    return data[nameKey as keyof typeof data] || data.name
-  }, [data, language]);
+    if (isComparing) {
+      return language === 'en' ? 'Comparison: P1 vs P2' : 'เปรียบเทียบ: P1 vs P2';
+    }
+    if (selectedRegion && regionalMockData[selectedRegion]) {
+      const regionData = regionalMockData[selectedRegion];
+      return language === 'en' ? regionData.name : regionData.name_th;
+    }
+    const projectData = activeProject === 'project1' ? project1Data : project2Data;
+    return language === 'en' ? projectData.name : projectData.name_th;
+  }, [isComparing, selectedRegion, activeProject, language]);
 
   const nameKey = language === 'en' ? 'name' : 'name_th';
 
@@ -273,6 +290,12 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
         <span className="text-chart-2">{val.p2}{unit}</span>
       </div>
   );
+
+  const recommendationParts = React.useMemo(() => {
+    const recommendationKey = language === 'th' ? 'โปรเจกต์' : 'Project';
+    const regex = new RegExp(`(${recommendationKey} 1|${recommendationKey} 2)`, 'g');
+    return t.recommendationDetail.split(regex);
+  }, [t.recommendationDetail, language]);
 
   return (
     <aside
@@ -590,11 +613,11 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                     <div className="grid grid-cols-2 gap-2 text-center">
                          <div className="flex flex-col items-center">
                             <p className="text-xs text-muted-foreground">{t.povertyReduction}</p>
-                            <div className="font-bold text-green-400 h-5 flex items-center">{isComparing ? renderComparisonValue(data.socioEconomic.povertyReduction) : `+${data.socioEconomic.povertyReduction}%`}</div>
+                            <div className="font-bold text-green-400 h-5 flex items-center justify-center">{isComparing ? renderComparisonValue(data.socioEconomic.povertyReduction) : `+${data.socioEconomic.povertyReduction}%`}</div>
                         </div>
                          <div className="flex flex-col items-center">
                             <p className="text-xs text-muted-foreground">{t.householdIncome}</p>
-                            <div className="font-bold text-green-400 h-5 flex items-center">{isComparing ? renderComparisonValue(data.socioEconomic.householdIncome) : `+${data.socioEconomic.householdIncome}%`}</div>
+                            <div className="font-bold text-green-400 h-5 flex items-center justify-center">{isComparing ? renderComparisonValue(data.socioEconomic.householdIncome) : `+${data.socioEconomic.householdIncome}%`}</div>
                         </div>
                     </div>
                     <div>
@@ -652,6 +675,32 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                 </TooltipProvider>
               </CardContent>
             </Card>
+
+            {isComparing && (
+              <Card className="glass-panel border-none">
+                <CardHeader className="p-2 flex flex-row items-center gap-2">
+                    <Bot className="h-5 w-5 text-primary"/>
+                    <CardTitle className="text-foreground text-sm">{t.aiRecommendation}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-2 pt-0 text-xs text-muted-foreground space-y-2">
+                    <p><strong className="text-foreground">{t.project1}</strong> {t.p1analysis}</p>
+                    <p><strong className="text-foreground">{t.project2}</strong> {t.p2analysis}</p>
+                    <p className="text-foreground pt-1">
+                      <strong>{t.recommendation}</strong>{' '}
+                      {recommendationParts.map((part, index) => {
+                          const recommendationKey = language === 'th' ? 'โปรเจกต์' : 'Project';
+                          if (part === `${recommendationKey} 1`) {
+                              return <strong key={index} className="text-chart-1">{part}</strong>;
+                          }
+                          if (part === `${recommendationKey} 2`) {
+                              return <strong key={index} className="text-chart-2">{part}</strong>;
+                          }
+                          return part;
+                      })}
+                    </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </ScrollArea>
     </aside>

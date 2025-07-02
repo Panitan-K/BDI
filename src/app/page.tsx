@@ -215,8 +215,19 @@ export default function NliPlatformPage() {
     }
   };
 
-  const handleStartComparison = (values: any) => {
-    console.log('Starting comparison with:', values);
+  const handleStartComparison = (values: { projects: string[], layers?: string[] }) => {
+    // Auto-activate selected layers
+    const layerKeys = Object.keys(activeLayers);
+    const newActiveLayers = Object.fromEntries(
+        layerKeys.map(key => [key, values.layers?.includes(key) ?? false])
+    ) as Record<string, boolean>;
+
+    // Special dependency: Population Density requires the Province layer
+    if (newActiveLayers['Population Density']) {
+        newActiveLayers['Province'] = true;
+    }
+    setActiveLayers(newActiveLayers);
+
     // In a real application, you would pass these values to an AI or data processing backend.
     // For this demo, we'll just enable the mock comparison view in the right sidebar.
     setCompareOpen(false);
