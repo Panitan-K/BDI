@@ -245,8 +245,8 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     if (isComparing) {
       return comparisonData;
     }
-    if (selectedRegion) {
-      return regionalMockData[selectedRegion] || project1Data;
+    if (selectedRegion && regionalMockData[selectedRegion]) {
+      return regionalMockData[selectedRegion];
     }
     return activeProject === 'project1' ? project1Data : project2Data;
   }, [isComparing, selectedRegion, activeProject]);
@@ -274,7 +274,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   } satisfies ChartConfig;
 
   const renderComparisonValue = (val: any, unit: string = '%') => (
-      <div className="flex items-baseline gap-2">
+      <div className="flex items-baseline justify-center gap-2">
         <span className="text-chart-1">{val.p1}{unit}</span>
         <span className="text-muted-foreground text-xs">vs</span>
         <span className="text-chart-2">{val.p2}{unit}</span>
@@ -374,8 +374,8 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                                 <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p1}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-chart-5 font-medium w-12">{t.project2}</span>
-                                <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-5" />
+                                <span className="text-xs text-chart-2 font-medium w-12">{t.project2}</span>
+                                <Progress value={data.investmentSuitability.p2} className="h-2 [&>div]:bg-chart-2" />
                                 <span className="text-xs font-bold w-8 text-right">{data.investmentSuitability.p2}</span>
                             </div>
                         </div>
@@ -394,8 +394,8 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                 <CardTitle className="text-sm font-medium text-foreground">{t.jobsCreated}</CardTitle>
               </CardHeader>
               <CardContent className="p-2 pt-0">
-                <ChartContainer config={barChartConfig} className="h-[150px] w-full">
-                  <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: -10 }} barGap={4}>
+                <ChartContainer config={barChartConfig} className="h-[180px] w-full">
+                  <BarChart accessibilityLayer data={data.jobsData} margin={{ left: -20, top: 20, right: 10, bottom: 0 }} barGap={4}>
                     <XAxis
                       dataKey={nameKey}
                       tickLine={false}
@@ -433,11 +433,11 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                 <CardTitle className="text-foreground text-sm">{t.regionalDist}</CardTitle>
               </CardHeader>
               <CardContent className='p-2 pt-0'>
-                 <ChartContainer config={{}} className="h-[100px] w-full">
+                 <ChartContainer config={barChartConfig} className="h-[140px] w-full">
                     <BarChart
                         accessibilityLayer
                         data={data.regionalData}
-                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                        margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
                     >
                         <XAxis
                             dataKey={nameKey}
@@ -458,9 +458,9 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                         />
                         {isComparing ? (
                             <>
-                                <Legend verticalAlign="top" height={30} />
-                                <Bar dataKey="p1" name={t.project1} fill="hsl(var(--chart-1))" radius={4} barSize={isMaximized ? 15 : 12} />
-                                <Bar dataKey="p2" name={t.project2} fill="hsl(var(--chart-2))" radius={4} barSize={isMaximized ? 15 : 12} />
+                                <ChartLegend verticalAlign="top" height={30} />
+                                <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={isMaximized ? 15 : 12} />
+                                <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={isMaximized ? 15 : 12} />
                             </>
                         ) : (
                             <Bar
@@ -479,78 +479,80 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
             </Card>
 
             {isComparing ? (
-              <div className="space-y-3">
-                 <Card className="glass-panel border-none">
+                <Card className="glass-panel border-none">
                     <CardHeader className="p-2 flex flex-row items-center gap-2">
                         <PiggyBank className="h-5 w-5 text-primary"/>
                         <CardTitle className="text-foreground text-sm">{t.financingCosts}</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-2 pt-0 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-center text-muted-foreground">{t.totalCost}</p>
-                        <ChartContainer config={barChartConfig} className="h-[80px] w-full">
-                          <BarChart layout="vertical" data={[{name: 'Cost', p1: data.funding.totalCost.p1, p2: data.funding.totalCost.p2}]} margin={{left: -10}}>
-                             <YAxis dataKey="name" type="category" hide/>
-                             <XAxis type="number" hide />
-                             <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                             <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={15}>
-                                <LabelList dataKey="p1" position="right" className="fill-foreground" fontSize={10}/>
-                             </Bar>
-                             <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={15}>
-                                <LabelList dataKey="p2" position="right" className="fill-foreground" fontSize={10}/>
-                             </Bar>
-                          </BarChart>
-                        </ChartContainer>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-center text-muted-foreground">{t.fundingSources}</p>
-                        <div className="grid grid-cols-2 gap-2">
-                            <ChartContainer config={fundingSourcesChartConfig} className="h-[80px] w-full">
-                                <PieChart>
-                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={data.funding.sourcesP1} dataKey="value" nameKey={nameKey} innerRadius={20}>
-                                        {data.funding.sourcesP1.map((entry:any) => <Cell key={entry.name} fill={entry.fill} />)}
-                                    </Pie>
-                                </PieChart>
-                            </ChartContainer>
-                            <ChartContainer config={fundingSourcesChartConfig} className="h-[80px] w-full">
-                                <PieChart>
-                                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                    <Pie data={data.funding.sourcesP2} dataKey="value" nameKey={nameKey} innerRadius={20}>
-                                         {data.funding.sourcesP2.map((entry:any) => <Cell key={entry.name} fill={entry.fill} />)}
-                                    </Pie>
-                                </PieChart>
+                    <CardContent className="p-2 pt-0 grid grid-cols-2 gap-x-4 gap-y-2">
+                        <div className="col-span-2 space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground">{t.totalCost}</p>
+                            <ChartContainer config={barChartConfig} className="h-[50px] w-full">
+                                <BarChart layout="vertical" data={[{name: 'Cost', p1: data.funding.totalCost.p1, p2: data.funding.totalCost.p2}]} margin={{left: 0, right: 0, top: 5, bottom: 5}} barGap={4}>
+                                    <YAxis dataKey="name" type="category" tick={false} axisLine={false} width={0}/>
+                                    <XAxis type="number" hide />
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                                    <Bar dataKey="p1" name={t.project1} fill="var(--color-p1)" radius={4} barSize={15}>
+                                        <LabelList dataKey="p1" position="right" offset={8} className="fill-foreground" fontSize={10}/>
+                                    </Bar>
+                                    <Bar dataKey="p2" name={t.project2} fill="var(--color-p2)" radius={4} barSize={15}>
+                                        <LabelList dataKey="p2" position="right" offset={8} className="fill-foreground" fontSize={10}/>
+                                    </Bar>
+                                </BarChart>
                             </ChartContainer>
                         </div>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-center text-muted-foreground">{t.roi}</p>
-                        <ChartContainer config={barChartConfig} className="h-[80px] w-full">
-                           <ComposedChart data={[{name: 'ROI', p1: data.funding.roi.p1, p2: data.funding.roi.p2}]}>
-                             <XAxis dataKey="name" hide/>
-                             <YAxis hide/>
-                             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                             <Bar dataKey="p1" name={t.project1} barSize={30} fill="var(--color-p1)" />
-                             <Bar dataKey="p2" name={t.project2} barSize={30} fill="var(--color-p2)" />
-                           </ComposedChart>
-                        </ChartContainer>
-                      </div>
-                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-center text-muted-foreground">{t.paybackPeriod}</p>
-                        <ChartContainer config={barChartConfig} className="h-[80px] w-full">
-                           <ComposedChart data={[{name: 'Payback', p1: data.funding.paybackPeriod.p1, p2: data.funding.paybackPeriod.p2}]}>
-                             <XAxis dataKey="name" hide/>
-                             <YAxis hide/>
-                             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                             <Line dataKey="p1" name={t.project1} stroke="var(--color-p1)" strokeWidth={3} dot={false}/>
-                             <Line dataKey="p2" name={t.project2} stroke="var(--color-p2)" strokeWidth={3} dot={false}/>
-                           </ComposedChart>
-                        </ChartContainer>
-                      </div>
+                        <div className="space-y-1">
+                           <p className="text-xs font-medium text-muted-foreground">{t.roi}</p>
+                           <div className="flex items-baseline justify-between rounded-lg bg-secondary/50 p-2 text-sm">
+                                <div className="text-center">
+                                    <p className="text-xs text-chart-1">{t.project1}</p>
+                                    <p className="font-bold text-chart-1">{data.funding.roi.p1}%</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-xs text-chart-2">{t.project2}</p>
+                                    <p className="font-bold text-chart-2">{data.funding.roi.p2}%</p>
+                                </div>
+                           </div>
+                        </div>
+                         <div className="space-y-1">
+                           <p className="text-xs font-medium text-muted-foreground">{t.paybackPeriod}</p>
+                           <div className="flex items-baseline justify-between rounded-lg bg-secondary/50 p-2 text-sm">
+                                <div className="text-center">
+                                    <p className="text-xs text-chart-1">{t.project1}</p>
+                                    <p className="font-bold text-chart-1">{data.funding.paybackPeriod.p1} yrs</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-xs text-chart-2">{t.project2}</p>
+                                    <p className="font-bold text-chart-2">{data.funding.paybackPeriod.p2} yrs</p>
+                                </div>
+                           </div>
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                            <p className="text-xs font-medium text-muted-foreground text-center">{t.fundingSources}</p>
+                            <div className="flex justify-evenly items-center">
+                                <ChartContainer config={fundingSourcesChartConfig} className="h-[80px] w-auto">
+                                    <PieChart>
+                                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                        <Pie data={data.funding.sourcesP1} dataKey="value" nameKey={nameKey} innerRadius={20} outerRadius={30}>
+                                            {data.funding.sourcesP1.map((entry) => <Cell key={`p1-${entry.name}`} fill={entry.fill} />)}
+                                        </Pie>
+                                    </PieChart>
+                                </ChartContainer>
+                                <ChartContainer config={fundingSourcesChartConfig} className="h-auto">
+                                    <ChartLegend content={<ChartLegendContent payload={data.funding.sourcesP1.map(s => ({value: s[nameKey], type: 'square', id: s.name, color: s.fill}))}/>} />
+                                </ChartContainer>
+                                <ChartContainer config={fundingSourcesChartConfig} className="h-[80px] w-auto">
+                                    <PieChart>
+                                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                        <Pie data={data.funding.sourcesP2} dataKey="value" nameKey={nameKey} innerRadius={20} outerRadius={30}>
+                                            {data.funding.sourcesP2.map((entry) => <Cell key={`p2-${entry.name}`} fill={entry.fill} />)}
+                                        </Pie>
+                                    </PieChart>
+                                </ChartContainer>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
-
-              </div>
             ) : (
                 <Card className="glass-panel border-none">
                     <CardHeader className="p-2 flex flex-row items-center gap-2">
@@ -667,3 +669,5 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </aside>
   );
 }
+
+    
