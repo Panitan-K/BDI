@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NewProjectDialog } from '@/components/nli-new-project-dialog';
+import { CompareProjectsDialog } from '@/components/nli-compare-dialog';
 
 const translations = {
   en: {
@@ -141,6 +142,7 @@ export default function NliPlatformPage() {
   const [isAiChatOpen, setAiChatOpen] = useState(false);
   const [isShareOpen, setShareOpen] = useState(false);
   const [isNewProjectOpen, setNewProjectOpen] = useState(false);
+  const [isCompareOpen, setCompareOpen] = useState(false);
   const [is3D, setIs3D] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [basemapStyle, setBasemapStyle] = useState('https://api.maptiler.com/maps/dataviz-dark/style.json');
@@ -204,11 +206,22 @@ export default function NliPlatformPage() {
   }
 
   const handleCompareToggle = () => {
-    setIsComparing(prev => !prev);
-    if (!isComparing) {
+    if (isComparing) {
+      setIsComparing(false);
       setSelectedRegion(null);
+    } else {
+      setCompareOpen(true);
     }
-  }
+  };
+
+  const handleStartComparison = (values: any) => {
+    console.log('Starting comparison with:', values);
+    // In a real application, you would pass these values to an AI or data processing backend.
+    // For this demo, we'll just enable the mock comparison view in the right sidebar.
+    setCompareOpen(false);
+    setIsComparing(true);
+    setSelectedRegion(null); // Ensure no single region is focused during comparison
+  };
 
   return (
     <div className={cn(
@@ -423,6 +436,7 @@ export default function NliPlatformPage() {
       <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} />
       <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} language={language} />
       <NewProjectDialog isOpen={isNewProjectOpen} onOpenChange={setNewProjectOpen} />
+      <CompareProjectsDialog isOpen={isCompareOpen} onOpenChange={setCompareOpen} onCompare={handleStartComparison} />
     </div>
   );
 }
