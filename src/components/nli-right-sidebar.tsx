@@ -203,7 +203,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     value: { label: t.jobs, color: "hsl(var(--chart-2))" },
   } satisfies ChartConfig;
 
-  const pieChartConfig = {
+  const regionalChartConfig = {
     value: { label: "Value" },
     p1: { label: t.project1 },
     p2: { label: t.project2 },
@@ -317,7 +317,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               </CardHeader>
               <CardContent className='p-2 pt-0'>
                  {isComparing ? (
-                    <ChartContainer config={pieChartConfig} className="h-[180px] w-full">
+                    <ChartContainer config={regionalChartConfig} className="h-[180px] w-full">
                         <BarChart layout="vertical" data={data.pieData} margin={{ left: 0, top: 20, right: 10 }}>
                         <YAxis
                             dataKey={nameKey}
@@ -336,32 +336,40 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                         </BarChart>
                     </ChartContainer>
                  ) : (
-                    <div>
-                        <ChartContainer config={pieChartConfig} className="mx-auto aspect-square h-[180px]">
-                            <PieChart>
-                                <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-                                <Pie 
-                                  data={data.pieData} 
-                                  dataKey="value" 
-                                  nameKey={nameKey} 
-                                  innerRadius={50} 
-                                  outerRadius={70}
-                                  strokeWidth={2}
-                                  paddingAngle={3}
-                                >
-                                    {data.pieData.map((entry: any) => (
-                                        <Cell key={entry.name} fill={`var(--color-${entry.name})`} className="stroke-background focus:outline-none" />
-                                    ))}
-                                </Pie>
-                                <ChartLegend
-                                    content={<ChartLegendContent 
-                                        nameKey="name" 
-                                        className="grid grid-cols-2 gap-x-6 gap-y-1 mt-4 text-xs" 
-                                    />}
-                                />
-                            </PieChart>
-                        </ChartContainer>
-                    </div>
+                    <ChartContainer config={regionalChartConfig} className="h-[180px] w-full">
+                        <BarChart
+                            accessibilityLayer
+                            data={data.pieData}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                        >
+                            <XAxis
+                                dataKey={nameKey}
+                                tickLine={false}
+                                axisLine={false}
+                                tickMargin={8}
+                                fontSize={10}
+                            />
+                            <YAxis
+                                tickLine={false}
+                                axisLine={false}
+                                fontSize={10}
+                                domain={[0, 'dataMax + 100']}
+                            />
+                            <ChartTooltip
+                                cursor={{ fill: 'hsla(var(--background), 0.5)' }}
+                                content={<ChartTooltipContent indicator="dot" />}
+                            />
+                            <Bar
+                                dataKey="value"
+                                radius={4}
+                                barSize={30}
+                            >
+                                {data.pieData.map((entry: any) => (
+                                    <Cell key={`cell-${entry.name}`} fill={`var(--color-${entry.name})`} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ChartContainer>
                  )}
               </CardContent>
             </Card>
@@ -413,3 +421,5 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     </aside>
   );
 }
+
+    
