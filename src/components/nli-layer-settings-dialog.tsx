@@ -101,7 +101,7 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
                 {colorSwatches.map(color => (
                   <Button key={color} className="h-7 w-7 rounded-full border-2 border-transparent focus:border-primary p-0" style={{ backgroundColor: color }} />
                 ))}
-                <Button className="h-7 w-7 rounded-full border-2 border-transparent focus:border-primary p-0" style={{ background: 'conic-gradient(from 180deg at 50% 50%, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF, #FF0000)' }} />
+                <Button className="h-7 w-7 rounded-full border-2 border-primary p-0" style={{ background: 'conic-gradient(from 180deg at 50% 50%, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF, #FF0000)' }} />
               </div>
             </div>
             <div>
@@ -111,7 +111,7 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
                 max={1}
                 step={0.1}
                 onValueChange={setOpacity}
-                className="mt-1.5"
+                className="mt-1.5 transition-all"
               />
             </div>
              <div>
@@ -121,7 +121,7 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
                 max={5}
                 step={0.5}
                 onValueChange={setBorderWidth}
-                className="mt-1.5"
+                className="mt-1.5 transition-all"
               />
             </div>
             <div>
@@ -149,7 +149,7 @@ export function NliLayerSettingsDialog({ isOpen, onOpenChange, layerName, langua
             </div>
           </TabsContent>
           
-          <TabsContent value="info" className="space-y-4 py-4">
+          <TabsContent value="info" className="space-y-3 py-4">
             <div>
               <Label htmlFor="layer-name">{t.layerName}</Label>
               <Input id="layer-name" defaultValue={layerName} className="mt-2 bg-secondary" />
