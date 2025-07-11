@@ -178,9 +178,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             source: 'measure-geojson',
             paint: {
                 'circle-radius': 5,
-                'circle-color': '#FCE525',
-                'circle-stroke-color': '#fff',
-                'circle-stroke-width': 2,
+                'circle-color': '#000',
             },
             filter: ['in', '$type', 'Point'],
         });
@@ -189,14 +187,14 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             type: 'line',
             source: 'measure-geojson',
             layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': '#FCE525', 'line-width': 2.5 },
+            paint: { 'line-color': '#000', 'line-width': 2.5 },
             filter: ['in', '$type', 'LineString'],
         });
         map.current?.addLayer({
             id: 'measure-polygon',
             type: 'fill',
             source: 'measure-geojson',
-            paint: { 'fill-color': '#FCE525', 'fill-opacity': 0.2 },
+            paint: { 'fill-color': '#000', 'fill-opacity': 0.1 },
             filter: ['in', '$type', 'Polygon'],
         });
 
@@ -331,7 +329,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
   
     const handleMapClick = (e: maptilersdk.MapMouseEvent) => {
       const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
-      if (!source) return; // Fix: Ensure source exists before proceeding
+      if (!source) return;
 
       const features = currentMap.queryRenderedFeatures(e.point, {
         layers: ['measure-points'],
@@ -345,9 +343,9 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
         };
   
         // If clicking on an existing point (especially the first one to close a polygon)
-        if (features.length) {
+        if (features.length && geojson.current.features.length > 2) {
             const firstPointId = geojson.current.features[0].properties?.id;
-            if (features[0].properties.id === firstPointId && geojson.current.features.length > 2) {
+            if (features[0].properties.id === firstPointId) {
                 // Close the polygon
                 linestring.current.geometry.coordinates.push(geojson.current.features[0].geometry.coordinates);
             }
@@ -369,15 +367,15 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
                 const polygon = turf.polygon([linestring.current.geometry.coordinates]);
                 area = turf.area(polygon); // in square meters
                 displayFeatures.push(polygon);
-            } else {
-                displayFeatures.push(linestring.current);
             }
+            // Always add the linestring if there's more than one point
+            displayFeatures.push(linestring.current);
             distance = turf.length(linestring.current, { units: 'kilometers' });
         }
         
         let message = '';
         if (distance > 0) {
-            message += `Distance: ${distance.toFixed(2)} km`;
+            message += `Total distance: ${distance.toFixed(2)} km`;
         }
         if (area > 0) {
             message += ` | Area: ${(area / 1000000).toFixed(2)} km²`;
@@ -415,7 +413,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="absolute w-full h-full" />
       {measureDistance && (
-        <div className="absolute top-2 left-2 z-10 bg-card/80 text-foreground text-xs p-2 rounded-md shadow-lg">
+        <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-xs p-2 rounded-md shadow-lg">
           {measureDistance}
         </div>
       )}
