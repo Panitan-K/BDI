@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Layers, Ruler, Pen, MousePointerSquareDashed, ChevronDown } from 'lucide-react';
+import { Layers, Ruler, Pen, MousePointerSquareDashed, ChevronDown, Baseline } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -24,6 +24,8 @@ const translations = {
         drawDesc: 'Draw points, lines, and polygons to add or highlight features.',
         selectTitle: 'Select Tool',
         selectDesc: 'Select and interact with features already on the map to view their data.',
+        scaleTitle: 'Toggle Scale',
+        scaleDesc: 'Show or hide the map scale control.',
     },
     th: {
         basemap: 'แผนที่ฐาน',
@@ -35,6 +37,8 @@ const translations = {
         drawDesc: 'วาดจุด, เส้น, และรูปหลายเหลี่ยมเพื่อเพิ่มหรือเน้นคุณลักษณะ',
         selectTitle: 'เครื่องมือเลือก',
         selectDesc: 'เลือกและโต้ตอบกับคุณลักษณะบนแผนที่เพื่อดูข้อมูล',
+        scaleTitle: 'สลับมาตราส่วน',
+        scaleDesc: 'แสดงหรือซ่อนตัวควบคุมมาตราส่วนแผนที่',
     }
 };
 
@@ -56,6 +60,7 @@ const tools = [
     { name: 'Measure', icon: Ruler, titleEn: 'Measure Tool', titleTh: 'เครื่องมือวัด', descEn: 'Measure distances and areas directly on the map.', descTh: 'วัดระยะทางและพื้นที่บนแผนที่โดยตรง' },
     { name: 'Draw', icon: Pen, titleEn: 'Draw Tool', titleTh: 'เครื่องมือวาด', descEn: 'Draw points, lines, and polygons to add or highlight features.', descTh: 'วาดจุด, เส้น, และรูปหลายเหลี่ยมเพื่อเพิ่มหรือเน้นคุณลักษณะ' },
     { name: 'Select', icon: MousePointerSquareDashed, titleEn: 'Select Tool', titleTh: 'เครื่องมือเลือก', descEn: 'Select and interact with features already on the map to view their data.', descTh: 'เลือกและโต้ตอบกับคุณลักษณะบนแผนที่เพื่อดูข้อมูล' },
+    { name: 'Scale', icon: Baseline, titleEn: 'Toggle Scale', titleTh: 'สลับมาตราส่วน', descEn: 'Show or hide the map scale control.', descTh: 'แสดงหรือซ่อนตัวควบคุมมาตราส่วนแผนที่' },
 ];
 
 export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, language }: NliMapToolbarProps) {

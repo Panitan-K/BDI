@@ -1,8 +1,9 @@
 
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as maptilersdk from '@maptiler/sdk';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 
 interface NliMapProps {
@@ -106,12 +107,12 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
 
   // For measure/draw tools
   const [measureDistance, setMeasureDistance] = useState<string | null>(null);
-  const geojson = useRef<turf.helpers.FeatureCollection<turf.helpers.Point>>({
+  const geojson = useRef<turf.helpers.FeatureCollection<turf.helpers.Point | turf.helpers.LineString | turf.helpers.Polygon>>({
     type: 'FeatureCollection',
     features: [],
   });
 
-  const linestring = useRef<turf.helpers.Feature<turf.helpers.LineString>>({
+  const linestring = useRef<turf.helpers.Feature<turf.helpers.LineString, any>>({
     type: 'Feature',
     geometry: {
       type: 'LineString',
@@ -119,18 +120,31 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     },
     properties: {},
   });
-
-  const clearMeasurements = () => {
-    geojson.current.features = [];
-    linestring.current.geometry.coordinates = [];
-    const currentMap = map.current;
-    if (currentMap && currentMap.getSource('measure-geojson')) {
-      const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
-      source.setData(geojson.current);
-    }
-    setMeasureDistance(null);
-  };
   
+  const drawControl = useRef<MapboxDraw | null>(null);
+  const scaleControl = useRef<maptilersdk.ScaleControl | null>(null);
+
+
+  const clearMeasurements = useCallback(() => {
+    const currentMap = map.current;
+    if (!currentMap) return;
+  
+    geojson.current.features = [];
+    if (linestring.current) {
+        linestring.current.geometry.coordinates = [];
+    }
+    
+    const source = currentMap.getSource('measure-geojson');
+    if (source && source.type === 'geojson') {
+        source.setData({
+            type: 'FeatureCollection',
+            features: [],
+        });
+    }
+  
+    setMeasureDistance(null);
+  }, []);
+
   useEffect(() => {
     if (!basemapStyle || map.current || !mapContainer.current) return;
 
@@ -147,7 +161,6 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     map.current.on('load', async () => {
         setIsStyleLoaded(true);
         
-        // Handle province source separately to add mock data
         const provinceConfig = layerSources['Province'];
         const resp = await fetch(provinceConfig.url);
         const geojson = await resp.json();
@@ -156,30 +169,22 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
         });
         map.current?.addSource('Province', { type: 'geojson', data: geojson, generateId: true });
 
-        // Handle other sources
         Object.keys(layerSources).forEach((layerName) => {
-            if (layerName === 'Province') return; // Already handled
+            if (layerName === 'Province') return;
             if (map.current?.getSource(layerName)) return;
             const layerConfig = layerSources[layerName];
             map.current?.addSource(layerName, { type: 'geojson', data: layerConfig.url });
         });
         
-        // Add sources and layers for measurement tool
         map.current?.addSource('measure-geojson', {
             type: 'geojson',
-            data: {
-                type: 'FeatureCollection',
-                features: [],
-            },
+            data: { type: 'FeatureCollection', features: [] },
         });
         map.current?.addLayer({
             id: 'measure-points',
             type: 'circle',
             source: 'measure-geojson',
-            paint: {
-                'circle-radius': 5,
-                'circle-color': '#000',
-            },
+            paint: { 'circle-radius': 5, 'circle-color': '#000' },
             filter: ['in', '$type', 'Point'],
         });
         map.current?.addLayer({
@@ -198,8 +203,6 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             filter: ['in', '$type', 'Polygon'],
         });
 
-
-        // Add click listener for provinces
         map.current?.on('click', 'Province', (e) => {
             if (activeTool) return;
             if (e.features && e.features.length > 0) {
@@ -229,28 +232,48 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             }
         });
 
+        // Initialize Draw control but don't add it yet
+        drawControl.current = new MapboxDraw({
+            displayControlsDefault: false,
+            controls: {
+                polygon: true,
+                line_string: true,
+                point: true,
+                trash: true
+            }
+        });
+
+        map.current.on('draw.create', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
+        map.current.on('draw.update', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
+        map.current.on('draw.delete', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
+
+        scaleControl.current = new maptilersdk.ScaleControl({ unit: 'metric' });
+
     });
     
     return () => {
       map.current?.remove();
       map.current = null;
     };
-  }, [apiKey, basemapStyle]);
+  }, [apiKey, basemapStyle, onRegionClick, activeTool]);
   
   useEffect(() => {
-    if (!map.current || !basemapStyle) return;
-    if (map.current.isStyleLoaded()) {
-      map.current.setStyle(basemapStyle);
-    } else {
-       map.current.once('load', () => map.current?.setStyle(basemapStyle));
+    const currentMap = map.current;
+    if (!currentMap || !basemapStyle) return;
+    const styleUpdate = () => {
+        if(currentMap.isStyleLoaded()) {
+            currentMap.setStyle(basemapStyle);
+        } else {
+            currentMap.once('load', () => currentMap.setStyle(basemapStyle));
+        }
     }
+    styleUpdate();
   }, [basemapStyle]);
 
   useEffect(() => {
     const currentMap = map.current;
     if (!currentMap || !currentMap.isStyleLoaded()) return;
 
-    // Logic for flying to selected region
     if (selectedRegion && regionData[selectedRegion]) {
         currentMap.flyTo({
             center: regionData[selectedRegion].center,
@@ -259,7 +282,6 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             essential: true
         });
     } else if (selectedRegion === null) {
-        // Fly back to default view if region is deselected
         currentMap.flyTo({
             center: [100.523186, 13.736717],
             zoom: 5.5,
@@ -320,93 +342,105 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     }
   }, [activeLayers['Population Density'], isStyleLoaded]);
 
-  // Measurement and Drawing Logic
+  const handleMapClick = useCallback((e: maptilersdk.MapMouseEvent) => {
+    const currentMap = map.current;
+    if (!currentMap) return;
+
+    const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
+    if (!source) return;
+
+    const features = currentMap.queryRenderedFeatures(e.point, {
+      layers: ['measure-points'],
+    });
+
+    const clickedPoint: [number, number] = [e.lngLat.lng, e.lngLat.lat];
+    
+    // Check if the user clicked the first point to close a polygon
+    const isClosingClick = geojson.current.features.length > 2 && features.length > 0 && (geojson.current.features[0] as turf.helpers.Feature<turf.helpers.Point>).properties?.id === features[0].properties.id;
+
+    if (isClosingClick) {
+        linestring.current.geometry.coordinates.push((geojson.current.features[0] as turf.helpers.Feature<turf.helpers.Point>).geometry.coordinates);
+    } else {
+        const newPoint = turf.point(clickedPoint, { id: String(new Date().getTime()) });
+        geojson.current.features.push(newPoint);
+        linestring.current.geometry.coordinates.push(clickedPoint);
+    }
+    
+    const displayFeatures: turf.helpers.Feature<any>[] = [...geojson.current.features];
+    
+    let area = 0;
+    let distance = 0;
+
+    if (linestring.current.geometry.coordinates.length > 1) {
+        const currentLine = turf.lineString(linestring.current.geometry.coordinates, { id: 'line' });
+        displayFeatures.push(currentLine);
+        distance = turf.length(currentLine, { units: 'kilometers' });
+
+        if (linestring.current.geometry.coordinates.length > 2 && isClosingClick) {
+            const polygon = turf.polygon([linestring.current.geometry.coordinates]);
+            displayFeatures.push(polygon);
+            area = turf.area(polygon); // in square meters
+        }
+    }
+    
+    let message = '';
+    if (distance > 0) {
+        message += `Total distance: ${distance.toFixed(2)} km`;
+    }
+    if (area > 0) {
+        message += ` | Area: ${(area / 1000000).toFixed(2)} km²`;
+    }
+    setMeasureDistance(message || null);
+
+    source.setData({
+        type: 'FeatureCollection',
+        features: displayFeatures,
+    });
+  }, []);
+
+
+  // Tool activation logic
   useEffect(() => {
     const currentMap = map.current;
     if (!currentMap || !isStyleLoaded) return;
   
     const canvas = currentMap.getCanvas();
   
-    const handleMapClick = (e: maptilersdk.MapMouseEvent) => {
-      const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
-      if (!source) return;
+    // Cleanup previous tool's state
+    currentMap.off('click', handleMapClick);
+    clearMeasurements();
+    if (drawControl.current && currentMap.hasControl(drawControl.current)) {
+        currentMap.removeControl(drawControl.current);
+    }
+    if (scaleControl.current && currentMap.hasControl(scaleControl.current)) {
+      currentMap.removeControl(scaleControl.current);
+    }
 
-      const features = currentMap.queryRenderedFeatures(e.point, {
-        layers: ['measure-points'],
-      });
-  
-      if (activeTool === 'Measure' || activeTool === 'Draw') {
-        const newPoint: turf.helpers.Feature<turf.helpers.Point> = {
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [e.lngLat.lng, e.lngLat.lat] },
-            properties: { id: String(new Date().getTime()) },
-        };
-  
-        // If clicking on an existing point (especially the first one to close a polygon)
-        if (features.length && geojson.current.features.length > 2) {
-            const firstPointId = geojson.current.features[0].properties?.id;
-            if (features[0].properties.id === firstPointId) {
-                // Close the polygon
-                linestring.current.geometry.coordinates.push(geojson.current.features[0].geometry.coordinates);
-            }
-        } else {
-            geojson.current.features.push(newPoint);
-            linestring.current.geometry.coordinates.push(newPoint.geometry.coordinates);
-        }
-  
-        // Create a collection of features for the source
-        const displayFeatures: any[] = [...geojson.current.features];
-        
-        let area = 0;
-        let distance = 0;
-
-        if (linestring.current.geometry.coordinates.length > 1) {
-            const isPolygon = linestring.current.geometry.coordinates.length > 2 && turf.booleanEqual(turf.point(linestring.current.geometry.coordinates[0]), turf.point(linestring.current.geometry.coordinates[linestring.current.geometry.coordinates.length-1]));
-
-            if (isPolygon) {
-                const polygon = turf.polygon([linestring.current.geometry.coordinates]);
-                area = turf.area(polygon); // in square meters
-                displayFeatures.push(polygon);
-            }
-            // Always add the linestring if there's more than one point
-            displayFeatures.push(linestring.current);
-            distance = turf.length(linestring.current, { units: 'kilometers' });
-        }
-        
-        let message = '';
-        if (distance > 0) {
-            message += `Total distance: ${distance.toFixed(2)} km`;
-        }
-        if (area > 0) {
-            message += ` | Area: ${(area / 1000000).toFixed(2)} km²`;
-        }
-        setMeasureDistance(message || null);
-  
-        source.setData({
-            type: 'FeatureCollection',
-            features: displayFeatures,
-        });
-      }
-    };
-  
-    if (activeTool === 'Measure' || activeTool === 'Draw') {
+    // Activate the selected tool
+    if (activeTool === 'Measure') {
       canvas.style.cursor = 'crosshair';
       currentMap.on('click', handleMapClick);
+    } else if (activeTool === 'Draw') {
+      canvas.style.cursor = 'crosshair';
+      if (drawControl.current) {
+        currentMap.addControl(drawControl.current);
+      }
+    } else if (activeTool === 'Scale') {
+      if (scaleControl.current) {
+          currentMap.addControl(scaleControl.current, 'bottom-left');
+      }
     } else {
       canvas.style.cursor = 'grab';
-      clearMeasurements();
     }
   
     return () => {
+      // General cleanup when component unmounts
       if (currentMap) {
         currentMap.off('click', handleMapClick);
         canvas.style.cursor = 'grab';
       }
-      if (activeTool !== 'Measure' && activeTool !== 'Draw') {
-        clearMeasurements();
-      }
     };
-  }, [activeTool, isStyleLoaded]);
+  }, [activeTool, isStyleLoaded, handleMapClick, clearMeasurements]);
 
 
   return (
