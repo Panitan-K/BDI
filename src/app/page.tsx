@@ -161,7 +161,6 @@ export default function NliPlatformPage() {
   const [isShareOpen, setShareOpen] = useState(false);
   const [isNewProjectOpen, setNewProjectOpen] = useState(false);
   const [isCompareOpen, setCompareOpen] = useState(false);
-  const [is3D, setIs3D] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [basemapStyle, setBasemapStyle] = useState('https://api.maptiler.com/maps/dataviz-dark/style.json');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -200,11 +199,11 @@ export default function NliPlatformPage() {
 
   // Effect to handle theme changes (DOM, localStorage, basemap)
   useEffect(() => {
-    if (theme === 'light') {
-      setBasemapStyle('https://api.maptiler.com/maps/outdoor-v2/style.json');
-    } else {
-      setBasemapStyle('https://api.maptiler.com/maps/dataviz-dark/style.json');
-    }
+    const newBasemap = theme === 'light' 
+      ? 'https://api.maptiler.com/maps/outdoor-v2/style.json' 
+      : 'https://api.maptiler.com/maps/dataviz-dark/style.json';
+    setBasemapStyle(newBasemap);
+    
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
     localStorage.setItem('nli-theme', theme);
@@ -400,8 +399,6 @@ export default function NliPlatformPage() {
                       onBasemapChange={setBasemapStyle}
                       activeTool={activeTool}
                       onToolSelect={handleToolSelect}
-                      is3D={is3D}
-                      on3DToggle={() => setIs3D(!is3D)}
                       language={language}
                   />
               </div>
@@ -496,7 +493,6 @@ export default function NliPlatformPage() {
           )}
 
           <NliMap 
-            is3D={is3D} 
             activeLayers={activeLayers} 
             basemapStyle={basemapStyle} 
             activeTool={activeTool}

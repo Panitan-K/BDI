@@ -9,9 +9,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Layers, Ruler, Pen, MousePointerSquareDashed, ChevronDown, Globe } from 'lucide-react';
+import { Layers, Ruler, Pen, MousePointerSquareDashed, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const translations = {
     en: {
@@ -24,10 +24,6 @@ const translations = {
         drawDesc: 'Draw points, lines, and polygons to add or highlight features.',
         selectTitle: 'Select Tool',
         selectDesc: 'Select and interact with features already on the map to view their data.',
-        toggle3dTitle: 'Toggle 3D View',
-        toggle2dTitle: 'Toggle 2D View',
-        toggle3dDesc: 'Switch to an interactive 3D globe.',
-        toggle2dDesc: 'Switch to a flat 2D map.'
     },
     th: {
         basemap: 'แผนที่ฐาน',
@@ -39,10 +35,6 @@ const translations = {
         drawDesc: 'วาดจุด, เส้น, และรูปหลายเหลี่ยมเพื่อเพิ่มหรือเน้นคุณลักษณะ',
         selectTitle: 'เครื่องมือเลือก',
         selectDesc: 'เลือกและโต้ตอบกับคุณลักษณะบนแผนที่เพื่อดูข้อมูล',
-        toggle3dTitle: 'สลับมุมมอง 3 มิติ',
-        toggle2dTitle: 'สลับมุมมอง 2 มิติ',
-        toggle3dDesc: 'เปลี่ยนเป็นมุมมองลูกโลก 3 มิติแบบโต้ตอบ',
-        toggle2dDesc: 'เปลี่ยนเป็นแผนที่ 2 มิติแบบแบน'
     }
 };
 
@@ -50,8 +42,6 @@ interface NliMapToolbarProps {
   onBasemapChange: (styleUrl: string) => void;
   activeTool: string | null;
   onToolSelect: (toolName: string) => void;
-  is3D: boolean;
-  on3DToggle: () => void;
   language: string;
 }
 
@@ -68,7 +58,7 @@ const tools = [
     { name: 'Select', icon: MousePointerSquareDashed, titleEn: 'Select Tool', titleTh: 'เครื่องมือเลือก', descEn: 'Select and interact with features already on the map to view their data.', descTh: 'เลือกและโต้ตอบกับคุณลักษณะบนแผนที่เพื่อดูข้อมูล' },
 ];
 
-export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D, on3DToggle, language }: NliMapToolbarProps) {
+export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, language }: NliMapToolbarProps) {
   const t = translations[language as keyof typeof translations] || translations.en;
 
   return (
@@ -119,20 +109,6 @@ export function NliMapToolbar({ onBasemapChange, activeTool, onToolSelect, is3D,
             </TooltipContent>
         </Tooltip>
       ))}
-
-        <Tooltip>
-            <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent hover:text-primary h-8 w-8" onClick={on3DToggle}>
-                <Globe className="h-4 w-4" />
-            </Button>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs text-left">
-                <p className="font-bold">{is3D ? t.toggle2dTitle : t.toggle3dTitle}</p>
-                <p className="text-muted-foreground">{is3D ? t.toggle2dDesc : t.toggle3dDesc}</p>
-            </TooltipContent>
-        </Tooltip>
     </div>
   );
 }
-
-    

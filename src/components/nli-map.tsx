@@ -3,9 +3,9 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import * as maptilersdk from '@maptiler/sdk';
+import * as turf from '@turf/turf';
 
 interface NliMapProps {
-  is3D: boolean;
   activeLayers: Record<string, boolean>;
   basemapStyle: string;
   activeTool: string | null;
@@ -97,15 +97,42 @@ const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circl
     },
 };
 
-export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionClick, selectedRegion }: NliMapProps) {
+export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, selectedRegion }: NliMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
   const [apiKey] = useState(process.env.NEXT_PUBLIC_MAPTILER_API_KEY || 'lVz5lFRZJpi7sv6fXhdz');
   const [isStyleLoaded, setIsStyleLoaded] = useState(false);
   const clickedProvinceId = useRef<string | number | null>(null);
 
+  // For measure/draw tools
+  const [measureDistance, setMeasureDistance] = useState<string | null>(null);
+  const geojson = useRef<turf.helpers.FeatureCollection<turf.helpers.Point>>({
+    type: 'FeatureCollection',
+    features: [],
+  });
+
+  const linestring = useRef<turf.helpers.Feature<turf.helpers.LineString>>({
+    type: 'Feature',
+    geometry: {
+      type: 'LineString',
+      coordinates: [],
+    },
+    properties: {},
+  });
+
+  const clearMeasurements = () => {
+    geojson.current.features = [];
+    linestring.current.geometry.coordinates = [];
+    const currentMap = map.current;
+    if (currentMap && currentMap.getSource('measure-geojson')) {
+      const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
+      source.setData(geojson.current);
+    }
+    setMeasureDistance(null);
+  };
+  
   useEffect(() => {
-    if (map.current || !mapContainer.current) return;
+    if (!basemapStyle || map.current || !mapContainer.current) return;
 
     maptilersdk.config.apiKey = apiKey;
     map.current = new maptilersdk.Map({
@@ -127,7 +154,7 @@ export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionC
         geojson.features.forEach((feature: any) => {
             feature.properties.pop_density = Math.random() * 1500;
         });
-        map.current?.addSource('Province', { type: 'geojson', data: geojson });
+        map.current?.addSource('Province', { type: 'geojson', data: geojson, generateId: true });
 
         // Handle other sources
         Object.keys(layerSources).forEach((layerName) => {
@@ -136,9 +163,47 @@ export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionC
             const layerConfig = layerSources[layerName];
             map.current?.addSource(layerName, { type: 'geojson', data: layerConfig.url });
         });
+        
+        // Add sources and layers for measurement tool
+        map.current?.addSource('measure-geojson', {
+            type: 'geojson',
+            data: {
+                type: 'FeatureCollection',
+                features: [],
+            },
+        });
+        map.current?.addLayer({
+            id: 'measure-points',
+            type: 'circle',
+            source: 'measure-geojson',
+            paint: {
+                'circle-radius': 5,
+                'circle-color': '#FCE525',
+                'circle-stroke-color': '#fff',
+                'circle-stroke-width': 2,
+            },
+            filter: ['in', '$type', 'Point'],
+        });
+        map.current?.addLayer({
+            id: 'measure-lines',
+            type: 'line',
+            source: 'measure-geojson',
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': '#FCE525', 'line-width': 2.5 },
+            filter: ['in', '$type', 'LineString'],
+        });
+        map.current?.addLayer({
+            id: 'measure-polygon',
+            type: 'fill',
+            source: 'measure-geojson',
+            paint: { 'fill-color': '#FCE525', 'fill-opacity': 0.2 },
+            filter: ['in', '$type', 'Polygon'],
+        });
+
 
         // Add click listener for provinces
         map.current?.on('click', 'Province', (e) => {
+            if (activeTool) return;
             if (e.features && e.features.length > 0) {
                 const feature = e.features[0];
                 const provinceName = feature.properties.name_en;
@@ -155,6 +220,7 @@ export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionC
         });
         
         map.current?.on('click', (e) => {
+            if (activeTool) return;
             const features = map.current?.queryRenderedFeatures(e.point, { layers: ['Province'] });
             if (!features || features.length === 0) {
                  if (clickedProvinceId.current !== null) {
@@ -171,30 +237,16 @@ export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionC
       map.current?.remove();
       map.current = null;
     };
-  }, [apiKey]);
+  }, [apiKey, basemapStyle]);
   
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !basemapStyle) return;
     if (map.current.isStyleLoaded()) {
       map.current.setStyle(basemapStyle);
     } else {
        map.current.once('load', () => map.current?.setStyle(basemapStyle));
     }
   }, [basemapStyle]);
-
-  useEffect(() => {
-    const currentMap = map.current;
-    if (!currentMap || !currentMap.isStyleLoaded()) return;
-
-    const projectionName = is3D ? 'globe' : 'mercator';
-    currentMap.setProjection({ name: projectionName });
-
-    if (is3D) {
-      currentMap.flyTo({ pitch: 60, zoom: 4, bearing: -20, duration: 2000, essential: true });
-    } else {
-      currentMap.flyTo({ pitch: 0, bearing: 0, duration: 2000, essential: true });
-    }
-  }, [is3D, isStyleLoaded]);
 
   useEffect(() => {
     const currentMap = map.current;
@@ -247,7 +299,11 @@ export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionC
       });
     };
     
-    updateLayers();
+    if (isStyleLoaded) {
+      updateLayers();
+    } else {
+      currentMap.once('load', updateLayers);
+    }
 
   }, [activeLayers, isStyleLoaded]);
 
@@ -266,24 +322,99 @@ export function NliMap({ is3D, activeLayers, basemapStyle, activeTool, onRegionC
     }
   }, [activeLayers['Population Density'], isStyleLoaded]);
 
+  // Measurement and Drawing Logic
   useEffect(() => {
     const currentMap = map.current;
-    if(!currentMap) return;
+    if (!currentMap || !isStyleLoaded) return;
+  
     const canvas = currentMap.getCanvas();
-    if (activeTool === 'Measure') {
-        canvas.style.cursor = 'crosshair';
-    } else if (activeTool === 'Draw') {
-        canvas.style.cursor = 'url(https://img.icons8.com/ios-glyphs/30/ffffff/pencil-tip.png), auto';
-    } else if (activeTool === 'Select') {
-        canvas.style.cursor = 'pointer';
+    const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
+  
+    const handleMapClick = (e: maptilersdk.MapMouseEvent) => {
+      const features = currentMap.queryRenderedFeatures(e.point, {
+        layers: ['measure-points'],
+      });
+  
+      if (activeTool === 'Measure' || activeTool === 'Draw') {
+        const newPoint: turf.helpers.Feature<turf.helpers.Point> = {
+            type: 'Feature',
+            geometry: { type: 'Point', coordinates: [e.lngLat.lng, e.lngLat.lat] },
+            properties: { id: String(new Date().getTime()) },
+        };
+  
+        // If clicking on an existing point (especially the first one to close a polygon)
+        if (features.length) {
+            const firstPointId = geojson.current.features[0].properties?.id;
+            if (features[0].properties.id === firstPointId && geojson.current.features.length > 2) {
+                // Close the polygon
+                linestring.current.geometry.coordinates.push(geojson.current.features[0].geometry.coordinates);
+            }
+        } else {
+            geojson.current.features.push(newPoint);
+            linestring.current.geometry.coordinates.push(newPoint.geometry.coordinates);
+        }
+  
+        // Create a collection of features for the source
+        const displayFeatures: any[] = [...geojson.current.features];
+        
+        let area = 0;
+        let distance = 0;
+
+        if (linestring.current.geometry.coordinates.length > 1) {
+            const isPolygon = linestring.current.geometry.coordinates.length > 2 && turf.booleanEqual(turf.point(linestring.current.geometry.coordinates[0]), turf.point(linestring.current.geometry.coordinates[linestring.current.geometry.coordinates.length-1]));
+
+            if (isPolygon) {
+                const polygon = turf.polygon([linestring.current.geometry.coordinates]);
+                area = turf.area(polygon); // in square meters
+                displayFeatures.push(polygon);
+            } else {
+                displayFeatures.push(linestring.current);
+            }
+            distance = turf.length(linestring.current, { units: 'kilometers' });
+        }
+        
+        let message = '';
+        if (distance > 0) {
+            message += `Distance: ${distance.toFixed(2)} km`;
+        }
+        if (area > 0) {
+            message += ` | Area: ${(area / 1000000).toFixed(2)} km²`;
+        }
+        setMeasureDistance(message || null);
+  
+        source.setData({
+            type: 'FeatureCollection',
+            features: displayFeatures,
+        });
+      }
+    };
+  
+    if (activeTool === 'Measure' || activeTool === 'Draw') {
+      canvas.style.cursor = 'crosshair';
+      currentMap.on('click', handleMapClick);
     } else {
-        canvas.style.cursor = 'grab';
+      canvas.style.cursor = 'grab';
+      clearMeasurements();
     }
-  }, [activeTool]);
+  
+    return () => {
+      currentMap.off('click', handleMapClick);
+      canvas.style.cursor = 'grab';
+      if (activeTool !== 'Measure' && activeTool !== 'Draw') {
+        clearMeasurements();
+      }
+    };
+  }, [activeTool, isStyleLoaded]);
+
 
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="absolute w-full h-full" />
+      {measureDistance && (
+        <div className="absolute top-2 left-2 z-10 bg-card/80 text-foreground text-xs p-2 rounded-md shadow-lg">
+          {measureDistance}
+        </div>
+      )}
     </div>
   );
 }
