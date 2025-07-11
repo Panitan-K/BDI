@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { NewProjectDialog } from '@/components/nli-new-project-dialog';
 import { CompareProjectsDialog } from '@/components/nli-compare-dialog';
+import { AnalyzeProjectDialog } from '@/components/nli-analyze-dialog';
 
 const translations = {
   en: {
@@ -157,10 +158,12 @@ function ShareDialog({ isOpen, onOpenChange, language, activeProject, isComparin
 export default function NliPlatformPage() {
   const [activeProject, setActiveProject] = useState('project1');
   const [isComparing, setIsComparing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAiChatOpen, setAiChatOpen] = useState(false);
   const [isShareOpen, setShareOpen] = useState(false);
   const [isNewProjectOpen, setNewProjectOpen] = useState(false);
   const [isCompareOpen, setCompareOpen] = useState(false);
+  const [isAnalyzeOpen, setAnalyzeOpen] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [basemapStyle, setBasemapStyle] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -288,7 +291,18 @@ export default function NliPlatformPage() {
     if (isComparing) {
       setIsComparing(false);
     }
+    if (isAnalyzing) {
+        setIsAnalyzing(false);
+    }
     setActiveProject(project);
+  }
+  
+  const handleAnalyzeToggle = () => {
+    if (isAnalyzing) {
+        setIsAnalyzing(false);
+    } else {
+        setAnalyzeOpen(true);
+    }
   }
 
   const handleCompareToggle = () => {
@@ -300,6 +314,14 @@ export default function NliPlatformPage() {
     }
   };
 
+  const handleStartAnalysis = (values: { parameters?: string[] }) => {
+    setActiveParameters(values.parameters || []);
+    setAnalyzeOpen(false);
+    setIsAnalyzing(true);
+    setIsComparing(false);
+    setSelectedRegion(null);
+  };
+  
   const handleStartComparison = (values: { projects: string[], layers?: string[], parameters?: string[] }) => {
     // Auto-activate selected layers
     const layerKeys = Object.keys(activeLayers);
@@ -318,6 +340,7 @@ export default function NliPlatformPage() {
     // For this demo, we'll just enable the mock comparison view in the right sidebar.
     setCompareOpen(false);
     setIsComparing(true);
+    setIsAnalyzing(false);
     setSelectedRegion(null); // Ensure no single region is focused during comparison
   };
 
@@ -332,6 +355,8 @@ export default function NliPlatformPage() {
           onProjectChange={handleProjectChange} 
           isComparing={isComparing}
           onCompareToggle={handleCompareToggle}
+          isAnalyzing={isAnalyzing}
+          onAnalyzeToggle={handleAnalyzeToggle}
           onShare={() => setShareOpen(true)}
           onNewProject={() => setNewProjectOpen(true)}
           onFullscreenToggle={() => setIsFullscreen(prev => !prev)}
@@ -521,7 +546,7 @@ export default function NliPlatformPage() {
             </div>
         </main>
         
-        {!isFullscreen && (
+        {!isFullscreen && (isComparing || isAnalyzing) && (
           <>
             <div
               className="w-1 cursor-col-resize rounded-full bg-transparent hover:bg-border transition-colors self-stretch my-2"
@@ -543,6 +568,7 @@ export default function NliPlatformPage() {
       <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} language={language} activeProject={activeProject} isComparing={isComparing} />
       <NewProjectDialog isOpen={isNewProjectOpen} onOpenChange={setNewProjectOpen} />
       <CompareProjectsDialog isOpen={isCompareOpen} onOpenChange={setCompareOpen} onCompare={handleStartComparison} language={language} />
+      <AnalyzeProjectDialog isOpen={isAnalyzeOpen} onOpenChange={setAnalyzeOpen} onAnalyze={handleStartAnalysis} language={language} />
     </div>
   );
 }

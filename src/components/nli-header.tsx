@@ -83,6 +83,8 @@ interface NliHeaderProps {
   onProjectChange: (project: string) => void;
   isComparing: boolean;
   onCompareToggle: () => void;
+  isAnalyzing: boolean;
+  onAnalyzeToggle: () => void;
   onShare: () => void;
   onNewProject: () => void;
   onFullscreenToggle: () => void;
@@ -97,6 +99,8 @@ export function NliHeader({
   onProjectChange, 
   isComparing,
   onCompareToggle,
+  isAnalyzing,
+  onAnalyzeToggle,
   onShare,
   onNewProject,
   onFullscreenToggle,
@@ -159,9 +163,13 @@ export function NliHeader({
          <Button 
           variant="outline" 
           size="sm"
-          className="bg-transparent"
+          className={cn(
+            "bg-transparent",
+            isAnalyzing && "bg-primary text-white"
+            )}
+          onClick={onAnalyzeToggle}
           >
-          <Lightbulb className="mr-2 h-4 w-4 text-primary"/>
+          <Lightbulb className="mr-2 h-4 w-4"/>
           {t.analyze}
         </Button>
          <Button 
