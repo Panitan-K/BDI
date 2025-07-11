@@ -328,9 +328,11 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     if (!currentMap || !isStyleLoaded) return;
   
     const canvas = currentMap.getCanvas();
-    const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
   
     const handleMapClick = (e: maptilersdk.MapMouseEvent) => {
+      const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
+      if (!source) return; // Fix: Ensure source exists before proceeding
+
       const features = currentMap.queryRenderedFeatures(e.point, {
         layers: ['measure-points'],
       });
