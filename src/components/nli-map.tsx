@@ -255,7 +255,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
       map.current?.remove();
       map.current = null;
     };
-  }, [apiKey, basemapStyle, onRegionClick, activeTool]);
+  }, [apiKey, basemapStyle, onRegionClick]);
   
   useEffect(() => {
     const currentMap = map.current;
@@ -392,10 +392,12 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     }
     setMeasureDistance(message || null);
 
-    source.setData({
-        type: 'FeatureCollection',
-        features: displayFeatures,
-    });
+    if (source) {
+      source.setData({
+          type: 'FeatureCollection',
+          features: displayFeatures,
+      });
+    }
   }, []);
 
 
@@ -412,10 +414,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     if (drawControl.current && currentMap.hasControl(drawControl.current)) {
         currentMap.removeControl(drawControl.current);
     }
-    if (scaleControl.current && currentMap.hasControl(scaleControl.current)) {
-      currentMap.removeControl(scaleControl.current);
-    }
-
+    
     // Activate the selected tool
     if (activeTool === 'Measure') {
       canvas.style.cursor = 'crosshair';
@@ -425,12 +424,19 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
       if (drawControl.current) {
         currentMap.addControl(drawControl.current);
       }
-    } else if (activeTool === 'Scale') {
-      if (scaleControl.current) {
-          currentMap.addControl(scaleControl.current, 'bottom-left');
-      }
     } else {
       canvas.style.cursor = 'grab';
+    }
+
+    // Handle scale control separately
+    if (activeTool === 'Scale') {
+      if (scaleControl.current && !currentMap.hasControl(scaleControl.current)) {
+        currentMap.addControl(scaleControl.current, 'bottom-left');
+      }
+    } else {
+       if (scaleControl.current && currentMap.hasControl(scaleControl.current)) {
+        currentMap.removeControl(scaleControl.current);
+      }
     }
   
     return () => {
