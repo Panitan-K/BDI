@@ -13,7 +13,8 @@ import {
   Palette,
   Globe,
   LogOut,
-  Minimize
+  Minimize,
+  Lightbulb
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -42,6 +43,7 @@ const translations = {
     project2: 'Project 2',
     addProject: 'Add New Project',
     compare: 'Compare Projects',
+    analyze: 'Analyze Project',
     fullscreen: 'Fullscreen',
     exitFullscreen: 'Exit Fullscreen',
     share: 'Share',
@@ -60,6 +62,7 @@ const translations = {
     project2: 'โปรเจกต์ 2',
     addProject: 'เพิ่มโปรเจกต์ใหม่',
     compare: 'เปรียบเทียบโปรเจกต์',
+    analyze: 'วิเคราะห์โปรเจกต์',
     fullscreen: 'เต็มจอ',
     exitFullscreen: 'ออกจากโหมดเต็มจอ',
     share: 'แบ่งปัน',
@@ -153,6 +156,14 @@ export function NliHeader({
       </div>
 
       <div className="flex items-center gap-2">
+         <Button 
+          variant="outline" 
+          size="sm"
+          className="bg-transparent"
+          >
+          <Lightbulb className="mr-2 h-4 w-4 text-primary"/>
+          {t.analyze}
+        </Button>
          <Button 
           variant="outline" 
           size="sm"
