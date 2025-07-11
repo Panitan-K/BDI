@@ -162,7 +162,7 @@ export default function NliPlatformPage() {
   const [isNewProjectOpen, setNewProjectOpen] = useState(false);
   const [isCompareOpen, setCompareOpen] = useState(false);
   const [activeTool, setActiveTool] = useState<string | null>(null);
-  const [basemapStyle, setBasemapStyle] = useState('https://api.maptiler.com/maps/dataviz-dark/style.json');
+  const [basemapStyle, setBasemapStyle] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [theme, setTheme] = useState('dark');
@@ -268,6 +268,15 @@ export default function NliPlatformPage() {
   };
   
   const handleToolSelect = (toolName: string) => {
+    // For single-action tools, just pass the name.
+    // For toggleable tools, toggle them.
+    const isAction = ['ZoomIn', 'ZoomOut', 'Compass', 'Home', 'Clear'].includes(toolName);
+    if(isAction) {
+        setActiveTool(toolName);
+        // Reset to null immediately after so it can be clicked again.
+        setTimeout(() => setActiveTool(null), 100);
+        return;
+    }
     setActiveTool(prev => prev === toolName ? null : toolName);
   }
 
@@ -492,13 +501,13 @@ export default function NliPlatformPage() {
             </Button>
           )}
 
-          <NliMap 
+          {basemapStyle && <NliMap 
             activeLayers={activeLayers} 
             basemapStyle={basemapStyle} 
             activeTool={activeTool}
             onRegionClick={handleRegionSelect}
             selectedRegion={selectedRegion}
-          />
+          />}
 
             <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
               <Button

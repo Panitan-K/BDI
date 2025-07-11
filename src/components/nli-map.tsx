@@ -98,6 +98,11 @@ const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circl
     },
 };
 
+const INITIAL_VIEW = {
+    center: [100.523186, 13.736717] as [number, number],
+    zoom: 5.5,
+};
+
 export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, selectedRegion }: NliMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
@@ -107,6 +112,8 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
 
   // For measure/draw tools
   const [measureDistance, setMeasureDistance] = useState<string | null>(null);
+  const [mouseCoords, setMouseCoords] = useState<string | null>(null);
+
   const geojson = useRef<turf.helpers.FeatureCollection<turf.helpers.Point | turf.helpers.LineString | turf.helpers.Polygon>>({
     type: 'FeatureCollection',
     features: [],
@@ -145,6 +152,12 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     setMeasureDistance(null);
   }, []);
 
+  const clearDrawings = useCallback(() => {
+    if (drawControl.current) {
+        drawControl.current.deleteAll();
+    }
+  }, []);
+
   useEffect(() => {
     if (!basemapStyle || map.current || !mapContainer.current) return;
 
@@ -152,8 +165,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     map.current = new maptilersdk.Map({
         container: mapContainer.current,
         style: basemapStyle,
-        center: [100.523186, 13.736717],
-        zoom: 5.5,
+        ...INITIAL_VIEW,
         pitch: 0,
         bearing: 0,
     });
@@ -249,6 +261,13 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
 
         scaleControl.current = new maptilersdk.ScaleControl({ unit: 'metric' });
 
+        map.current.on('mousemove', (e) => {
+            setMouseCoords(`Lng: ${e.lngLat.lng.toFixed(4)}, Lat: ${e.lngLat.lat.toFixed(4)}`);
+        });
+        map.current.on('mouseout', () => {
+            setMouseCoords(null);
+        })
+
     });
     
     return () => {
@@ -283,8 +302,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
         });
     } else if (selectedRegion === null) {
         currentMap.flyTo({
-            center: [100.523186, 13.736717],
-            zoom: 5.5,
+            ...INITIAL_VIEW,
             duration: 2000,
             essential: true
         });
@@ -408,9 +426,21 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
   
     const canvas = currentMap.getCanvas();
   
+    // Handle one-time actions first
+    switch(activeTool) {
+        case 'ZoomIn': currentMap.zoomIn(); break;
+        case 'ZoomOut': currentMap.zoomOut(); break;
+        case 'Compass': currentMap.resetNorthPitch(); break;
+        case 'Home': currentMap.flyTo({...INITIAL_VIEW}); break;
+        case 'Clear':
+            clearMeasurements();
+            clearDrawings();
+            break;
+    }
+
     // Cleanup previous tool's state
     currentMap.off('click', handleMapClick);
-    clearMeasurements();
+    
     if (drawControl.current && currentMap.hasControl(drawControl.current)) {
         currentMap.removeControl(drawControl.current);
     }
@@ -418,26 +448,33 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     // Activate the selected tool
     if (activeTool === 'Measure') {
       canvas.style.cursor = 'crosshair';
+      clearMeasurements();
       currentMap.on('click', handleMapClick);
     } else if (activeTool === 'Draw') {
       canvas.style.cursor = 'crosshair';
       if (drawControl.current) {
-        currentMap.addControl(drawControl.current);
+        currentMap.addControl(drawControl.current, 'top-left');
       }
     } else {
       canvas.style.cursor = 'grab';
+      if (activeTool !== 'Measure') {
+        clearMeasurements();
+      }
     }
 
-    // Handle scale control separately
-    if (activeTool === 'Scale') {
-      if (scaleControl.current && !currentMap.hasControl(scaleControl.current)) {
-        currentMap.addControl(scaleControl.current, 'bottom-left');
-      }
-    } else {
-       if (scaleControl.current && currentMap.hasControl(scaleControl.current)) {
-        currentMap.removeControl(scaleControl.current);
-      }
+    // Handle persistent toggles
+    if (scaleControl.current) {
+        if (activeTool === 'Scale' && !currentMap.hasControl(scaleControl.current)) {
+            currentMap.addControl(scaleControl.current, 'bottom-left');
+        } else if (activeTool !== 'Scale' && currentMap.hasControl(scaleControl.current)) {
+            currentMap.removeControl(scaleControl.current);
+        }
     }
+
+    if (activeTool === '3DView') {
+        currentMap.setPitch(currentMap.getPitch() === 0 ? 60 : 0);
+    }
+
   
     return () => {
       // General cleanup when component unmounts
@@ -446,7 +483,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
         canvas.style.cursor = 'grab';
       }
     };
-  }, [activeTool, isStyleLoaded, handleMapClick, clearMeasurements]);
+  }, [activeTool, isStyleLoaded, handleMapClick, clearMeasurements, clearDrawings]);
 
 
   return (
@@ -455,6 +492,11 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
       {measureDistance && (
         <div className="absolute top-2 left-2 z-10 bg-black/75 text-white text-xs p-2 rounded-md shadow-lg">
           {measureDistance}
+        </div>
+      )}
+      {activeTool === 'Coords' && mouseCoords && (
+        <div className="absolute bottom-2 right-2 z-10 bg-black/75 text-white text-xs p-2 rounded-md shadow-lg">
+          {mouseCoords}
         </div>
       )}
     </div>
