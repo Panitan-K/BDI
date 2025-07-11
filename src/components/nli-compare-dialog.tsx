@@ -28,21 +28,34 @@ import { GitCompare, ListChecks } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 
 const projects = [
-    { id: 'project1', label: 'Project 1: Eastern EEC High-Speed Rail' },
-    { id: 'project2', label: 'Project 2: Southern Land Bridge' },
+    { id: 'project1', en: 'Project 1: Eastern EEC High-Speed Rail', th: 'โปรเจกต์ 1: รถไฟความเร็วสูง EEC ตะวันออก' },
+    { id: 'project2', en: 'Project 2: Southern Land Bridge', th: 'โปรเจกต์ 2: สะพานเศรษฐกิจภาคใต้' },
 ];
 
 const dataLayers = [
-    'Roads', 'Railways', 'Airports', 'Ports',
-    'Land Use Plan', 'Forest Zones', 'Agricultural Zones',
-    'Province', 'Industrial Zones', 'Special Economic Corridors',
-    'Population Density',
+    { id: 'Roads', en: 'Roads', th: 'ถนน' },
+    { id: 'Railways', en: 'Railways', th: 'ทางรถไฟ' },
+    { id: 'Airports', en: 'Airports', th: 'สนามบิน' },
+    { id: 'Ports', en: 'Ports', th: 'ท่าเรือ' },
+    { id: 'Land Use Plan', en: 'Land Use Plan', th: 'ผังการใช้ประโยชน์ที่ดิน' },
+    { id: 'Forest Zones', en: 'Forest Zones', th: 'เขตป่าไม้' },
+    { id: 'Agricultural Zones', en: 'Agricultural Zones', th: 'เขตเกษตรกรรม' },
+    { id: 'Province', en: 'Province', th: 'จังหวัด' },
+    { id: 'Industrial Zones', en: 'Industrial Zones', th: 'เขตอุตสาหกรรม' },
+    { id: 'Special Economic Corridors', en: 'Special Economic Corridors', th: 'ระเบียงเศรษฐกิจพิเศษ' },
+    { id: 'Population Density', en: 'Population Density', th: 'ความหนาแน่นของประชากร' },
 ];
 
 const analysisParameters = [
-    'Economic Impact', 'Logistic Flow', 'Environmental Score',
-    'Investment Suitability', 'Job Creation', 'Regional Distribution', 'Financing & Costs',
-    'Socio-Economic Impact', 'Predictive Tools',
+    { id: 'Economic Impact', en: 'Economic Impact', th: 'ผลกระทบทางเศรษฐกิจ' },
+    { id: 'Logistic Flow', en: 'Logistic Flow', th: 'การไหลของโลจิสติกส์' },
+    { id: 'Environmental Score', en: 'Environmental Score', th: 'คะแนนสิ่งแวดล้อม' },
+    { id: 'Investment Suitability', en: 'Investment Suitability', th: 'ความเหมาะสมในการลงทุน' },
+    { id: 'Job Creation', en: 'Job Creation', th: 'การสร้างงาน' },
+    { id: 'Regional Distribution', en: 'Regional Distribution', th: 'การกระจายตัวตามภูมิภาค' },
+    { id: 'Financing & Costs', en: 'Financing & Costs', th: 'การเงินและต้นทุน' },
+    { id: 'Socio-Economic Impact', en: 'Socio-Economic Impact', th: 'ผลกระทบทางเศรษฐกิจและสังคม' },
+    { id: 'Predictive Tools', en: 'Predictive Tools', th: 'เครื่องมือคาดการณ์' },
 ];
 
 const translations = {
@@ -103,6 +116,7 @@ export function CompareProjectsDialog({ isOpen, onOpenChange, onCompare, languag
   });
 
   const t = translations[language as keyof typeof translations] || translations.en;
+  const langKey = language as keyof typeof projects[0];
 
   const watchedParameters = form.watch('parameters');
   const allParametersSelected = analysisParameters.length > 0 && watchedParameters?.length === analysisParameters.length;
@@ -111,7 +125,7 @@ export function CompareProjectsDialog({ isOpen, onOpenChange, onCompare, languag
     if (allParametersSelected) {
       form.setValue('parameters', []);
     } else {
-      form.setValue('parameters', analysisParameters);
+      form.setValue('parameters', analysisParameters.map(p => p.id));
     }
   };
 
@@ -174,7 +188,7 @@ export function CompareProjectsDialog({ isOpen, onOpenChange, onCompare, languag
                                       />
                                     </FormControl>
                                     <FormLabel className="font-normal w-full cursor-pointer">
-                                      {project.label}
+                                      {project[langKey] || project.en}
                                     </FormLabel>
                                   </FormItem>
                                 );
@@ -201,31 +215,31 @@ export function CompareProjectsDialog({ isOpen, onOpenChange, onCompare, languag
                         <div className="grid grid-cols-3 gap-4">
                           {dataLayers.map((item) => (
                             <FormField
-                              key={item}
+                              key={item.id}
                               control={form.control}
                               name="layers"
                               render={({ field }) => {
                                 return (
                                   <FormItem
-                                    key={item}
+                                    key={item.id}
                                     className="flex flex-row items-start space-x-3 space-y-0"
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(item)}
+                                        checked={field.value?.includes(item.id)}
                                         onCheckedChange={(checked) => {
                                           return checked
-                                            ? field.onChange([...(field.value || []), item])
+                                            ? field.onChange([...(field.value || []), item.id])
                                             : field.onChange(
                                                 (field.value || [])?.filter(
-                                                  (value) => value !== item
+                                                  (value) => value !== item.id
                                                 )
                                               );
                                         }}
                                       />
                                     </FormControl>
                                     <FormLabel className="text-sm font-normal">
-                                      {item}
+                                      {item[langKey] || item.en}
                                     </FormLabel>
                                   </FormItem>
                                 );
@@ -258,31 +272,31 @@ export function CompareProjectsDialog({ isOpen, onOpenChange, onCompare, languag
                         <div className="grid grid-cols-3 gap-4">
                           {analysisParameters.map((item) => (
                             <FormField
-                              key={item}
+                              key={item.id}
                               control={form.control}
                               name="parameters"
                               render={({ field }) => {
                                 return (
                                   <FormItem
-                                    key={item}
+                                    key={item.id}
                                     className="flex flex-row items-start space-x-3 space-y-0"
                                   >
                                     <FormControl>
                                       <Checkbox
-                                        checked={field.value?.includes(item)}
+                                        checked={field.value?.includes(item.id)}
                                         onCheckedChange={(checked) => {
                                           return checked
-                                            ? field.onChange([...(field.value || []), item])
+                                            ? field.onChange([...(field.value || []), item.id])
                                             : field.onChange(
                                                 (field.value || [])?.filter(
-                                                  (value) => value !== item
+                                                  (value) => value !== item.id
                                                 )
                                               );
                                         }}
                                       />
                                     </FormControl>
                                     <FormLabel className="text-sm font-normal">
-                                      {item}
+                                      {item[langKey] || item.en}
                                     </FormLabel>
                                   </FormItem>
                                 );
