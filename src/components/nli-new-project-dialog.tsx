@@ -135,7 +135,8 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                               </FormItem>
                             )}
                           />
-
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                           <FormField
                             control={form.control}
                             name="region"
@@ -172,12 +173,12 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                           role="combobox"
                                           className={cn(
                                           "w-full justify-between bg-background/50 h-10",
-                                          !field.value.length && "text-muted-foreground"
+                                          !field.value?.length && "text-muted-foreground"
                                           )}
                                           disabled={!selectedRegion}
                                       >
                                           <div className="flex gap-1 flex-wrap">
-                                          {field.value.length > 0 ? (
+                                          {field.value && field.value.length > 0 ? (
                                               field.value.map(val => (
                                                   <Badge key={val} variant="secondary" className="mr-1">
                                                       {provincesInRegion.find(p => p.value === val)?.name}
@@ -201,7 +202,8 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                           <CommandItem
                                               value={province.name}
                                               key={province.value}
-                                              onSelect={() => {
+                                              onSelect={(e) => {
+                                                e.preventDefault(); // This is the fix
                                                 const currentValues = field.value || [];
                                                 const isSelected = currentValues.includes(province.value);
                                                 const newValues = isSelected
@@ -213,7 +215,7 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                               <Check
                                               className={cn(
                                                   "mr-2 h-4 w-4",
-                                                  field.value.includes(province.value) ? "opacity-100" : "opacity-0"
+                                                  field.value && field.value.includes(province.value) ? "opacity-100" : "opacity-0"
                                               )}
                                               />
                                               {province.name}
@@ -228,7 +230,8 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                               </FormItem>
                               )}
                           />
-                      
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                           <FormField
                               control={form.control}
                               name="governmentBudget"
@@ -255,7 +258,9 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                   </FormItem>
                               )}
                           />
-                          <FormField
+                      </div>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                           <FormField
                               control={form.control}
                               name="startDate"
                               render={({ field }) => (
@@ -296,7 +301,7 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                   </FormItem>
                               )}
                           />
-                      </div>
+                       </div>
                   </div>
                 </ScrollArea>
                 
