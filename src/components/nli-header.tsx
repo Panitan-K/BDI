@@ -14,7 +14,8 @@ import {
   Globe,
   LogOut,
   Minimize,
-  Lightbulb
+  Lightbulb,
+  PiggyBank
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Switch } from '@/components/ui/switch';
 import { Separator } from './ui/separator';
+import { project1Data, project2Data } from '@/lib/project-data';
 
 const translations = {
   en: {
@@ -54,7 +56,8 @@ const translations = {
     language: 'Language',
     logout: 'Log Out',
     english: 'English',
-    thai: 'Thai'
+    thai: 'Thai',
+    projectBudget: 'Project Budget',
   },
   th: {
     title: 'NLI-Thailand Land',
@@ -73,7 +76,8 @@ const translations = {
     language: 'ภาษา',
     logout: 'ออกจากระบบ',
     english: 'อังกฤษ',
-    thai: 'ไทย'
+    thai: 'ไทย',
+    projectBudget: 'งบประมาณโครงการ',
   }
 };
 
@@ -130,6 +134,11 @@ export function NliHeader({
   }
 
   const t = translations[language as keyof typeof translations] || translations.en;
+  
+  const currentBudget = React.useMemo(() => {
+    if (isComparing || isAnalyzing) return null;
+    return activeProject === 'project1' ? project1Data.funding.totalCost : project2Data.funding.totalCost;
+  }, [activeProject, isComparing, isAnalyzing]);
 
   return (
     <header className="flex items-center justify-between px-2 py-2 border-b border-border/50 glass-panel !rounded-none z-10 shrink-0">
@@ -160,6 +169,15 @@ export function NliHeader({
       </div>
 
       <div className="flex items-center gap-2">
+         {currentBudget !== null && (
+            <div className="flex items-center gap-2 bg-secondary/50 text-foreground rounded-lg px-3 py-1.5 text-sm">
+                <PiggyBank className="h-4 w-4 text-primary" />
+                <div>
+                  <div className="text-xs text-muted-foreground">{t.projectBudget}</div>
+                  <div className="font-bold">{language === 'th' ? `฿${currentBudget} พันล้าน` : `฿${currentBudget}B`}</div>
+                </div>
+            </div>
+         )}
          <Button 
           variant="outline" 
           size="sm"
