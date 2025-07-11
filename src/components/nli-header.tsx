@@ -60,7 +60,7 @@ const translations = {
     projectBudget: 'Project Budget',
   },
   th: {
-    title: 'NLI-Thailand Land',
+    title: 'NLI-Thailand',
     project1: 'โปรเจกต์ 1',
     project2: 'โปรเจกต์ 2',
     addProject: 'เพิ่มโปรเจกต์ใหม่',
