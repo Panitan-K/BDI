@@ -72,9 +72,13 @@ const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circl
         paint: { 'line-color': '#FF0000', 'line-width': 2 }
     },
     'Railways': {
-        url: 'https://api.maptiler.com/data/rail/features.json?key=lVz5lFRZJpi7sv6fXhdz',
+        url: 'https://ngis.go.th/arcgis/rest/services/Hosted/เส้นทางรถไฟ/FeatureServer/0/query?f=geojson&outFields=*&where=1%3D1',
         type: 'line',
-        paint: { 'line-color': '#888', 'line-width': 2, 'line-dasharray': [2, 2] }
+        paint: {
+            'line-color': '#FF0000',
+            'line-width': 2,
+            'line-opacity': 0.7
+        }
     },
     'Ports': {
         url: 'https://api.maptiler.com/data/port/features.json?key=lVz5lFRZJpi7sv6fXhdz',
