@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -26,24 +27,30 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { CalendarIcon, FolderPlus } from 'lucide-react';
+import { CalendarIcon, FolderPlus, Check, ChevronsUpDown } from 'lucide-react';
 import { format } from 'date-fns';
+import { regions } from '@/lib/thailand-data';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Mock data for Thai provinces
-const thaiProvinces = [
-    'Amnat Charoen', 'Ang Thong', 'Bangkok', 'Bueng Kan', 'Buri Ram', 'Chachoengsao', 'Chai Nat', 'Chaiyaphum', 'Chanthaburi', 'Chiang Mai', 'Chiang Rai', 'Chon Buri', 'Chumphon', 'Kalasin', 'Kamphaeng Phet', 'Kanchanaburi', 'Khon Kaen', 'Krabi', 'Lampang', 'Lamphun', 'Loei', 'Lop Buri', 'Mae Hong Son', 'Maha Sarakham', 'Mukdahan', 'Nakhon Nayok', 'Nakhon Pathom', 'Nakhon Phanom', 'Nakhon Ratchasima', 'Nakhon Sawan', 'Nakhon Si Thammarat', 'Nan', 'Narathiwat', 'Nong Bua Lam Phu', 'Nong Khai', 'Nonthaburi', 'Pathum Thani', 'Pattani', 'Phangnga', 'Phatthalung', 'Phayao', 'Phetchabun', 'Phetchaburi', 'Phichit', 'Phitsanulok', 'Phra Nakhon Si Ayutthaya', 'Phrae', 'Phuket', 'Prachin Buri', 'Prachuap Khiri Khan', 'Ranong', 'Ratchaburi', 'Rayong', 'Roi Et', 'Sa Kaeo', 'Sakon Nakhon', 'Samut Prakan', 'Samut Sakhon', 'Samut Songkhram', 'Saraburi', 'Satun', 'Sing Buri', 'Sisaket', 'Songkhla', 'Sukhothai', 'Suphan Buri', 'Surat Thani', 'Surin', 'Tak', 'Trang', 'Trat', 'Ubon Ratchathani', 'Udon Thani', 'Uthai Thani', 'Uttaradit', 'Yala', 'Yasothon'
-];
 
 const projectSchema = z.object({
   projectName: z.string().min(3, { message: 'Project name must be at least 3 characters.' }),
+  projectType: z.string({
+    required_error: 'Please select a project type.',
+  }),
+  region: z.string({
+    required_error: 'Please select a region.',
+  }),
+  provinces: z.array(z.string()).refine(value => value.length > 0, {
+    message: 'You must select at least one province.',
+  }),
   governmentBudget: z.coerce.number().min(0, { message: 'Budget must be a positive number.' }),
   startDate: z.date({
     required_error: 'A start date is required.',
   }),
   paybackPeriod: z.coerce.number().min(0, { message: 'Payback period must be a positive number.' }),
-  province: z.string({
-    required_error: 'Please select a province.',
-  }),
 });
 
 export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; onOpenChange: (open: boolean) => void; }) {
@@ -53,8 +60,22 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
       projectName: '',
       governmentBudget: 0,
       paybackPeriod: 0,
+      provinces: [],
     },
   });
+
+  const selectedRegion = form.watch('region');
+
+  React.useEffect(() => {
+    form.setValue('provinces', []);
+  }, [selectedRegion, form]);
+
+  const provincesInRegion = React.useMemo(() => {
+    if (!selectedRegion) return [];
+    const regionData = regions.find(r => r.value === selectedRegion);
+    return regionData ? regionData.provinces : [];
+  }, [selectedRegion]);
+
 
   function onSubmit(values: z.infer<typeof projectSchema>) {
     // Here you would handle the form submission, e.g., send to an API
@@ -92,25 +113,119 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                         )}
                     />
                     <FormField
+                      control={form.control}
+                      name="projectType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-background/50">
+                                <SelectValue placeholder="Select a project type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="government">Government</SelectItem>
+                              <SelectItem value="private">Private</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="region"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Region</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-background/50">
+                                <SelectValue placeholder="Select a region" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {regions.map((region) => (
+                                <SelectItem key={region.value} value={region.value}>{region.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
                         control={form.control}
-                        name="province"
+                        name="provinces"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Province / Region</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger className="bg-background/50">
-                                            <SelectValue placeholder="Select a province" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent className="max-h-72">
-                                        {thaiProvinces.map((province) => (
-                                            <SelectItem key={province} value={province}>{province}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
+                        <FormItem className="flex flex-col">
+                            <FormLabel>Provinces</FormLabel>
+                            <Popover>
+                            <PopoverTrigger asChild>
+                                <FormControl>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                    "w-full justify-between bg-background/50 h-10",
+                                    !field.value.length && "text-muted-foreground"
+                                    )}
+                                    disabled={!selectedRegion}
+                                >
+                                    <div className="flex gap-1 flex-wrap">
+                                    {field.value.length > 0 ? (
+                                        field.value.map(val => (
+                                            <Badge key={val} variant="secondary" className="mr-1">
+                                                {provincesInRegion.find(p => p.value === val)?.name}
+                                            </Badge>
+                                        ))
+                                    ) : (
+                                        "Select provinces..."
+                                    )}
+                                    </div>
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                                </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                <Command>
+                                <CommandInput placeholder="Search provinces..." />
+                                <CommandEmpty>No province found.</CommandEmpty>
+                                <CommandGroup>
+                                  <ScrollArea className="h-48">
+                                    {provincesInRegion.map((province) => (
+                                    <CommandItem
+                                        value={province.name}
+                                        key={province.value}
+                                        onSelect={() => {
+                                          const currentValues = field.value || [];
+                                          const isSelected = currentValues.includes(province.value);
+                                          const newValues = isSelected
+                                            ? currentValues.filter(v => v !== province.value)
+                                            : [...currentValues, province.value];
+                                          field.onChange(newValues);
+                                        }}
+                                    >
+                                        <Check
+                                        className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value.includes(province.value) ? "opacity-100" : "opacity-0"
+                                        )}
+                                        />
+                                        {province.name}
+                                    </CommandItem>
+                                    ))}
+                                  </ScrollArea>
+                                </CommandGroup>
+                                </Command>
+                            </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                        </FormItem>
                         )}
                     />
                 </div>
