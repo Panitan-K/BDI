@@ -34,6 +34,56 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+const translations = {
+    en: {
+        title: 'Create New Project',
+        description: 'Configure the settings for your new infrastructure project. All fields are required.',
+        projectName: 'Project Name',
+        projectNamePlaceholder: 'e.g., Eastern High-Speed Rail',
+        projectType: 'Project Type',
+        projectTypePlaceholder: 'Select a project type',
+        government: 'Government',
+        private: 'Private',
+        region: 'Region',
+        regionPlaceholder: 'Select a region',
+        provinces: 'Provinces',
+        provincesPlaceholder: 'Select provinces...',
+        searchProvinces: 'Search provinces...',
+        noProvinceFound: 'No province found.',
+        budget: 'Gov. Budget (Billion THB)',
+        budgetPlaceholder: '150',
+        payback: 'Payback Period (Years)',
+        paybackPlaceholder: '8',
+        startDate: 'Project Start Date',
+        pickDate: 'Pick a date',
+        cancel: 'Cancel',
+        createProject: 'Create Project',
+    },
+    th: {
+        title: 'สร้างโปรเจกต์ใหม่',
+        description: 'กำหนดการตั้งค่าสำหรับโปรเจกต์โครงสร้างพื้นฐานใหม่ของคุณ ทุกช่องต้องระบุ',
+        projectName: 'ชื่อโปรเจกต์',
+        projectNamePlaceholder: 'เช่น รถไฟความเร็วสูงสายตะวันออก',
+        projectType: 'ประเภทโปรเจกต์',
+        projectTypePlaceholder: 'เลือกประเภทโปรเจกต์',
+        government: 'ภาครัฐ',
+        private: 'เอกชน',
+        region: 'ภาค',
+        regionPlaceholder: 'เลือกภาค',
+        provinces: 'จังหวัด',
+        provincesPlaceholder: 'เลือกจังหวัด...',
+        searchProvinces: 'ค้นหาจังหวัด...',
+        noProvinceFound: 'ไม่พบจังหวัด',
+        budget: 'งบประมาณภาครัฐ (พันล้านบาท)',
+        budgetPlaceholder: '150',
+        payback: 'ระยะเวลาคืนทุน (ปี)',
+        paybackPlaceholder: '8',
+        startDate: 'วันที่เริ่มโปรเจกต์',
+        pickDate: 'เลือกวันที่',
+        cancel: 'ยกเลิก',
+        createProject: 'สร้างโปรเจกต์',
+    },
+};
 
 const projectSchema = z.object({
   projectName: z.string().min(3, { message: 'Project name must be at least 3 characters.' }),
@@ -53,7 +103,7 @@ const projectSchema = z.object({
   paybackPeriod: z.coerce.number().min(0, { message: 'Payback period must be a positive number.' }),
 });
 
-export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; onOpenChange: (open: boolean) => void; }) {
+export function NewProjectDialog({ isOpen, onOpenChange, language }: { isOpen: boolean; onOpenChange: (open: boolean) => void; language: string; }) {
   const form = useForm<z.infer<typeof projectSchema>>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
@@ -65,6 +115,8 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
   });
 
   const selectedRegion = form.watch('region');
+  const t = translations[language as keyof typeof translations] || translations.en;
+  const langKey = language as keyof typeof regions[0]['provinces'][0];
 
   React.useEffect(() => {
     form.setValue('provinces', []);
@@ -89,10 +141,10 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
         <DialogHeader className="p-6 pb-4">
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <FolderPlus className="text-primary" />
-            Create New Project
+            {t.title}
           </DialogTitle>
           <DialogDescription>
-            Configure the settings for your new infrastructure project. All fields are required.
+            {t.description}
           </DialogDescription>
         </DialogHeader>
         
@@ -106,9 +158,9 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                               name="projectName"
                               render={({ field }) => (
                                   <FormItem>
-                                  <FormLabel>Project Name</FormLabel>
+                                  <FormLabel>{t.projectName}</FormLabel>
                                   <FormControl>
-                                      <Input placeholder="e.g., Eastern High-Speed Rail" {...field} className="bg-background/50"/>
+                                      <Input placeholder={t.projectNamePlaceholder} {...field} className="bg-background/50"/>
                                   </FormControl>
                                   <FormMessage />
                                   </FormItem>
@@ -119,16 +171,16 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                             name="projectType"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Project Type</FormLabel>
+                                <FormLabel>{t.projectType}</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
                                     <SelectTrigger className="bg-background/50">
-                                      <SelectValue placeholder="Select a project type" />
+                                      <SelectValue placeholder={t.projectTypePlaceholder} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="government">Government</SelectItem>
-                                    <SelectItem value="private">Private</SelectItem>
+                                    <SelectItem value="government">{t.government}</SelectItem>
+                                    <SelectItem value="private">{t.private}</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -142,16 +194,16 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                             name="region"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Region</FormLabel>
+                                <FormLabel>{t.region}</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <FormControl>
                                     <SelectTrigger className="bg-background/50">
-                                      <SelectValue placeholder="Select a region" />
+                                      <SelectValue placeholder={t.regionPlaceholder} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
                                     {regions.map((region) => (
-                                      <SelectItem key={region.value} value={region.value}>{region.name}</SelectItem>
+                                      <SelectItem key={region.value} value={region.value}>{region[langKey] || region.name}</SelectItem>
                                     ))}
                                   </SelectContent>
                                 </Select>
@@ -164,7 +216,7 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                               name="provinces"
                               render={({ field }) => (
                               <FormItem className="flex flex-col">
-                                  <FormLabel>Provinces</FormLabel>
+                                  <FormLabel>{t.provinces}</FormLabel>
                                   <Popover>
                                   <PopoverTrigger asChild>
                                       <FormControl>
@@ -181,11 +233,11 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                           {field.value && field.value.length > 0 ? (
                                               field.value.map(val => (
                                                   <Badge key={val} variant="secondary" className="mr-1">
-                                                      {provincesInRegion.find(p => p.value === val)?.name}
+                                                      {provincesInRegion.find(p => p.value === val)?.[langKey] || provincesInRegion.find(p => p.value === val)?.name}
                                                   </Badge>
                                               ))
                                           ) : (
-                                              "Select provinces..."
+                                            t.provincesPlaceholder
                                           )}
                                           </div>
                                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -194,13 +246,13 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                   </PopoverTrigger>
                                   <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                                       <Command>
-                                      <CommandInput placeholder="Search provinces..." />
-                                      <CommandEmpty>No province found.</CommandEmpty>
+                                      <CommandInput placeholder={t.searchProvinces} />
+                                      <CommandEmpty>{t.noProvinceFound}</CommandEmpty>
                                       <CommandGroup>
                                         <ScrollArea className="h-48">
                                           {provincesInRegion.map((province) => (
                                           <CommandItem
-                                              value={province.name}
+                                              value={province[langKey] || province.name}
                                               key={province.value}
                                               onSelect={(e) => {
                                                 e.preventDefault(); // This is the fix
@@ -218,7 +270,7 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                                   field.value && field.value.includes(province.value) ? "opacity-100" : "opacity-0"
                                               )}
                                               />
-                                              {province.name}
+                                              {province[langKey] || province.name}
                                           </CommandItem>
                                           ))}
                                         </ScrollArea>
@@ -237,9 +289,9 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                               name="governmentBudget"
                               render={({ field }) => (
                                   <FormItem>
-                                  <FormLabel>Gov. Budget (Billion THB)</FormLabel>
+                                  <FormLabel>{t.budget}</FormLabel>
                                   <FormControl>
-                                      <Input type="number" placeholder="150" {...field} className="bg-background/50"/>
+                                      <Input type="number" placeholder={t.budgetPlaceholder} {...field} className="bg-background/50"/>
                                   </FormControl>
                                   <FormMessage />
                                   </FormItem>
@@ -250,9 +302,9 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                               name="paybackPeriod"
                               render={({ field }) => (
                                   <FormItem>
-                                  <FormLabel>Payback Period (Years)</FormLabel>
+                                  <FormLabel>{t.payback}</FormLabel>
                                   <FormControl>
-                                      <Input type="number" placeholder="8" {...field} className="bg-background/50"/>
+                                      <Input type="number" placeholder={t.paybackPlaceholder} {...field} className="bg-background/50"/>
                                   </FormControl>
                                   <FormMessage />
                                   </FormItem>
@@ -265,7 +317,7 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                               name="startDate"
                               render={({ field }) => (
                                   <FormItem className="flex flex-col">
-                                      <FormLabel>Project Start Date</FormLabel>
+                                      <FormLabel>{t.startDate}</FormLabel>
                                       <Popover>
                                           <PopoverTrigger asChild>
                                           <FormControl>
@@ -280,7 +332,7 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                                               {field.value ? (
                                                   format(field.value, "PPP")
                                               ) : (
-                                                  <span>Pick a date</span>
+                                                  <span>{t.pickDate}</span>
                                               )}
                                               </Button>
                                           </FormControl>
@@ -306,8 +358,8 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
                 </ScrollArea>
                 
                 <DialogFooter className="pt-6 mt-4 border-t border-border">
-                    <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
-                    <Button type="submit">Create Project</Button>
+                    <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>{t.cancel}</Button>
+                    <Button type="submit">{t.createProject}</Button>
                 </DialogFooter>
             </form>
         </Form>
@@ -315,3 +367,5 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
     </Dialog>
   );
 }
+
+    

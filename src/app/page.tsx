@@ -566,9 +566,11 @@ export default function NliPlatformPage() {
       </div>
       <AiChatModal isOpen={isAiChatOpen} onOpenChange={setAiChatOpen} language={language} />
       <ShareDialog isOpen={isShareOpen} onOpenChange={setShareOpen} language={language} activeProject={activeProject} isComparing={isComparing} />
-      <NewProjectDialog isOpen={isNewProjectOpen} onOpenChange={setNewProjectOpen} />
+      <NewProjectDialog isOpen={isNewProjectOpen} onOpenChange={setNewProjectOpen} language={language} />
       <CompareProjectsDialog isOpen={isCompareOpen} onOpenChange={setCompareOpen} onCompare={handleStartComparison} language={language} />
       <AnalyzeProjectDialog isOpen={isAnalyzeOpen} onOpenChange={setAnalyzeOpen} onAnalyze={handleStartAnalysis} language={language} />
     </div>
   );
 }
+
+    
