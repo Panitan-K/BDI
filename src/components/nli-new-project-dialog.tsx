@@ -97,210 +97,210 @@ export function NewProjectDialog({ isOpen, onOpenChange }: { isOpen: boolean; on
         </DialogHeader>
         
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 px-6 pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                        control={form.control}
-                        name="projectName"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Project Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g., Eastern High-Speed Rail" {...field} className="bg-background/50"/>
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="projectType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="bg-background/50">
-                                <SelectValue placeholder="Select a project type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="government">Government</SelectItem>
-                              <SelectItem value="private">Private</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="region"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Region</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="bg-background/50">
-                                <SelectValue placeholder="Select a region" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {regions.map((region) => (
-                                <SelectItem key={region.value} value={region.value}>{region.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="provinces"
-                        render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Provinces</FormLabel>
-                            <Popover>
-                            <PopoverTrigger asChild>
-                                <FormControl>
-                                <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className={cn(
-                                    "w-full justify-between bg-background/50 h-10",
-                                    !field.value.length && "text-muted-foreground"
-                                    )}
-                                    disabled={!selectedRegion}
-                                >
-                                    <div className="flex gap-1 flex-wrap">
-                                    {field.value.length > 0 ? (
-                                        field.value.map(val => (
-                                            <Badge key={val} variant="secondary" className="mr-1">
-                                                {provincesInRegion.find(p => p.value === val)?.name}
-                                            </Badge>
-                                        ))
-                                    ) : (
-                                        "Select provinces..."
-                                    )}
-                                    </div>
-                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                                </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                <Command>
-                                <CommandInput placeholder="Search provinces..." />
-                                <CommandEmpty>No province found.</CommandEmpty>
-                                <CommandGroup>
-                                  <ScrollArea className="h-48">
-                                    {provincesInRegion.map((province) => (
-                                    <CommandItem
-                                        value={province.name}
-                                        key={province.value}
-                                        onSelect={() => {
-                                          const currentValues = field.value || [];
-                                          const isSelected = currentValues.includes(province.value);
-                                          const newValues = isSelected
-                                            ? currentValues.filter(v => v !== province.value)
-                                            : [...currentValues, province.value];
-                                          field.onChange(newValues);
-                                        }}
-                                    >
-                                        <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            field.value.includes(province.value) ? "opacity-100" : "opacity-0"
-                                        )}
-                                        />
-                                        {province.name}
-                                    </CommandItem>
-                                    ))}
-                                  </ScrollArea>
-                                </CommandGroup>
-                                </Command>
-                            </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                     <FormField
-                        control={form.control}
-                        name="governmentBudget"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Gov. Budget (Billion THB)</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="150" {...field} className="bg-background/50"/>
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="paybackPeriod"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Payback Period (Years)</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="8" {...field} className="bg-background/50"/>
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="startDate"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-col justify-end">
-                                <FormLabel>Project Start Date</FormLabel>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                    <FormControl>
-                                        <Button
-                                        variant={"outline"}
-                                        className={cn(
-                                            "w-full justify-start text-left font-normal bg-background/50",
-                                            !field.value && "text-muted-foreground"
-                                        )}
-                                        >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {field.value ? (
-                                            format(field.value, "PPP")
-                                        ) : (
-                                            <span>Pick a date</span>
-                                        )}
-                                        </Button>
-                                    </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar
-                                        mode="single"
-                                        selected={field.value}
-                                        onSelect={field.onChange}
-                                        disabled={(date) =>
-                                            date > new Date() || date < new Date("1900-01-01")
-                                        }
-                                        initialFocus
-                                    />
-                                    </PopoverContent>
-                                </Popover>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="px-6 pb-6">
+                <ScrollArea className="h-[60vh] pr-4">
+                  <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                          <FormField
+                              control={form.control}
+                              name="projectName"
+                              render={({ field }) => (
+                                  <FormItem>
+                                  <FormLabel>Project Name</FormLabel>
+                                  <FormControl>
+                                      <Input placeholder="e.g., Eastern High-Speed Rail" {...field} className="bg-background/50"/>
+                                  </FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="projectType"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Project Type</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="bg-background/50">
+                                      <SelectValue placeholder="Select a project type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="government">Government</SelectItem>
+                                    <SelectItem value="private">Private</SelectItem>
+                                  </SelectContent>
+                                </Select>
                                 <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="region"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Region</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="bg-background/50">
+                                      <SelectValue placeholder="Select a region" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {regions.map((region) => (
+                                      <SelectItem key={region.value} value={region.value}>{region.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                              control={form.control}
+                              name="provinces"
+                              render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                                  <FormLabel>Provinces</FormLabel>
+                                  <Popover>
+                                  <PopoverTrigger asChild>
+                                      <FormControl>
+                                      <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          className={cn(
+                                          "w-full justify-between bg-background/50 h-10",
+                                          !field.value.length && "text-muted-foreground"
+                                          )}
+                                          disabled={!selectedRegion}
+                                      >
+                                          <div className="flex gap-1 flex-wrap">
+                                          {field.value.length > 0 ? (
+                                              field.value.map(val => (
+                                                  <Badge key={val} variant="secondary" className="mr-1">
+                                                      {provincesInRegion.find(p => p.value === val)?.name}
+                                                  </Badge>
+                                              ))
+                                          ) : (
+                                              "Select provinces..."
+                                          )}
+                                          </div>
+                                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                      </Button>
+                                      </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                      <Command>
+                                      <CommandInput placeholder="Search provinces..." />
+                                      <CommandEmpty>No province found.</CommandEmpty>
+                                      <CommandGroup>
+                                        <ScrollArea className="h-48">
+                                          {provincesInRegion.map((province) => (
+                                          <CommandItem
+                                              value={province.name}
+                                              key={province.value}
+                                              onSelect={() => {
+                                                const currentValues = field.value || [];
+                                                const isSelected = currentValues.includes(province.value);
+                                                const newValues = isSelected
+                                                  ? currentValues.filter(v => v !== province.value)
+                                                  : [...currentValues, province.value];
+                                                field.onChange(newValues);
+                                              }}
+                                          >
+                                              <Check
+                                              className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value.includes(province.value) ? "opacity-100" : "opacity-0"
+                                              )}
+                                              />
+                                              {province.name}
+                                          </CommandItem>
+                                          ))}
+                                        </ScrollArea>
+                                      </CommandGroup>
+                                      </Command>
+                                  </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                              </FormItem>
+                              )}
+                          />
+                      
+                          <FormField
+                              control={form.control}
+                              name="governmentBudget"
+                              render={({ field }) => (
+                                  <FormItem>
+                                  <FormLabel>Gov. Budget (Billion THB)</FormLabel>
+                                  <FormControl>
+                                      <Input type="number" placeholder="150" {...field} className="bg-background/50"/>
+                                  </FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          <FormField
+                              control={form.control}
+                              name="paybackPeriod"
+                              render={({ field }) => (
+                                  <FormItem>
+                                  <FormLabel>Payback Period (Years)</FormLabel>
+                                  <FormControl>
+                                      <Input type="number" placeholder="8" {...field} className="bg-background/50"/>
+                                  </FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          <FormField
+                              control={form.control}
+                              name="startDate"
+                              render={({ field }) => (
+                                  <FormItem className="flex flex-col">
+                                      <FormLabel>Project Start Date</FormLabel>
+                                      <Popover>
+                                          <PopoverTrigger asChild>
+                                          <FormControl>
+                                              <Button
+                                              variant={"outline"}
+                                              className={cn(
+                                                  "w-full justify-start text-left font-normal bg-background/50",
+                                                  !field.value && "text-muted-foreground"
+                                              )}
+                                              >
+                                              <CalendarIcon className="mr-2 h-4 w-4" />
+                                              {field.value ? (
+                                                  format(field.value, "PPP")
+                                              ) : (
+                                                  <span>Pick a date</span>
+                                              )}
+                                              </Button>
+                                          </FormControl>
+                                          </PopoverTrigger>
+                                          <PopoverContent className="w-auto p-0" align="start">
+                                          <Calendar
+                                              mode="single"
+                                              selected={field.value}
+                                              onSelect={field.onChange}
+                                              disabled={(date) =>
+                                                  date > new Date() || date < new Date("1900-01-01")
+                                              }
+                                              initialFocus
+                                          />
+                                          </PopoverContent>
+                                      </Popover>
+                                      <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                      </div>
+                  </div>
+                </ScrollArea>
                 
-                <DialogFooter className="pt-6 mt-2 border-t border-border">
+                <DialogFooter className="pt-6 mt-4 border-t border-border">
                     <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>Cancel</Button>
                     <Button type="submit">Create Project</Button>
                 </DialogFooter>
