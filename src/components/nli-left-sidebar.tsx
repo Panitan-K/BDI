@@ -19,6 +19,7 @@ import {
   LucideIcon,
   Layers3,
   Settings,
+  PlusCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NliLayerSettingsDialog } from './nli-layer-settings-dialog';
@@ -35,6 +36,7 @@ interface LayerCategory {
 const translations = {
   en: {
     dataLayers: 'Data Layers',
+    addInfrastructure: 'Add Infrastructure',
     categories: {
       'Infrastructure': 'Infrastructure',
       'Land Use': 'Land Use',
@@ -53,6 +55,7 @@ const translations = {
   },
   th: {
     dataLayers: 'ชั้นข้อมูล',
+    addInfrastructure: 'เพิ่มโครงสร้างพื้นฐาน',
     categories: {
       'Infrastructure': 'โครงสร้างพื้นฐาน',
       'Land Use': 'การใช้ที่ดิน',
@@ -124,7 +127,12 @@ export function NliLeftSidebar({ activeLayers, onLayerToggle, language, style }:
           'p-3 flex flex-col glass-panel !rounded-lg z-10 shrink-0'
         )}
       >
-          <h2 className="text-base font-bold text-foreground mb-3 px-1">{t.dataLayers}</h2>
+          <div className="flex justify-between items-center mb-3 px-1">
+            <h2 className="text-base font-bold text-foreground">{t.dataLayers}</h2>
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" title={t.addInfrastructure}>
+              <PlusCircle className="h-4 w-4" />
+            </Button>
+          </div>
           <ScrollArea className="flex-1 -mr-3 pr-3">
             <div className="space-y-4 px-1">
               {Object.entries(dataLayerConfig).map(([category, layers]) => (
