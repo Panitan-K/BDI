@@ -400,8 +400,10 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     }
   
     return () => {
-      currentMap.off('click', handleMapClick);
-      canvas.style.cursor = 'grab';
+      if (currentMap) {
+        currentMap.off('click', handleMapClick);
+        canvas.style.cursor = 'grab';
+      }
       if (activeTool !== 'Measure' && activeTool !== 'Draw') {
         clearMeasurements();
       }
