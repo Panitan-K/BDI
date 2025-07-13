@@ -60,7 +60,7 @@ const choroplethProvincePaint = {
     'fill-outline-color': '#fff'
 };
 
-const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circle' , paint: any, sourceData?: any, sourceLayer?: string }> = {
+const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circle' | 'fill-extrusion', paint: any, sourceData?: any, sourceLayer?: string }> = {
     'Province': {
         url: 'https://api.maptiler.com/data/thailand-administrative/features.json?key=lVz5lFRZJpi7sv6fXhdz',
         type: 'fill',
@@ -98,6 +98,27 @@ const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circl
             'circle-color': '#9333ea', // a purple color
             'circle-stroke-color': 'white',
             'circle-stroke-width': 1.5
+        }
+    },
+    'Industrial Zones': {
+        url: "https://api.maptiler.com/data/019801ca-14e1-7441-bb1e-d83b7976efcf/features.json?key=mCJoJWjy7xv8aBfkazzm",
+        type: 'fill-extrusion',
+        paint: {
+          "fill-extrusion-color": [ "interpolate", ["linear"], ["get", "price"], 0, "#E0FFFF", 10, "#B0E0FF", 20, "#87CEFA", 30, "#40BFFF", 40, "#1E90FF", 50, "#0077FF", 60, "#0055CC", 70, "#0033AA", 80, "#1A1A80", 90, "#0D0D66", 100, "#000044" ],
+          "fill-extrusion-height": ["*", ["get", "price"], 1500],
+          "fill-extrusion-base": 10,
+          "fill-extrusion-opacity": 0.9,
+          "fill-extrusion-vertical-gradient": true
+        }
+    },
+    'Special Economic Corridors': {
+        url: "https://api.maptiler.com/data/019801f4-5d5b-742d-a765-1d848c3c1b7b/features.json?key=mCJoJWjy7xv8aBfkazzm",
+        type: 'circle',
+        paint: {
+            'circle-radius': 5,
+            'circle-color': '#ff0000',
+            'circle-opacity': 0.5,
+            'circle-stroke-width': 0
         }
     },
 };
@@ -506,3 +527,5 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     </div>
   );
 }
+
+    

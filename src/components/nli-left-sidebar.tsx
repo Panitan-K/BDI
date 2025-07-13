@@ -177,3 +177,5 @@ export function NliLeftSidebar({ activeLayers, onLayerToggle, language, style }:
     </>
   );
 }
+
+    
