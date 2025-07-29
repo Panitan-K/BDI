@@ -72,7 +72,7 @@ const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circl
         paint: { 'line-color': '#FF0000', 'line-width': 2 }
     },
     'Railways': {
-        url: 'https://ngis.go.th/arcgis/rest/services/Hosted/เส้นทางรถไฟ/FeatureServer/0/query?f=geojson&outFields=*&where=1%3D1',
+        url: 'https://api.maptiler.com/data/01980218-e7f9-7917-a344-5cfed5095fb0/features.json?key=mCJoJWjy7xv8aBfkazzm',
         type: 'line',
         paint: {
             'line-color': '#FF0000',
@@ -212,6 +212,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             const layerConfig = layerSources[layerName];
             map.current?.addSource(layerName, { type: 'geojson', data: layerConfig.url });
         });
+        
         
         map.current?.addSource('measure-geojson', {
             type: 'geojson',
