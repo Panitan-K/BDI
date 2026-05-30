@@ -5,6 +5,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as maptilersdk from '@maptiler/sdk';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
+import { FeatureCollection, Feature, Point, LineString, Polygon } from 'geojson';
 
 interface NliMapProps {
   activeLayers: Record<string, boolean>;
@@ -139,12 +140,12 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
   const [measureDistance, setMeasureDistance] = useState<string | null>(null);
   const [mouseCoords, setMouseCoords] = useState<string | null>(null);
 
-  const geojson = useRef<turf.helpers.FeatureCollection<turf.helpers.Point | turf.helpers.LineString | turf.helpers.Polygon>>({
+  const geojson = useRef<FeatureCollection<Point | LineString | Polygon>>({
     type: 'FeatureCollection',
     features: [],
   });
 
-  const linestring = useRef<turf.helpers.Feature<turf.helpers.LineString, any>>({
+  const linestring = useRef<Feature<LineString, any>>({
     type: 'Feature',
     geometry: {
       type: 'LineString',
@@ -166,8 +167,8 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
         linestring.current.geometry.coordinates = [];
     }
     
-    const source = currentMap.getSource('measure-geojson');
-    if (source && source.type === 'geojson') {
+    const source = currentMap.getSource('measure-geojson') as maptilersdk.GeoJSONSource;
+    if (source) {
         source.setData({
             type: 'FeatureCollection',
             features: [],
@@ -187,15 +188,16 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     if (!basemapStyle || map.current || !mapContainer.current) return;
 
     maptilersdk.config.apiKey = apiKey;
-    map.current = new maptilersdk.Map({
+    const currentMap = new maptilersdk.Map({
         container: mapContainer.current,
         style: basemapStyle,
         ...INITIAL_VIEW,
         pitch: 0,
         bearing: 0,
     });
+    map.current = currentMap;
     
-    map.current.on('load', async () => {
+    currentMap.on('load', async () => {
         setIsStyleLoaded(true);
         
         const provinceConfig = layerSources['Province'];
@@ -204,28 +206,28 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
         geojson.features.forEach((feature: any) => {
             feature.properties.pop_density = Math.random() * 1500;
         });
-        map.current?.addSource('Province', { type: 'geojson', data: geojson, generateId: true });
+        currentMap.addSource('Province', { type: 'geojson', data: geojson, generateId: true });
 
         Object.keys(layerSources).forEach((layerName) => {
             if (layerName === 'Province') return;
-            if (map.current?.getSource(layerName)) return;
+            if (currentMap.getSource(layerName)) return;
             const layerConfig = layerSources[layerName];
-            map.current?.addSource(layerName, { type: 'geojson', data: layerConfig.url });
+            currentMap.addSource(layerName, { type: 'geojson', data: layerConfig.url });
         });
         
         
-        map.current?.addSource('measure-geojson', {
+        currentMap.addSource('measure-geojson', {
             type: 'geojson',
             data: { type: 'FeatureCollection', features: [] },
         });
-        map.current?.addLayer({
+        currentMap.addLayer({
             id: 'measure-points',
             type: 'circle',
             source: 'measure-geojson',
             paint: { 'circle-radius': 5, 'circle-color': '#000' },
             filter: ['in', '$type', 'Point'],
         });
-        map.current?.addLayer({
+        currentMap.addLayer({
             id: 'measure-lines',
             type: 'line',
             source: 'measure-geojson',
@@ -233,7 +235,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             paint: { 'line-color': '#000', 'line-width': 2.5 },
             filter: ['in', '$type', 'LineString'],
         });
-        map.current?.addLayer({
+        currentMap.addLayer({
             id: 'measure-polygon',
             type: 'fill',
             source: 'measure-geojson',
@@ -241,29 +243,29 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             filter: ['in', '$type', 'Polygon'],
         });
 
-        map.current?.on('click', 'Province', (e) => {
+        currentMap.on('click', 'Province', (e) => {
             if (activeTool) return;
             if (e.features && e.features.length > 0) {
                 const feature = e.features[0];
                 const provinceName = feature.properties.name_en;
 
                 if (clickedProvinceId.current !== null) {
-                    map.current?.setFeatureState({ source: 'Province', id: clickedProvinceId.current }, { clicked: false });
+                    currentMap.setFeatureState({ source: 'Province', id: clickedProvinceId.current }, { clicked: false });
                 }
                 
                 clickedProvinceId.current = feature.id ?? null;
-                map.current?.setFeatureState({ source: 'Province', id: clickedProvinceId.current! }, { clicked: true });
+                currentMap.setFeatureState({ source: 'Province', id: clickedProvinceId.current! }, { clicked: true });
 
                 onRegionClick(provinceName);
             }
         });
         
-        map.current?.on('click', (e) => {
+        currentMap.on('click', (e) => {
             if (activeTool) return;
-            const features = map.current?.queryRenderedFeatures(e.point, { layers: ['Province'] });
+            const features = currentMap.queryRenderedFeatures(e.point, { layers: ['Province'] });
             if (!features || features.length === 0) {
                  if (clickedProvinceId.current !== null) {
-                    map.current?.setFeatureState({ source: 'Province', id: clickedProvinceId.current }, { clicked: false });
+                    currentMap.setFeatureState({ source: 'Province', id: clickedProvinceId.current }, { clicked: false });
                     clickedProvinceId.current = null;
                  }
                 onRegionClick(null);
@@ -281,23 +283,23 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             }
         });
 
-        map.current.on('draw.create', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
-        map.current.on('draw.update', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
-        map.current.on('draw.delete', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
+        currentMap.on('draw.create', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
+        currentMap.on('draw.update', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
+        currentMap.on('draw.delete', (e) => console.log("Drawn Features:", drawControl.current?.getAll()));
 
         scaleControl.current = new maptilersdk.ScaleControl({ unit: 'metric' });
 
-        map.current.on('mousemove', (e) => {
+        currentMap.on('mousemove', (e) => {
             setMouseCoords(`Lng: ${e.lngLat.lng.toFixed(4)}, Lat: ${e.lngLat.lat.toFixed(4)}`);
         });
-        map.current.on('mouseout', () => {
+        currentMap.on('mouseout', () => {
             setMouseCoords(null);
         })
 
     });
     
     return () => {
-      map.current?.remove();
+      currentMap.remove();
       map.current = null;
     };
   }, [apiKey, basemapStyle, onRegionClick]);
@@ -400,17 +402,17 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     const clickedPoint: [number, number] = [e.lngLat.lng, e.lngLat.lat];
     
     // Check if the user clicked the first point to close a polygon
-    const isClosingClick = geojson.current.features.length > 2 && features.length > 0 && (geojson.current.features[0] as turf.helpers.Feature<turf.helpers.Point>).properties?.id === features[0].properties.id;
+    const isClosingClick = geojson.current.features.length > 2 && features.length > 0 && (geojson.current.features[0] as Feature<Point>).properties?.id === features[0].properties.id;
 
     if (isClosingClick) {
-        linestring.current.geometry.coordinates.push((geojson.current.features[0] as turf.helpers.Feature<turf.helpers.Point>).geometry.coordinates);
+        linestring.current.geometry.coordinates.push((geojson.current.features[0] as Feature<Point>).geometry.coordinates);
     } else {
         const newPoint = turf.point(clickedPoint, { id: String(new Date().getTime()) });
         geojson.current.features.push(newPoint);
         linestring.current.geometry.coordinates.push(clickedPoint);
     }
     
-    const displayFeatures: turf.helpers.Feature<any>[] = [...geojson.current.features];
+    const displayFeatures: Feature<any>[] = [...geojson.current.features];
     
     let area = 0;
     let distance = 0;
@@ -467,8 +469,8 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     // Cleanup previous tool's state
     currentMap.off('click', handleMapClick);
     
-    if (drawControl.current && currentMap.hasControl(drawControl.current)) {
-        currentMap.removeControl(drawControl.current);
+    if (drawControl.current && currentMap.hasControl(drawControl.current as any)) {
+        currentMap.removeControl(drawControl.current as any);
     }
     
     // Activate the selected tool
@@ -479,7 +481,7 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     } else if (activeTool === 'Draw') {
       canvas.style.cursor = 'crosshair';
       if (drawControl.current) {
-        currentMap.addControl(drawControl.current, 'top-left');
+        currentMap.addControl(drawControl.current as any, 'top-left');
       }
     } else {
       canvas.style.cursor = 'grab';

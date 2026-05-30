@@ -254,8 +254,7 @@ export function NewProjectDialog({ isOpen, onOpenChange, language }: { isOpen: b
                                           <CommandItem
                                               value={province[langKey] || province.name}
                                               key={province.value}
-                                              onSelect={(e) => {
-                                                e.preventDefault(); // This is the fix
+                                              onSelect={() => {
                                                 const currentValues = field.value || [];
                                                 const isSelected = currentValues.includes(province.value);
                                                 const newValues = isSelected

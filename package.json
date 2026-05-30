@@ -2,6 +2,10 @@
   "name": "bdi",
   "version": "0.1.0-beta.1",
   "license": "MIT",
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Panitan-K/BDI.git"
@@ -18,7 +22,6 @@
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -48,7 +51,7 @@
     "@radix-ui/react-tabs": "^1.1.3",
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
-    "@turf/turf": "^6.5.0",
+    "@turf/turf": "^7.3.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
@@ -58,11 +61,10 @@
     "firebase": "^11.9.1",
     "genkit": "^1.13.0",
     "lucide-react": "^0.475.0",
-    "next": "15.3.8",
-    "patch-package": "^8.0.0",
-    "react": "^18.3.1",
+    "next": "^16.2.6",
+    "react": "^19.1.0",
     "react-day-picker": "^8.10.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.1.0",
     "react-draggable": "^4.4.6",
     "react-hook-form": "^7.54.2",
     "recharts": "^2.15.1",
@@ -72,10 +74,9 @@
   },
   "devDependencies": {
     "@types/mapbox__mapbox-gl-draw": "^1.4.6",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "@types/turf": "^3.5.32",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "genkit-cli": "^1.13.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
