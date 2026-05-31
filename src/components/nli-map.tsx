@@ -372,6 +372,168 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
             }
           }
       });
+
+      // Toggle visibility of built-in basemap style layers
+      try {
+        const style = currentMap.getStyle();
+        if (style && style.layers) {
+          style.layers.forEach((layer: any) => {
+            const id = layer.id;
+            const lowerId = id.toLowerCase();
+            
+            // Skip custom layers we added
+            if (
+              Object.keys(layerSources).includes(id) || 
+              id.startsWith('lrt-') || 
+              id.startsWith('measure-')
+            ) {
+              return;
+            }
+            
+            let show = true;
+            
+            // Infrastructure: Roads
+            if (
+              lowerId.includes('road') || 
+              lowerId.includes('street') || 
+              lowerId.includes('highway') || 
+              lowerId.includes('motorway') || 
+              lowerId.includes('tunnel') || 
+              lowerId.includes('bridge') || 
+              lowerId.includes('path') || 
+              lowerId.includes('pedestrian') || 
+              lowerId.includes('track') || 
+              lowerId.includes('steps') || 
+              lowerId.includes('trail') || 
+              lowerId.includes('bicycle') || 
+              lowerId.includes('route')
+            ) {
+              if (!lowerId.includes('rail') && !lowerId.includes('subway') && !lowerId.includes('transit') && !lowerId.includes('train')) {
+                show = activeLayers['Roads'] ?? false;
+              }
+            }
+            
+            // Infrastructure: Railways
+            if (
+              lowerId.includes('rail') || 
+              lowerId.includes('transit') || 
+              lowerId.includes('subway') || 
+              lowerId.includes('train')
+            ) {
+              show = activeLayers['Railways'] ?? false;
+            }
+            
+            // Infrastructure: Airports
+            if (
+              lowerId.includes('airport') || 
+              lowerId.includes('aeroway') || 
+              lowerId.includes('runway') || 
+              lowerId.includes('taxiway') || 
+              lowerId.includes('apron') || 
+              lowerId.includes('aerodrome')
+            ) {
+              show = activeLayers['Airports'] ?? false;
+            }
+            
+            // Infrastructure: Ports
+            if (
+              lowerId.includes('port') || 
+              lowerId.includes('pier') || 
+              lowerId.includes('harbor') || 
+              lowerId.includes('ferry') || 
+              lowerId.includes('marina')
+            ) {
+              show = activeLayers['Ports'] ?? false;
+            }
+            
+            // Land Use: Forest Zones
+            if (
+              lowerId.includes('forest') || 
+              lowerId.includes('wood') || 
+              lowerId.includes('park') || 
+              lowerId.includes('scrub') || 
+              lowerId.includes('tree') || 
+              lowerId.includes('grass') || 
+              lowerId.includes('cemetery') || 
+              lowerId.includes('protected')
+            ) {
+              show = activeLayers['Forest Zones'] ?? false;
+            }
+            
+            // Land Use: Agricultural Zones
+            if (
+              lowerId.includes('farm') || 
+              lowerId.includes('meadow') || 
+              lowerId.includes('crop') || 
+              lowerId.includes('orchard') || 
+              lowerId.includes('agricultural') || 
+              lowerId.includes('cultivated')
+            ) {
+              show = activeLayers['Agricultural Zones'] ?? false;
+            }
+            
+            // Land Use: Land Use Plan
+            if (
+              lowerId.includes('landuse') || 
+              lowerId.includes('landcover') || 
+              lowerId.includes('residential') || 
+              lowerId.includes('commercial') || 
+              lowerId.includes('military') || 
+              lowerId.includes('hospital') || 
+              lowerId.includes('stadium') || 
+              lowerId.includes('retail')
+            ) {
+              const isForest = lowerId.includes('forest') || lowerId.includes('wood') || lowerId.includes('park') || lowerId.includes('scrub') || lowerId.includes('tree') || lowerId.includes('grass') || lowerId.includes('cemetery') || lowerId.includes('protected');
+              const isAgri = lowerId.includes('farm') || lowerId.includes('meadow') || lowerId.includes('crop') || lowerId.includes('orchard') || lowerId.includes('agricultural');
+              const isIndustrial = lowerId.includes('industrial');
+              if (!isForest && !isAgri && !isIndustrial) {
+                show = activeLayers['Land Use Plan'] ?? false;
+              }
+            }
+            
+            // Economic: Industrial Zones
+            if (lowerId.includes('industrial')) {
+              show = activeLayers['Industrial Zones'] ?? false;
+            }
+            
+            // Administrative: Province boundary / label
+            if (
+              (lowerId.includes('border') || lowerId.includes('boundary') || lowerId.includes('admin') || lowerId.includes('label')) &&
+              (lowerId.includes('state') || lowerId.includes('province') || lowerId.includes('level_4') || lowerId.includes('level4') || lowerId.endsWith('_4') || lowerId.includes('-4-') || lowerId.includes('_4_')) &&
+              !lowerId.includes('country')
+            ) {
+              show = activeLayers['Province'] ?? false;
+            }
+            
+            // Administrative: District boundary / label
+            if (
+              (lowerId.includes('border') || lowerId.includes('boundary') || lowerId.includes('admin') || lowerId.includes('label')) &&
+              (lowerId.includes('district') || lowerId.includes('county') || lowerId.includes('level_6') || lowerId.includes('level6') || lowerId.endsWith('_6') || lowerId.includes('-6-') || lowerId.includes('_6_')) &&
+              !lowerId.includes('country')
+            ) {
+              show = activeLayers['District'] ?? false;
+            }
+            
+            // Administrative: Sub-district boundary / label
+            if (
+              (lowerId.includes('border') || lowerId.includes('boundary') || lowerId.includes('admin') || lowerId.includes('label')) &&
+              (lowerId.includes('subdistrict') || lowerId.includes('sub-district') || lowerId.includes('township') || lowerId.includes('locality') || lowerId.includes('level_8') || lowerId.includes('level8') || lowerId.endsWith('_8') || lowerId.includes('-8-') || lowerId.includes('_8_')) &&
+              !lowerId.includes('country')
+            ) {
+              show = activeLayers['Sub-district'] ?? false;
+            }
+            
+            // General admin border fallback if it matches boundary/border but isn't country
+            if (lowerId === 'other border' || lowerId === 'other border dash' || lowerId === 'disputed border') {
+              show = activeLayers['Province'] ?? false;
+            }
+            
+            currentMap.setLayoutProperty(id, 'visibility', show ? 'visible' : 'none');
+          });
+        }
+      } catch (err) {
+        console.error('Error toggling style layers:', err);
+      }
     };
     
     if (isStyleLoaded) {

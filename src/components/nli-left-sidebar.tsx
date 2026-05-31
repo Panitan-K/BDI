@@ -154,42 +154,8 @@ export function NliLeftSidebar({
             </Button>
           </div>
           <ScrollArea className="flex-1 -mr-3 pr-3">
-            <div className="space-y-4 px-1">
-              {Object.entries(dataLayerConfig).map(([category, layers]) => (
-                <div key={category}>
-                  <h3 className="font-semibold text-muted-foreground mb-2 text-sm">{t.categories[category as keyof typeof t.categories]}</h3>
-                  <div className="space-y-2">
-                    {layers.map((layer) => (
-                      <div key={layer.name} className="flex items-center justify-between p-1 rounded-md hover:bg-accent group">
-                        <div className="flex items-center gap-3">
-                          <layer.icon className="h-4 w-4 text-primary" />
-                          <span className="text-xs text-foreground">{t.layers[layer.name as keyof typeof t.layers]}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
-                            onClick={() => openSettings(layer.name)}
-                            aria-label={t.layerSettings}
-                          >
-                              <Settings className="h-3 w-3" />
-                          </Button>
-                          <Switch 
-                            checked={activeLayers[layer.name]}
-                            onCheckedChange={(checked) => onLayerToggle(layer.name, checked)}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
             {/* Khon Kaen LRT Proposed Plans */}
-            <Separator className="my-4 bg-border/50" />
-            <div className="px-1 pb-4">
+            <div className="px-1 pb-2">
               <h3 className="font-bold text-sm text-primary mb-2 flex items-center gap-2">
                 <TrainTrack className="h-4 w-4" />
                 {language === 'th' ? 'แผนเสนอโครงข่าย LRT ขอนแก่น' : 'Khon Kaen LRT Plans'}
@@ -249,6 +215,41 @@ export function NliLeftSidebar({
                   </div>
                 )}
               </div>
+            </div>
+
+            <Separator className="my-4 bg-border/50" />
+
+            <div className="space-y-4 px-1">
+              {Object.entries(dataLayerConfig).map(([category, layers]) => (
+                <div key={category}>
+                  <h3 className="font-semibold text-muted-foreground mb-2 text-sm">{t.categories[category as keyof typeof t.categories]}</h3>
+                  <div className="space-y-2">
+                    {layers.map((layer) => (
+                      <div key={layer.name} className="flex items-center justify-between p-1 rounded-md hover:bg-accent group">
+                        <div className="flex items-center gap-3">
+                          <layer.icon className="h-4 w-4 text-primary" />
+                          <span className="text-xs text-foreground">{t.layers[layer.name as keyof typeof t.layers]}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                            onClick={() => openSettings(layer.name)}
+                            aria-label={t.layerSettings}
+                          >
+                              <Settings className="h-3 w-3" />
+                          </Button>
+                          <Switch 
+                            checked={activeLayers[layer.name]}
+                            onCheckedChange={(checked) => onLayerToggle(layer.name, checked)}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </ScrollArea>
       </aside>
