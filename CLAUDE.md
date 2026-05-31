@@ -45,7 +45,7 @@ page.tsx (all state lives here)
 ├─ nli-header            project switcher, compare/analyze toggles, theme, language
 ├─ (toolbar row)         import/settings/legend/table/params/notes/export buttons
 ├─ nli-map-toolbar       basemap switch + map tools (zoom, measure, draw, 3D…)
-├─ nli-left-sidebar      data-layer toggles
+├─ nli-left-sidebar      3 boxes: LRT Line Plan (+ base layers) · EIA/ROW · Project Tracking
 ├─ nli-map               ← the real workhorse (MapTiler)
 ├─ nli-right-sidebar     analysis / comparison charts (shown only when active)
 └─ dialogs               ai-chat, share, new-project, compare, analyze
@@ -89,6 +89,9 @@ env-only before any public/production deployment.
   click-to-select, measure & draw tools, 3D pitch. Layers (Province, Roads,
   Railways, Ports, Airports, Industrial Zones, SEZ) load from hosted MapTiler GeoJSON.
 - The AI assistant end-to-end (live with a key, mock without).
+- Khon Kaen LRT overlay: 10 proposed network plans (`docs/lrt_plans.json`) render
+  as route lines + stations on the map, selectable from the left sidebar's
+  **LRT Line Plan** box (box 1).
 - Bilingual UI, theme switching, resizable sidebars, fullscreen, share-link.
 
 **Mock / placeholder:**
@@ -98,15 +101,21 @@ env-only before any public/production deployment.
 - The map defaults to **Khon Kaen** (`INITIAL_VIEW` in `nli-map.tsx`, zoom 11.5) —
   the LRT command center's home city. `regionData` is a hardcoded handful
   (Khon Kaen, Bangkok, Chiang Mai, Phuket, Chon Buri) used for click-to-fly.
+- The left sidebar's **EIA & Right-of-Way** (box 2) and **Project Tracking**
+  (box 3) boxes are mock. Figures — corridor width, buildings to demolish
+  (residential/commercial split), compensation cost, EIA risk score, complaint
+  counts, and the 8-step milestone tracker — come from `src/lib/lrt-eia-data.ts`,
+  derived **deterministically** from the selected plan (stable per plan, different
+  across the 10). No real EIA/expropriation computation behind them.
 - The **top toolbar buttons** (Import, Settings, Legend, Attribute Table,
   Parameters, Time-Series, User Notes, Export) are **decorative** — tooltips only,
   no onClick wiring.
 
 **Not built at all** (despite appearing in product/vision docs): no database
-(no PostGIS/Supabase), no CCTV/SCAMTIR demand pipeline, no 3D Right-of-Way /
-expropriation engine, no citizen-complaint NLP, no Qdrant/pgvector RAG. The
-unified geospatial schema for these is sketched in `.env.template` comments and
-discussed but **not implemented**.
+(no PostGIS/Supabase), no CCTV/SCAMTIR demand pipeline, no *real* 3D Right-of-Way /
+expropriation engine (the EIA box shows mock figures only), no citizen-complaint
+NLP, no Qdrant/pgvector RAG. The unified geospatial schema for these is sketched
+in `.env.template` comments and discussed but **not implemented**.
 
 ## Gotchas
 

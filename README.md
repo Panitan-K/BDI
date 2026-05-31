@@ -2,7 +2,28 @@
 
 > **Status: Beta** 🚧
 
-BDI — a Next.js 16 application built with Firebase, Genkit AI, and MapTiler mapping.
+BDI — a bilingual (EN/TH) GIS dashboard for the **Khon Kaen LRT** command center,
+built with Next.js 16, Genkit AI, and MapTiler mapping. It helps planners evaluate
+proposed light-rail networks, their environmental/right-of-way impact, and approval
+progress on a single interactive map.
+
+## Features
+
+- 🗺️ **Khon Kaen-centered map** (MapTiler) — pan/zoom, basemap + theme switching,
+  measure & draw tools, province click-to-select, 3D pitch.
+- 🚈 **LRT Line Plan overlay** — 10 proposed network configurations
+  (`docs/lrt_plans.json`) rendered as routes + stations, selectable from the sidebar.
+- ⚠️ **EIA & Right-of-Way box** _(mock)_ — corridor width, buildings to demolish,
+  estimated compensation, EIA risk score, and community-friction complaint counts,
+  reactive to the selected plan.
+- ✅ **Project Tracking box** _(mock)_ — an 8-step approval timeline (survey → line
+  plan confirmed → EIA → public hearing → budget → construction) with progress.
+- 🤖 **AI assistant ("Typhoon LLM")** — live Google Gemini when `GEMINI_API_KEY`
+  is set, graceful mock responses otherwise (Live AI / Demo Mode badge).
+
+> **Real-vs-mock:** the app runs end-to-end with an empty `.env`. Most analytics
+> are placeholder/mock; see [`CLAUDE.md`](CLAUDE.md) for exactly what's real vs.
+> mocked, and [`.env.template`](.env.template) to plug in real data sources.
 
 ## Original Producers
 
@@ -21,9 +42,8 @@ This project was originally created by **NLI Thailand**:
 - **AI:** Genkit with Google AI
 - **Maps:** MapTiler SDK / Mapbox GL Draw
 - **UI:** Radix UI + Tailwind CSS + shadcn/ui
-- **Backend:** Firebase
 - **Package Manager:** pnpm
-- **Deployment:** Vercel-optimized
+- **Deployment:** AWS Amplify (`amplify.yml`)
 
 ## Getting Started
 
