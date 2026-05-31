@@ -34,8 +34,8 @@ npm install -g pnpm
 # Install dependencies
 pnpm install
 
-# Copy environment file and fill in your keys
-cp .env.example .env
+# Copy environment file and fill in your keys (all keys optional — blanks fall back to mock data)
+cp .env.template .env.local
 
 # Run the development server
 pnpm dev

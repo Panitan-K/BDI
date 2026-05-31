@@ -28,6 +28,8 @@ const translations = {
     title: "AI Assistant (Typhoon LLM)",
     send: "Send",
     error: "Sorry, I encountered an error. Please try again.",
+    liveBadge: "Live AI",
+    mockBadge: "Demo Mode",
     initialMessage: "Hello! I am Typhoon LLM. I can help you analyze potential investment locations. For example, you could ask me:\n\n'Hello AI, I'm looking for a suitable location to invest in the EEC area. I'm not sure which province to choose. Can you help me with a spatial analysis?'"
   },
   th: {
@@ -36,6 +38,8 @@ const translations = {
     title: "ผู้ช่วย AI (ไต้ฝุ่น LLM)",
     send: "ส่ง",
     error: "ขออภัย เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+    liveBadge: "AI สด",
+    mockBadge: "โหมดสาธิต",
     initialMessage: `สวัสดีครับ! ผมคือไต้ฝุ่น LLM ผู้ช่วยวิเคราะห์การลงทุนโครงสร้างพื้นฐาน\n\nคุณสามารถสอบถามเกี่ยวกับการวิเคราะห์เชิงพื้นที่ หรือผลกระทบของโครงการต่างๆ ได้เลยครับ`
   }
 };
@@ -49,12 +53,15 @@ export function AiChatModal({ isOpen, onOpenChange, language = 'en' }: { isOpen:
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+  // 'live' = answered by the real LLM, 'mock' = built-in demo response, null = no query yet.
+  const [mode, setMode] = useState<'live' | 'mock' | null>(null);
+
   React.useEffect(() => {
     // When language changes, reset the chat with the appropriate initial message
     const newTranslations = translations[language as keyof typeof translations] || translations.en;
     setMessages([{ sender: 'bot', text: newTranslations.initialMessage }]);
     setInput('');
+    setMode(null);
   }, [language]);
 
 
@@ -70,6 +77,7 @@ export function AiChatModal({ isOpen, onOpenChange, language = 'en' }: { isOpen:
       const result = await askGisAssistant({ query: input, language });
       const botMessage: Message = { sender: 'bot', text: result.response };
       setMessages((prev) => [...prev, botMessage]);
+      setMode(result.source);
     } catch (error) {
       console.error('AI assistant error:', error);
       const errorMessage: Message = { sender: 'bot', text: t.error };
@@ -86,6 +94,22 @@ export function AiChatModal({ isOpen, onOpenChange, language = 'en' }: { isOpen:
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="text-primary" />
             {t.title}
+            {mode && (
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  mode === 'live'
+                    ? 'bg-emerald-500/15 text-emerald-400'
+                    : 'bg-amber-500/15 text-amber-500'
+                }`}
+                title={
+                  mode === 'live'
+                    ? 'Answered by the live Gemini LLM.'
+                    : 'No GEMINI_API_KEY configured — showing a built-in demo response.'
+                }
+              >
+                {mode === 'live' ? t.liveBadge : t.mockBadge}
+              </span>
+            )}
           </DialogTitle>
           <DialogDescription>
             {t.description}

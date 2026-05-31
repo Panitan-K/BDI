@@ -6,10 +6,16 @@
  * - askGisAssistant - A function that handles queries for the GIS assistant.
  * - GisAssistantInput - The input type for the askGisAssistant function.
  * - GisAssistantOutput - The return type for the askGisAssistant function.
+ *
+ * Behavior: if a Gemini API key is configured (see `.env.template`), the flow
+ * calls the live LLM. Otherwise — or if the live call fails — it returns the
+ * built-in mock response. Every result is tagged with `source: 'live' | 'mock'`
+ * so the UI can show which mode produced it.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {isLlmConfigured} from '@/lib/config';
 
 const GisAssistantInputSchema = z.object({
   query: z.string().describe('The user\'s natural language query about GIS data and infrastructure impact.'),
@@ -19,8 +25,14 @@ export type GisAssistantInput = z.infer<typeof GisAssistantInputSchema>;
 
 const GisAssistantOutputSchema = z.object({
   response: z.string().describe('The AI\'s response to the user query, formatted as a markdown string.'),
+  source: z.enum(['live', 'mock']).describe('Whether the answer came from the live LLM or the built-in mock.'),
 });
 export type GisAssistantOutput = z.infer<typeof GisAssistantOutputSchema>;
+
+// The schema the LLM itself fills (the `source` tag is added by the flow, not the model).
+const LlmOutputSchema = z.object({
+  response: z.string().describe('The AI\'s response to the user query, formatted as a markdown string.'),
+});
 
 export async function askGisAssistant(input: GisAssistantInput): Promise<GisAssistantOutput> {
   return gisAssistantFlow(input);
@@ -29,7 +41,7 @@ export async function askGisAssistant(input: GisAssistantInput): Promise<GisAssi
 const prompt = ai.definePrompt({
   name: 'gisAssistantPrompt',
   input: {schema: GisAssistantInputSchema},
-  output: {schema: GisAssistantOutputSchema},
+  output: {schema: LlmOutputSchema},
   prompt: `You are "Typhoon LLM", a sophisticated AI assistant for the "NLI-Thai" (National Logistic Investment Thai) GIS platform. Your purpose is to help government officials, planners, and policymakers analyze the potential impacts of major infrastructure investments in Thailand.
 
 You will receive a query from a user. Based on this query, you must provide a detailed, data-driven analysis. Simulate the response as if you have access to a vast repository of real-time GIS data, economic models, and environmental data for Thailand.
@@ -45,21 +57,14 @@ Generate a simulated, insightful response to this query.
 `,
 });
 
-const gisAssistantFlow = ai.defineFlow(
-  {
-    name: 'gisAssistantFlow',
-    inputSchema: GisAssistantInputSchema,
-    outputSchema: GisAssistantOutputSchema,
-  },
-  async (input) => {
-    // In a real implementation, you would call the LLM like this:
-    // const {output} = await prompt(input);
-    // return output!;
-
-    // Mock Response for Demonstration
-    if (input.language === 'th' && (input.query.includes('วิเคราะห์เชิงพื้นที่') || input.query.includes('EEC'))) {
-        return {
-            response: `ยินดีครับ! ข้อมูลที่คุณต้องการให้ฉันวิเคราะห์ประกอบด้วยอะไรบ้างครับ เช่น ประเภทธุรกิจที่ต้องการลงทุน งบประมาณ หรือเงื่อนไขเฉพาะอื่น ๆ?
+/**
+ * Built-in mock responses. Used when no Gemini key is configured, or as a
+ * graceful fallback if the live LLM call throws.
+ */
+function getMockResponse(input: GisAssistantInput): {response: string} {
+  if (input.language === 'th' && (input.query.includes('วิเคราะห์เชิงพื้นที่') || input.query.includes('EEC'))) {
+    return {
+      response: `ยินดีครับ! ข้อมูลที่คุณต้องการให้ฉันวิเคราะห์ประกอบด้วยอะไรบ้างครับ เช่น ประเภทธุรกิจที่ต้องการลงทุน งบประมาณ หรือเงื่อนไขเฉพาะอื่น ๆ?
 
 ... หลังจากที่คุณให้ข้อมูลเพิ่มเติม ...
 
@@ -79,15 +84,14 @@ const gisAssistantFlow = ai.defineFlow(
 
 ... กำลังจัดทำแผนที่ ...
 
-แน่นอนครับ ฉันกำลังจัดทำแผนที่แสดงจุดเด่นของแต่ละพื้นที่ พร้อมไฮไลต์เส้นทางขนส่งและศักยภาพทางเศรษฐกิจ… กรุณารอสักครู่…`
-        }
-    }
+แน่นอนครับ ฉันกำลังจัดทำแผนที่แสดงจุดเด่นของแต่ละพื้นที่ พร้อมไฮไลต์เส้นทางขนส่งและศักยภาพทางเศรษฐกิจ… กรุณารอสักครู่…`,
+    };
+  }
 
-
-    if (input.query.toLowerCase().includes("high-speed rail") || input.query.includes("รถไฟความเร็วสูง")) {
-        if (input.language === 'th') {
-            return {
-                response: `### การวิเคราะห์สำหรับรถไฟความเร็วสูง: กรุงเทพฯ - ชลบุรี
+  if (input.query.toLowerCase().includes("high-speed rail") || input.query.includes("รถไฟความเร็วสูง")) {
+    if (input.language === 'th') {
+      return {
+        response: `### การวิเคราะห์สำหรับรถไฟความเร็วสูง: กรุงเทพฯ - ชลบุรี
 
 จากข้อเสนอโครงการรถไฟความเร็วสูงเชื่อมต่อระหว่างกรุงเทพฯ และชลบุรี สรุปผลกระทบที่คาดการณ์ได้ดังนี้:
 
@@ -105,10 +109,10 @@ const gisAssistantFlow = ai.defineFlow(
 *   **ข้อควรพิจารณา:** คะแนนโครงการได้รับผลกระทบจากการก่อสร้างผ่านพื้นที่ชายฝั่งที่ละเอียดอ่อน แนะนำให้ใช้กลยุทธ์การบรรเทาผลกระทบ เช่น รางยกระดับและทางเชื่อมสำหรับสัตว์ป่า เพื่อปรับปรุงคะแนนนี้
 
 การจำลองนี้บ่งชี้ถึงแนวโน้มทางเศรษฐกิจที่เป็นบวกอย่างมาก แต่ต้องมีการจัดการด้านสิ่งแวดล้อมอย่างรอบคอบ`,
-            };
-        }
-       return {
-         response: `### Analysis for High-Speed Rail: Bangkok to Chon Buri
+      };
+    }
+    return {
+      response: `### Analysis for High-Speed Rail: Bangkok to Chon Buri
 
 Based on the proposed high-speed rail link between Bangkok and Chon Buri, here is a summary of the projected impacts:
 
@@ -126,16 +130,39 @@ Based on the proposed high-speed rail link between Bangkok and Chon Buri, here i
 *   **Considerations:** The project score is impacted by construction through sensitive coastal areas. Mitigation strategies, such as elevated tracks and wildlife corridors, are recommended to improve this score.
 
 This simulation indicates a strong positive economic outlook but requires careful environmental management.`,
-       };
+    };
+  }
+
+  if (input.language === 'th') {
+    return {
+      response: "ฉันพร้อมที่จะวิเคราะห์คำถามเกี่ยวกับการลงทุนในโครงสร้างพื้นฐานของคุณแล้ว โปรดให้รายละเอียดเกี่ยวกับโครงการที่คุณต้องการจำลอง เช่น 'การสร้างรถไฟความเร็วสูงจากกรุงเทพฯ ไปชลบุรีมีผลกระทบทางเศรษฐกิจอย่างไร?'",
+    };
+  }
+  return {
+    response: "I am ready to analyze your infrastructure investment query. Please provide details on the project you would like to simulate, for example: 'What is the economic impact of building a high-speed rail from Bangkok to Chon Buri?'",
+  };
+}
+
+const gisAssistantFlow = ai.defineFlow(
+  {
+    name: 'gisAssistantFlow',
+    inputSchema: GisAssistantInputSchema,
+    outputSchema: GisAssistantOutputSchema,
+  },
+  async (input): Promise<GisAssistantOutput> => {
+    // Live path: only attempted when a Gemini key is configured.
+    if (isLlmConfigured()) {
+      try {
+        const {output} = await prompt(input);
+        if (output?.response) {
+          return {response: output.response, source: 'live'};
+        }
+      } catch (err) {
+        console.error('[gis-assistant] Live LLM call failed, falling back to mock:', err);
+      }
     }
 
-    if (input.language === 'th') {
-        return {
-          response: "ฉันพร้อมที่จะวิเคราะห์คำถามเกี่ยวกับการลงทุนในโครงสร้างพื้นฐานของคุณแล้ว โปรดให้รายละเอียดเกี่ยวกับโครงการที่คุณต้องการจำลอง เช่น 'การสร้างรถไฟความเร็วสูงจากกรุงเทพฯ ไปชลบุรีมีผลกระทบทางเศรษฐกิจอย่างไร?'"
-        };
-    }
-    return {
-      response: "I am ready to analyze your infrastructure investment query. Please provide details on the project you would like to simulate, for example: 'What is the economic impact of building a high-speed rail from Bangkok to Chon Buri?'"
-    };
+    // Mock fallback (no key configured, or the live call failed/returned empty).
+    return {...getMockResponse(input), source: 'mock'};
   }
 );
