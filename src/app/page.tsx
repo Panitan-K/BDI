@@ -25,6 +25,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { NewProjectDialog } from '@/components/nli-new-project-dialog';
 import { CompareProjectsDialog } from '@/components/nli-compare-dialog';
 import { AnalyzeProjectDialog } from '@/components/nli-analyze-dialog';
+import lrtPlansData from '../../docs/lrt_plans.json';
 
 const translations = {
   en: {
@@ -171,6 +172,20 @@ export default function NliPlatformPage() {
   const [theme, setTheme] = useState('dark');
   const [language, setLanguage] = useState('en');
   const [activeParameters, setActiveParameters] = useState<string[]>([]);
+
+  // LRT Plans states
+  const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
+  const [showLrtRoutes, setShowLrtRoutes] = useState(true);
+  const [showLrtStations, setShowLrtStations] = useState(true);
+
+  const handlePlanSelect = (planId: number | null) => {
+    setSelectedPlanId(planId);
+    if (planId !== null) {
+      setIsComparing(false);
+      setIsAnalyzing(false);
+      setSelectedRegion(null);
+    }
+  };
   
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(256);
@@ -294,6 +309,7 @@ export default function NliPlatformPage() {
     if (isAnalyzing) {
         setIsAnalyzing(false);
     }
+    setSelectedPlanId(null);
     setActiveProject(project);
   }
   
@@ -301,6 +317,7 @@ export default function NliPlatformPage() {
     if (isAnalyzing) {
         setIsAnalyzing(false);
     } else {
+        setSelectedPlanId(null);
         setAnalyzeOpen(true);
     }
   }
@@ -310,6 +327,7 @@ export default function NliPlatformPage() {
       setIsComparing(false);
       setSelectedRegion(null);
     } else {
+      setSelectedPlanId(null);
       setCompareOpen(true);
     }
   };
@@ -506,6 +524,12 @@ export default function NliPlatformPage() {
               activeLayers={activeLayers}
               onLayerToggle={handleLayerToggle}
               language={language}
+              selectedPlanId={selectedPlanId}
+              onPlanSelect={handlePlanSelect}
+              showLrtRoutes={showLrtRoutes}
+              onToggleLrtRoutes={setShowLrtRoutes}
+              showLrtStations={showLrtStations}
+              onToggleLrtStations={setShowLrtStations}
             />
             <div
               className="w-1 cursor-col-resize rounded-full bg-transparent hover:bg-border transition-colors self-stretch my-2"
@@ -532,6 +556,9 @@ export default function NliPlatformPage() {
             activeTool={activeTool}
             onRegionClick={handleRegionSelect}
             selectedRegion={selectedRegion}
+            selectedPlanId={selectedPlanId}
+            showLrtRoutes={showLrtRoutes}
+            showLrtStations={showLrtStations}
           />}
 
             <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
@@ -546,7 +573,7 @@ export default function NliPlatformPage() {
             </div>
         </main>
         
-        {!isFullscreen && (isComparing || isAnalyzing) && (
+        {!isFullscreen && (isComparing || isAnalyzing || selectedPlanId !== null) && (
           <>
             <div
               className="w-1 cursor-col-resize rounded-full bg-transparent hover:bg-border transition-colors self-stretch my-2"
@@ -560,6 +587,8 @@ export default function NliPlatformPage() {
               onClearRegion={() => setSelectedRegion(null)}
               language={language}
               activeParameters={activeParameters}
+              selectedPlanId={selectedPlanId}
+              onClearLrtPlan={() => handlePlanSelect(null)}
             />
           </>
         )}

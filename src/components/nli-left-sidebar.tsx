@@ -20,7 +20,10 @@ import {
   Layers3,
   Settings,
   PlusCircle,
+  MapPin,
 } from 'lucide-react';
+import { Separator } from './ui/separator';
+import lrtPlansData from '../../docs/lrt_plans.json';
 import { Button } from '@/components/ui/button';
 import { NliLayerSettingsDialog } from './nli-layer-settings-dialog';
 
@@ -106,9 +109,26 @@ interface NliLeftSidebarProps {
   onLayerToggle: (layerName: string, isActive: boolean) => void;
   language: string;
   style?: React.CSSProperties;
+  selectedPlanId: number | null;
+  onPlanSelect: (planId: number | null) => void;
+  showLrtRoutes: boolean;
+  onToggleLrtRoutes: (show: boolean) => void;
+  showLrtStations: boolean;
+  onToggleLrtStations: (show: boolean) => void;
 }
 
-export function NliLeftSidebar({ activeLayers, onLayerToggle, language, style }: NliLeftSidebarProps) {
+export function NliLeftSidebar({ 
+  activeLayers, 
+  onLayerToggle, 
+  language, 
+  style,
+  selectedPlanId,
+  onPlanSelect,
+  showLrtRoutes,
+  onToggleLrtRoutes,
+  showLrtStations,
+  onToggleLrtStations
+}: NliLeftSidebarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
 
@@ -165,6 +185,70 @@ export function NliLeftSidebar({ activeLayers, onLayerToggle, language, style }:
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Khon Kaen LRT Proposed Plans */}
+            <Separator className="my-4 bg-border/50" />
+            <div className="px-1 pb-4">
+              <h3 className="font-bold text-sm text-primary mb-2 flex items-center gap-2">
+                <TrainTrack className="h-4 w-4" />
+                {language === 'th' ? 'แผนเสนอโครงข่าย LRT ขอนแก่น' : 'Khon Kaen LRT Plans'}
+              </h3>
+              <p className="text-[11px] text-muted-foreground mb-3 leading-relaxed">
+                {language === 'th' 
+                  ? 'วิเคราะห์และเปรียบเทียบข้อเสนอ 10 เส้นทางรถไฟฟ้ารางเบาขอนแก่น เพื่อนำเสนอเทศบาลนครขอนแก่น' 
+                  : 'Evaluate and compare the 10 proposed LRT network configurations for presentation to the Municipality.'}
+              </p>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-[10px] text-muted-foreground block mb-1">
+                    {language === 'th' ? 'เลือกข้อเสนอเส้นทาง:' : 'Select Proposed Plan:'}
+                  </label>
+                  <select 
+                    value={selectedPlanId ?? ''} 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      onPlanSelect(val === '' ? null : Number(val));
+                    }}
+                    className="w-full bg-background/50 hover:bg-background/80 border border-border/50 focus:border-primary/50 text-foreground text-xs rounded-md px-2 py-1.5 focus:outline-none transition-all duration-200 cursor-pointer"
+                  >
+                    <option value="" className="bg-popover text-foreground">
+                      {language === 'th' ? '--- ซ่อนชั้นข้อมูล LRT ---' : '--- None / Hide Overlay ---'}
+                    </option>
+                    {lrtPlansData.plans.map((plan: any) => (
+                      <option key={plan.plan_id} value={plan.plan_id} className="bg-popover text-foreground">
+                        Plan {plan.plan_id}: {plan.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedPlanId !== null && (
+                  <div className="space-y-2 bg-secondary/20 p-2 rounded-md border border-border/20 transition-all duration-200">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1.5">
+                        <Route className="h-3 w-3 text-primary" />
+                        {language === 'th' ? 'แสดงเส้นทางเดินรถ' : 'Show LRT Routes'}
+                      </span>
+                      <Switch 
+                        checked={showLrtRoutes}
+                        onCheckedChange={onToggleLrtRoutes}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1.5">
+                        <MapPin className="h-3 w-3 text-primary" />
+                        {language === 'th' ? 'แสดงสถานีเชื่อมต่อ' : 'Show LRT Stations'}
+                      </span>
+                      <Switch 
+                        checked={showLrtStations}
+                        onCheckedChange={onToggleLrtStations}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </ScrollArea>
       </aside>

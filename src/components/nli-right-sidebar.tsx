@@ -33,6 +33,7 @@ import {
     popoverDetailData,
     comparisonPopoverDetailData
 } from '@/lib/project-data';
+import lrtPlansData from '../../docs/lrt_plans.json';
 
 
 const translations = {
@@ -307,9 +308,35 @@ interface NliRightSidebarProps {
     language: string; 
     activeParameters?: string[];
     style?: React.CSSProperties;
+    selectedPlanId: number | null;
+    onClearLrtPlan: () => void;
 }
 
-export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language, activeParameters = [], style }: NliRightSidebarProps) {
+export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language, activeParameters = [], style, selectedPlanId, onClearLrtPlan }: NliRightSidebarProps) {
+  const lrtPlan = useMemo(() => {
+    if (selectedPlanId === null) return null;
+    return lrtPlansData.plans.find((p: any) => p.plan_id === selectedPlanId) || null;
+  }, [selectedPlanId]);
+
+  const lrtMetrics = useMemo(() => {
+    if (!lrtPlan) return null;
+    const stationIndices = Array.from(new Set(lrtPlan.lines.flatMap((l: any) => l.station_indices)));
+    const stationsInPlan = stationIndices.map(idx => lrtPlansData.stations[idx]).filter(Boolean);
+    const totalDailyTraffic = stationsInPlan.reduce((sum, s) => sum + s.daily_total, 0);
+    const avgVehiclesPerHour = Math.round(stationsInPlan.reduce((sum, s) => sum + s.vehicles_per_hour, 0) / stationsInPlan.length);
+    const chartData = stationsInPlan.map(s => ({
+      name: language === 'th' ? s.name_th.split(' (')[0] : s.name_en,
+      traffic: s.daily_total,
+    }));
+    return {
+      stationsCount: stationsInPlan.length,
+      totalDailyTraffic,
+      avgVehiclesPerHour,
+      chartData,
+      color: lrtPlan.lines[0]?.color || '#008080'
+    };
+  }, [lrtPlan, language]);
+
   const data = React.useMemo(() => {
     if (isComparing) {
       return comparisonData;
@@ -375,6 +402,9 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
   const t = translations[language as keyof typeof translations] || translations.en;
   
   const title = React.useMemo(() => {
+    if (lrtPlan) {
+      return language === 'en' ? `Plan ${lrtPlan.plan_id}: ${lrtPlan.name}` : `แผนที่ ${lrtPlan.plan_id}: ${lrtPlan.name}`;
+    }
     if (isComparing) {
       return language === 'en' ? 'Comparison: P1 vs P2' : 'เปรียบเทียบ: P1 vs P2';
     }
@@ -384,7 +414,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
     }
     const projectData = activeProject === 'project1' ? project1Data : project2Data;
     return language === 'en' ? projectData.name : projectData.name_th;
-  }, [isComparing, selectedRegion, activeProject, language]);
+  }, [isComparing, selectedRegion, activeProject, language, lrtPlan]);
 
   const nameKey = language === 'en' ? 'name' : 'name_th';
 
@@ -432,11 +462,139 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
         <div className='flex justify-between items-center mb-2 px-1'>
             <h2 className="text-base font-bold text-foreground">{title}</h2>
             <div className="flex items-center">
+              {lrtPlan && <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onClearLrtPlan}><XIcon className='h-4 w-4'/></Button>}
               {selectedRegion && <Button variant="ghost" size="icon" className='h-6 w-6' onClick={onClearRegion}><XIcon className='h-4 w-4'/></Button>}
             </div>
         </div>
         <ScrollArea className="flex-1 -mr-2 pr-2">
-          <div className="space-y-3 px-1">
+          {lrtPlan && lrtMetrics ? (
+            <div className="space-y-4 px-1 pb-4">
+              {/* Type and Description */}
+              <div className="bg-secondary/20 p-2.5 rounded-lg border border-border/20 text-xs">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
+                    {language === 'th' ? 'ประเภทเครือข่าย' : 'Network Type'}
+                  </span>
+                  <span className="px-1.5 py-0.5 bg-primary/20 text-primary rounded font-semibold text-[10px]">
+                    {lrtPlan.type.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                <p className="text-foreground leading-relaxed font-medium">{lrtPlan.description}</p>
+              </div>
+
+              {/* Key Metrics */}
+              <div className="grid grid-cols-3 gap-2">
+                <Card className="glass-panel border-none">
+                  <CardHeader className="p-2 pb-0">
+                    <CardTitle className="text-[9px] font-medium text-muted-foreground uppercase">
+                      {language === 'th' ? 'สถานีทั้งหมด' : 'Stations'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-2 pt-0.5">
+                    <span className="text-base font-bold text-foreground">{lrtMetrics.stationsCount}</span>
+                  </CardContent>
+                </Card>
+                <Card className="glass-panel border-none">
+                  <CardHeader className="p-2 pb-0">
+                    <CardTitle className="text-[9px] font-medium text-muted-foreground uppercase">
+                      {language === 'th' ? 'เส้นทางเชื่อมต่อ' : 'Lines'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-2 pt-0.5">
+                    <span className="text-base font-bold text-foreground" style={{ color: lrtMetrics.color }}>
+                      {lrtPlan.total_lines}
+                    </span>
+                  </CardContent>
+                </Card>
+                <Card className="glass-panel border-none">
+                  <CardHeader className="p-2 pb-0">
+                    <CardTitle className="text-[9px] font-medium text-muted-foreground uppercase">
+                      {language === 'th' ? 'ทราฟฟิกรวม' : 'Daily Traffic'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-2 pt-0.5">
+                    <span className="text-xs font-bold text-green-400 break-all">
+                      {lrtMetrics.totalDailyTraffic.toLocaleString()}
+                    </span>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* reasoning / value to municipality */}
+              <Card className="glass-panel border-none">
+                <CardHeader className="p-3 pb-1">
+                  <CardTitle className="text-xs font-bold text-primary flex items-center gap-1.5">
+                    <Lightbulb className="h-4 w-4 text-primary" />
+                    {language === 'th' ? 'เหตุผลความเหมาะสมทางเศรษฐกิจ' : 'Socio-Economic Reasoning'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3 pt-0 text-[11px] text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {lrtPlan.reasoning}
+                </CardContent>
+              </Card>
+
+              {/* Station Traffic Chart */}
+              <Card className="glass-panel border-none">
+                <CardHeader className="p-3 pb-1">
+                  <CardTitle className="text-xs font-bold text-foreground">
+                    {language === 'th' ? 'ปริมาณการเดินทางรายสถานี' : 'Traffic Volume per Station'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-2 pt-0 h-[180px]">
+                  <ChartContainer config={{}} className="w-full h-full">
+                    <BarChart data={lrtMetrics.chartData} margin={{ left: -20, top: 15, right: 5, bottom: 0 }}>
+                      <XAxis dataKey="name" tickLine={false} axisLine={false} fontSize={9} interval={0} tickFormatter={(v) => v.length > 8 ? v.substring(0, 7) + '..' : v} />
+                      <YAxis tickLine={false} axisLine={false} fontSize={9} />
+                      <ChartTooltip cursor={{ fill: 'hsla(var(--background), 0.3)' }} content={<ChartTooltipContent hideIndicator hideLabel />} />
+                      <Bar dataKey="traffic" fill={lrtMetrics.color} radius={3} barSize={10} />
+                    </BarChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+
+              {/* Pros & Cons */}
+              <div className="grid grid-cols-1 gap-2">
+                <Card className="glass-panel border-none">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-xs font-bold text-green-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="h-4 w-4 text-green-400" />
+                      {language === 'th' ? 'ข้อดี / ประโยชน์หลัก' : 'Key Advantages'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 text-[11px] text-muted-foreground">
+                    <ul className="space-y-1.5">
+                      {lrtPlan.pros.map((pro: string, i: number) => (
+                        <li key={i} className="flex gap-1.5 items-baseline">
+                          <span className="text-green-400 font-bold">•</span>
+                          <span>{pro}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+
+                <Card className="glass-panel border-none">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-xs font-bold text-red-400 flex items-center gap-1.5">
+                      <Info className="h-4 w-4 text-red-400" />
+                      {language === 'th' ? 'ข้อจำกัด / ความเสี่ยง' : 'Limitations & Risks'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 text-[11px] text-muted-foreground">
+                    <ul className="space-y-1.5">
+                      {lrtPlan.cons.map((con: string, i: number) => (
+                        <li key={i} className="flex gap-1.5 items-baseline">
+                          <span className="text-red-400 font-bold">•</span>
+                          <span>{con}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 px-1">
             <div className="grid grid-cols-2 gap-2">
               {shouldShow('Economic Impact') && (
                 <CardWrapper popoverKey='economicImpact'>
@@ -837,6 +995,7 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
               </Card>
             )}
           </div>
+          )}
         </ScrollArea>
     </aside>
     {activePopover && popoverDataForKey && (

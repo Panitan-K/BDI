@@ -7,16 +7,23 @@ import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 import { FeatureCollection, Feature, Point, LineString, Polygon } from 'geojson';
 
+import lrtPlansData from '../../docs/lrt_plans.json';
+
 interface NliMapProps {
   activeLayers: Record<string, boolean>;
   basemapStyle: string;
   activeTool: string | null;
   onRegionClick: (regionName: string | null) => void;
   selectedRegion: string | null;
+  selectedPlanId: number | null;
+  showLrtRoutes: boolean;
+  showLrtStations: boolean;
 }
 
-// Mock data source for clickable provinces with coordinates
+// Mock data source for clickable provinces with coordinates.
+// Khon Kaen is the primary focus (the LRT command center's home city).
 const regionData: Record<string, { center: [number, number], zoom: number }> = {
+    'Khon Kaen': { center: [102.836, 16.4419], zoom: 11 },
     'Bangkok': { center: [100.523186, 13.736717], zoom: 9 },
     'Chiang Mai': { center: [98.9853, 18.7883], zoom: 8 },
     'Phuket': { center: [98.3923, 7.8804], zoom: 9 },
@@ -124,12 +131,14 @@ const layerSources: Record<string, { url: string, type: 'line' | 'fill' | 'circl
     },
 };
 
+// Default view: Khon Kaen city. The whole dashboard is centered on the
+// Khon Kaen LRT corridor, so the map opens here rather than country-wide.
 const INITIAL_VIEW = {
-    center: [100.523186, 13.736717] as [number, number],
-    zoom: 5.5,
+    center: [102.836, 16.4419] as [number, number],
+    zoom: 11.5,
 };
 
-export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, selectedRegion }: NliMapProps) {
+export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, selectedRegion, selectedPlanId, showLrtRoutes, showLrtStations }: NliMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maptilersdk.Map | null>(null);
   const [apiKey] = useState(process.env.NEXT_PUBLIC_MAPTILER_API_KEY || 'lVz5lFRZJpi7sv6fXhdz');
@@ -372,6 +381,224 @@ export function NliMap({ activeLayers, basemapStyle, activeTool, onRegionClick, 
     }
 
   }, [activeLayers, isStyleLoaded]);
+
+  // Render LRT Proposed Plans
+  useEffect(() => {
+    const currentMap = map.current;
+    if (!currentMap) return;
+
+    const renderLrt = () => {
+      if (!currentMap.isStyleLoaded()) return;
+
+      if (selectedPlanId === null) {
+        // Remove LRT layers and sources if they exist
+        if (currentMap.getLayer('lrt-station-labels-layer')) currentMap.removeLayer('lrt-station-labels-layer');
+        if (currentMap.getLayer('lrt-stations-layer')) currentMap.removeLayer('lrt-stations-layer');
+        if (currentMap.getLayer('lrt-routes-layer')) currentMap.removeLayer('lrt-routes-layer');
+        if (currentMap.getSource('lrt-stations-source')) currentMap.removeSource('lrt-stations-source');
+        if (currentMap.getSource('lrt-routes-source')) currentMap.removeSource('lrt-routes-source');
+        return;
+      }
+
+      const plan = lrtPlansData.plans.find((p: any) => p.plan_id === selectedPlanId);
+      if (!plan) return;
+
+      // 1. Build routes GeoJSON
+      const routesFeatures = plan.lines.map((line: any) => {
+        const reversedCoords = line.route_geometry.map((coord: [number, number]) => [coord[1], coord[0]]);
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: reversedCoords
+          },
+          properties: {
+            color: line.color,
+            name: line.line_name
+          }
+        };
+      });
+
+      const routesGeoJson = {
+        type: 'FeatureCollection',
+        features: routesFeatures
+      };
+
+      // 2. Build stations GeoJSON
+      const stationsFeatures: any[] = [];
+      const addedStationIndices = new Set<number>();
+
+      plan.lines.forEach((line: any) => {
+        line.station_indices.forEach((index: number) => {
+          if (addedStationIndices.has(index)) return;
+          addedStationIndices.add(index);
+          
+          const station = lrtPlansData.stations[index];
+          if (!station) return;
+
+          const isInterchange = (plan.interchange_stations as number[]).includes(station.id) || (plan.interchange_stations as number[]).includes(index);
+
+          stationsFeatures.push({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: [station.lng, station.lat]
+            },
+            properties: {
+              ...station,
+              isInterchange,
+              color: line.color
+            }
+          });
+        });
+      });
+
+      const stationsGeoJson = {
+        type: 'FeatureCollection',
+        features: stationsFeatures
+      };
+
+      // Update or Add Sources and Layers
+      if (currentMap.getSource('lrt-routes-source')) {
+        (currentMap.getSource('lrt-routes-source') as maptilersdk.GeoJSONSource).setData(routesGeoJson as any);
+      } else {
+        currentMap.addSource('lrt-routes-source', { type: 'geojson', data: routesGeoJson as any });
+      }
+
+      if (!currentMap.getLayer('lrt-routes-layer')) {
+        currentMap.addLayer({
+          id: 'lrt-routes-layer',
+          type: 'line',
+          source: 'lrt-routes-source',
+          paint: {
+            'line-color': ['get', 'color'],
+            'line-width': 4.5,
+            'line-opacity': 0.85
+          }
+        });
+      }
+
+      if (currentMap.getSource('lrt-stations-source')) {
+        (currentMap.getSource('lrt-stations-source') as maptilersdk.GeoJSONSource).setData(stationsGeoJson as any);
+      } else {
+        currentMap.addSource('lrt-stations-source', { type: 'geojson', data: stationsGeoJson as any });
+      }
+
+      if (!currentMap.getLayer('lrt-stations-layer')) {
+        currentMap.addLayer({
+          id: 'lrt-stations-layer',
+          type: 'circle',
+          source: 'lrt-stations-source',
+          paint: {
+            'circle-radius': ['case', ['boolean', ['get', 'isInterchange'], false], 9, 6.5],
+            'circle-color': ['get', 'color'],
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-width': 2
+          }
+        });
+
+        // Add click handler for popups
+        currentMap.on('click', 'lrt-stations-layer', (e) => {
+          if (e.features && e.features.length > 0) {
+            const feature = e.features[0];
+            const props = feature.properties;
+            if (!props) return;
+            
+            const coords = (feature.geometry as Point).coordinates as [number, number];
+            
+            const html = `
+              <div style="font-family: 'Inter', sans-serif; color: #f3f4f6; background-color: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px; font-size: 11px; min-width: 180px;">
+                <div style="font-weight: 700; font-size: 13px; color: ${props.color}; margin-bottom: 2px;">${props.name_en}</div>
+                <div style="color: #9ca3af; margin-bottom: 6px; font-size: 10px;">${props.name_th}</div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #9ca3af;">Daily Traffic:</span>
+                    <span style="font-weight: 600;">${Number(props.daily_total).toLocaleString()}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #9ca3af;">Peak Flow:</span>
+                    <span style="font-weight: 600;">${Number(props.vehicles_per_hour).toLocaleString()} vph</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #9ca3af;">Car Share:</span>
+                    <span style="font-weight: 600; color: #4ade80;">${props.car_ratio_pct}%</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #9ca3af;">Landmark:</span>
+                    <span style="font-weight: 600; max-width: 100px; text-align: right; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">${props.landmark}</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #9ca3af;">Zone:</span>
+                    <span style="font-weight: 600; text-transform: capitalize;">${props.zone}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            new maptilersdk.Popup({ closeButton: true, className: 'lrt-popup' })
+              .setLngLat(coords)
+              .setHTML(html)
+              .addTo(currentMap);
+          }
+        });
+
+        // Cursor hover states
+        currentMap.on('mouseenter', 'lrt-stations-layer', () => {
+          currentMap.getCanvas().style.cursor = 'pointer';
+        });
+        currentMap.on('mouseleave', 'lrt-stations-layer', () => {
+          currentMap.getCanvas().style.cursor = activeTool === 'Measure' || activeTool === 'Draw' ? 'crosshair' : 'grab';
+        });
+      }
+
+      if (!currentMap.getLayer('lrt-station-labels-layer')) {
+        currentMap.addLayer({
+          id: 'lrt-station-labels-layer',
+          type: 'symbol',
+          source: 'lrt-stations-source',
+          layout: {
+            'text-field': ['get', 'name_en'],
+            'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+            'text-offset': [0, 1.2],
+            'text-anchor': 'top',
+            'text-size': 10
+          },
+          paint: {
+            'text-color': '#ffffff',
+            'text-halo-color': '#000000',
+            'text-halo-width': 1.5
+          }
+        });
+      }
+
+      // Toggle visibility based on state
+      currentMap.setLayoutProperty('lrt-routes-layer', 'visibility', showLrtRoutes ? 'visible' : 'none');
+      currentMap.setLayoutProperty('lrt-stations-layer', 'visibility', showLrtStations ? 'visible' : 'none');
+      currentMap.setLayoutProperty('lrt-station-labels-layer', 'visibility', showLrtStations ? 'visible' : 'none');
+    };
+
+    if (selectedPlanId !== null) {
+      // Pan to Khon Kaen city
+      currentMap.flyTo({
+        center: [lrtPlansData.meta.map_center.lng, lrtPlansData.meta.map_center.lat],
+        zoom: 12.5,
+        duration: 1500,
+        essential: true
+      });
+    }
+
+    if (currentMap.isStyleLoaded()) {
+      renderLrt();
+    } else {
+      currentMap.once('load', renderLrt);
+    }
+
+    currentMap.on('style.load', renderLrt);
+
+    return () => {
+      currentMap.off('style.load', renderLrt);
+    };
+  }, [selectedPlanId, showLrtRoutes, showLrtStations, isStyleLoaded, basemapStyle]);
 
   useEffect(() => {
     const currentMap = map.current;
