@@ -95,8 +95,9 @@ env-only before any public/production deployment.
 - All economic analytics in `src/lib/project-data.ts` are **`Math.random()`** —
   GDP, freight, jobs, ROI, etc. `pop_density` is randomized per-feature at load
   time in `nli-map.tsx`.
-- Region coordinates (`regionData` in `nli-map.tsx`) are a hardcoded handful
-  (Bangkok, Chiang Mai, Phuket, Chon Buri).
+- The map defaults to **Khon Kaen** (`INITIAL_VIEW` in `nli-map.tsx`, zoom 11.5) —
+  the LRT command center's home city. `regionData` is a hardcoded handful
+  (Khon Kaen, Bangkok, Chiang Mai, Phuket, Chon Buri) used for click-to-fly.
 - The **top toolbar buttons** (Import, Settings, Legend, Attribute Table,
   Parameters, Time-Series, User Notes, Export) are **decorative** — tooltips only,
   no onClick wiring.

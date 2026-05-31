@@ -69,6 +69,7 @@ export const comparisonData = {
   };
 
 export const regionalMockData: Record<string, any> = {
+      'Khon Kaen': { ...project1Data, name: 'Khon Kaen LRT Analysis', name_th: 'การวิเคราะห์ LRT ขอนแก่น', economicImpact: 3.4, environmentalScore: 74, investmentSuitability: 83 },
       'Bangkok': { ...project1Data, name: 'Bangkok Analysis', name_th: 'การวิเคราะห์กรุงเทพมหานคร', economicImpact: 5.1, environmentalScore: 55, investmentSuitability: 92 },
       'Chiang Mai': { ...project2Data, name: 'Chiang Mai Analysis', name_th: 'การวิเคราะห์เชียงใหม่', economicImpact: 1.8, environmentalScore: 88, investmentSuitability: 75 },
       'Phuket': { ...project1Data, name: 'Phuket Analysis', name_th: 'การวิเคราะห์ภูเก็ต', economicImpact: 3.5, environmentalScore: 78, investmentSuitability: 85 },
