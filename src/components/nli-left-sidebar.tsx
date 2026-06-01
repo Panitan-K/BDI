@@ -33,12 +33,16 @@ import {
   Circle,
   Droplets,
   Volume2,
+  Users2,
+  AlertTriangle,
 } from 'lucide-react';
 import { Separator } from './ui/separator';
 import lrtPlansData from '../../docs/lrt_plans.json';
 import { Button } from '@/components/ui/button';
 import { NliLayerSettingsDialog } from './nli-layer-settings-dialog';
-import { getEiaForPlan, getTracking, type MilestoneStatus } from '@/lib/lrt-eia-data';
+import { getEiaForPlan, getTracking, SLIPPAGE_HISTORY, type MilestoneStatus } from '@/lib/lrt-eia-data';
+import { getAnchorCapture, getRidership } from '@/lib/lrt-decision-data';
+import { EstimateBadge } from '@/components/nli-estimate-badge';
 
 interface Layer {
   name: string;
@@ -84,13 +88,43 @@ const translations = {
     statusDone: 'Done',
     statusProgress: 'In progress',
     statusPending: 'Pending',
+    statusAtRisk: 'At risk',
+    // Coalition / Sila
+    coalitionTitle: 'Coalition & Ridership',
+    silaToggle: 'Exclude Sila corridor (withdrawn)',
+    silaHint: 'Sila Municipality withdrew from KKTS — approved 30 Apr 2026',
+    anchorsShort: 'anchors',
+    ridersShort: 'k trips/day',
+    parcels: 'Affected Parcels',
+    owners: '~owners',
+    slippageLabel: 'Opening-date slippage',
+    blockerLabel: 'Blocker',
+    blockers: {
+      sila: 'Sila exit forces alignment re-confirmation',
+      financing: '฿26.96B not committed — still in negotiation',
+      drt_license: 'First-ever local-operator licence (untested)',
+    } as Record<string, string>,
+    notes: {
+      fin_not_secured: 'Under review — NOT secured',
+      drt_new: 'New under Rail Transport Act B.E. 2568',
+    } as Record<string, string>,
+    ownerMap: {
+      '4 Municipalities': '4 Municipalities',
+      'KKTS / Lenders': 'KKTS / Lenders',
+      'ONEP / EIA Cttee': 'ONEP / EIA Cttee',
+      'Cabinet / Lenders': 'Cabinet / Lenders',
+      'Contractor': 'Contractor',
+    } as Record<string, string>,
     milestoneLabels: {
       survey: 'Corridor Survey',
       draft: 'Line Plan Drafted',
       confirm: 'Line Plan Confirmed',
+      financing: 'Financing',
       eia_submit: 'EIA Submitted',
       eia_pass: 'EIA Approved',
+      drt_engage: 'DRT Engagement',
       hearing: 'Public Hearing',
+      drt_license: 'Operating Licence (DRT)',
       budget: 'Budget Approved',
       construction: 'Construction Start',
     } as Record<string, string>,
@@ -141,13 +175,42 @@ const translations = {
     statusDone: 'เสร็จแล้ว',
     statusProgress: 'กำลังดำเนินการ',
     statusPending: 'รอดำเนินการ',
+    statusAtRisk: 'มีความเสี่ยง',
+    coalitionTitle: 'พันธมิตรและผู้โดยสาร',
+    silaToggle: 'ตัดแนวเขตเทศบาลเมืองศิลา (ถอนตัวแล้ว)',
+    silaHint: 'เทศบาลเมืองศิลาได้ถอนตัวจาก KKTS โดยได้รับอนุมัติเมื่อวันที่ 30 เมษายน 2569',
+    anchorsShort: 'จุดยุทธศาสตร์',
+    ridersShort: 'พันเที่ยว/วัน',
+    parcels: 'แปลงที่ดินที่ได้รับผลกระทบ',
+    owners: 'หน่วยงานผู้รับผิดชอบ',
+    slippageLabel: 'การเลื่อนกำหนดการเปิดให้บริการ',
+    blockerLabel: 'อุปสรรค',
+    blockers: {
+      sila: 'การถอนตัวของเทศบาลเมืองศิลา ทำให้ต้องยืนยันแนวเส้นทางใหม่ร่วมกัน',
+      financing: 'งบประมาณ 26.96 พันล้านบาท ยังมิได้ผูกพัน อยู่ระหว่างการเจรจา',
+      drt_license: 'การขอใบอนุญาตผู้ให้บริการระดับท้องถิ่นเป็นรายแรก (ยังไม่เคยมีแนวปฏิบัติ)',
+    } as Record<string, string>,
+    notes: {
+      fin_not_secured: 'อยู่ระหว่างการพิจารณา — ยังไม่ได้รับอนุมัติ',
+      drt_new: 'ขั้นตอนใหม่ตามพระราชบัญญัติการขนส่งทางราง พ.ศ. 2568',
+    } as Record<string, string>,
+    ownerMap: {
+      '4 Municipalities': 'เทศบาล 4 แห่ง',
+      'KKTS / Lenders': 'KKTS / เจ้าหนี้',
+      'ONEP / EIA Cttee': 'สผ. / คกก. EIA',
+      'Cabinet / Lenders': 'ครม. / เจ้าหนี้',
+      'Contractor': 'ผู้รับเหมา',
+    } as Record<string, string>,
     milestoneLabels: {
       survey: 'สำรวจแนวเส้นทาง',
       draft: 'ร่างแผนเส้นทาง',
       confirm: 'ยืนยันแผนเส้นทาง',
+      financing: 'การจัดหาเงินทุน',
       eia_submit: 'ยื่นรายงาน EIA',
       eia_pass: 'EIA ผ่านการอนุมัติ',
+      drt_engage: 'หารือกับกรมการขนส่งทางราง',
       hearing: 'ประชาพิจารณ์',
+      drt_license: 'ใบอนุญาตเดินรถ (กรท.)',
       budget: 'อนุมัติงบประมาณ',
       construction: 'เริ่มก่อสร้าง',
     } as Record<string, string>,
@@ -204,6 +267,8 @@ interface NliLeftSidebarProps {
   onToggleLrtRoutes: (show: boolean) => void;
   showLrtStations: boolean;
   onToggleLrtStations: (show: boolean) => void;
+  silaExcluded: boolean;
+  onToggleSila: (excluded: boolean) => void;
 }
 
 type BoxKey = 'plan' | 'eia' | 'tracking';
@@ -291,6 +356,8 @@ export function NliLeftSidebar({
   onToggleLrtRoutes,
   showLrtStations,
   onToggleLrtStations,
+  silaExcluded,
+  onToggleSila,
 }: NliLeftSidebarProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedLayer, setSelectedLayer] = useState<string | null>(null);
@@ -325,7 +392,11 @@ export function NliLeftSidebar({
     riskBand === 'high' ? '[&>div]:bg-red-500' : riskBand === 'med' ? '[&>div]:bg-amber-500' : '[&>div]:bg-emerald-500';
   const riskLabel = riskBand === 'high' ? t.riskHigh : riskBand === 'med' ? t.riskMed : t.riskLow;
 
-  // ---- Tracking (mock) ----
+  // ---- Coalition & ridership (derived from real CCTV data) ----
+  const anchors = planSelected ? getAnchorCapture(selectedPlanId!, { excludeSila: silaExcluded }) : null;
+  const ridership = planSelected ? getRidership(selectedPlanId!, { excludeSila: silaExcluded }) : null;
+
+  // ---- Tracking (honest) ----
   const milestones = getTracking(planSelected);
   const doneCount = milestones.filter((m) => m.status === 'done').length;
   const trackPct = Math.round((doneCount / milestones.length) * 100);
@@ -333,6 +404,7 @@ export function NliLeftSidebar({
   const statusMeta: Record<MilestoneStatus, { icon: LucideIcon; cls: string; label: string }> = {
     done: { icon: CheckCircle2, cls: 'text-emerald-500', label: t.statusDone },
     in_progress: { icon: Loader2, cls: 'text-amber-500', label: t.statusProgress },
+    at_risk: { icon: AlertTriangle, cls: 'text-red-500', label: t.statusAtRisk },
     pending: { icon: Circle, cls: 'text-muted-foreground/50', label: t.statusPending },
   };
 
@@ -396,6 +468,38 @@ export function NliLeftSidebar({
                       {t.showStations}
                     </span>
                     <Switch checked={showLrtStations} onCheckedChange={onToggleLrtStations} />
+                  </div>
+                </div>
+              )}
+
+              {/* ── Coalition & ridership (Sila scenario) ── */}
+              {planSelected && anchors && ridership && (
+                <div className="space-y-2 mt-3 rounded-md border border-border/20 bg-secondary/20 p-2">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-foreground">
+                    <Users2 className="h-3.5 w-3.5 text-primary" />
+                    {t.coalitionTitle}
+                  </div>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-[11px] text-muted-foreground leading-tight flex-1">
+                      {t.silaToggle}
+                      <span className="block text-[9px] text-muted-foreground/70">{t.silaHint}</span>
+                    </span>
+                    <Switch checked={silaExcluded} onCheckedChange={onToggleSila} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="rounded bg-background/50 p-1.5 text-center">
+                      <div className="text-base font-bold text-foreground leading-none">
+                        {anchors.capturedCount}/{anchors.realAnchorCount}
+                      </div>
+                      <div className="text-[9px] text-muted-foreground mt-0.5">{t.anchorsShort}</div>
+                    </div>
+                    <div className="rounded bg-background/50 p-1.5 text-center">
+                      <div className="text-base font-bold text-foreground leading-none flex items-center justify-center gap-1">
+                        {(ridership.low / 1000).toFixed(1)}–{(ridership.high / 1000).toFixed(1)}
+                        <EstimateBadge kind="estimate" language={language} tooltip={language === 'th' ? ridership.assumption_th : ridership.assumption_en} />
+                      </div>
+                      <div className="text-[9px] text-muted-foreground mt-0.5">{t.ridersShort}</div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -479,8 +583,9 @@ export function NliLeftSidebar({
               ) : (
                 <div className="space-y-3">
                   {selectedPlan && (
-                    <p className="text-[11px] text-muted-foreground truncate">
-                      Plan {selectedPlanId}: <span className="text-foreground font-medium">{selectedPlan.name}</span>
+                    <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1.5">
+                      <span className="truncate">Plan {selectedPlanId}: <span className="text-foreground font-medium">{selectedPlan.name}</span></span>
+                      <EstimateBadge kind="estimate" language={language} tooltip={language === 'th' ? 'เป็นค่าประมาณการเชิงพื้นที่ ระบบยังไม่มีเครื่องมือประเมิน EIA และการเวนคืนจริง' : 'Modeled spatial estimate — no real EIA/expropriation engine yet'} />
                     </p>
                   )}
                   <div className="grid grid-cols-2 gap-2">
@@ -497,6 +602,12 @@ export function NliLeftSidebar({
                       icon={Coins}
                       label={t.compensation}
                       value={`฿${eia.compensationCostMTHB}M`}
+                      accent="text-amber-500"
+                    />
+                    <StatTile
+                      icon={LandPlot}
+                      label={t.parcels}
+                      value={`${eia.parcelsAffected}`}
                       accent="text-amber-500"
                     />
                   </div>
@@ -550,11 +661,23 @@ export function NliLeftSidebar({
                 <Progress value={trackPct} className="h-1.5 [&>div]:bg-emerald-500" />
               </div>
 
+              {/* Slippage history — shown honestly, not hidden */}
+              <div className="mb-3 flex items-center gap-1.5 rounded-md bg-red-500/10 border border-red-500/20 px-2 py-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                <span className="text-[10px] text-muted-foreground">
+                  {t.slippageLabel}: <span className="font-mono text-red-400">{SLIPPAGE_HISTORY}</span>
+                </span>
+              </div>
+
               <ol className="relative space-y-3 pl-1">
                 {milestones.map((m, i) => {
                   const meta = statusMeta[m.status];
                   const Icon = meta.icon;
                   const isLast = i === milestones.length - 1;
+                  const owner = t.ownerMap[m.owner] ?? m.owner;
+                  const blocker = m.blockerKey ? t.blockers[m.blockerKey] : null;
+                  const note = m.noteKey ? t.notes[m.noteKey] : null;
+                  const slipped = m.forecastDate !== '—' && m.forecastDate !== m.baselineDate;
                   return (
                     <li key={m.key} className="relative flex items-start gap-2.5">
                       {/* connector line */}
@@ -572,9 +695,23 @@ export function NliLeftSidebar({
                           >
                             {t.milestoneLabels[m.key]}
                           </span>
-                          <span className="text-[10px] text-muted-foreground shrink-0">{m.date}</span>
+                          <span className="text-[10px] text-muted-foreground shrink-0 font-mono">
+                            {m.baselineDate}
+                            {slipped && <span className="text-red-400"> → {m.forecastDate}</span>}
+                          </span>
                         </div>
-                        <span className={cn('text-[10px]', meta.cls)}>{meta.label}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={cn('text-[10px]', meta.cls)}>{meta.label}</span>
+                          <span className="text-[9px] text-muted-foreground/70">· {owner}</span>
+                        </div>
+                        {note && (
+                          <span className="block text-[10px] font-semibold text-red-400 mt-0.5">{note}</span>
+                        )}
+                        {blocker && (
+                          <span className="block text-[9px] text-muted-foreground mt-0.5 leading-tight">
+                            <span className="text-amber-500">{t.blockerLabel}:</span> {blocker}
+                          </span>
+                        )}
                       </div>
                     </li>
                   );

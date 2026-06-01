@@ -92,6 +92,17 @@ env-only before any public/production deployment.
 - Khon Kaen LRT overlay: 10 proposed network plans (`docs/lrt_plans.json`) render
   as route lines + stations on the map, selectable from the left sidebar's
   **LRT Line Plan** box (box 1).
+- **LRT decision-intelligence layer** (`src/lib/lrt-decision-data.ts`): derived
+  from the **real** CCTV `daily_total` counts + `landmark`/`zone` tags in
+  `lrt_plans.json`, surfaced as four decision views — (1) coalition/alignment with
+  a **Sila-corridor toggle** + anchor-capture scorecard + ridership range, (2) a
+  per-plan financial case (capex/opex/farebox-recovery/TOD/sensitivity), (3) a
+  national pipeline ranking (`nli-pipeline-dialog.tsx`, Khon Kaen vs the 4 MRTA
+  cities), (4) an honest milestone tracker (owner, baseline→forecast slippage,
+  blockers, DRT licensing steps, financing shown as **NOT secured**). Every
+  derived figure is parametric/illustrative and stamped with `EstimateBadge`
+  (`nli-estimate-badge.tsx`); ranges not point values; Hospital/HSR shown as data
+  gaps, never fabricated. See that module's header for the assumption set.
 - Bilingual UI, theme switching, resizable sidebars, fullscreen, share-link.
 
 **Mock / placeholder:**
@@ -102,11 +113,15 @@ env-only before any public/production deployment.
   the LRT command center's home city. `regionData` is a hardcoded handful
   (Khon Kaen, Bangkok, Chiang Mai, Phuket, Chon Buri) used for click-to-fly.
 - The left sidebar's **EIA & Right-of-Way** (box 2) and **Project Tracking**
-  (box 3) boxes are mock. Figures — corridor width, buildings to demolish
-  (residential/commercial split), compensation cost, EIA risk score, complaint
-  counts, and the 8-step milestone tracker — come from `src/lib/lrt-eia-data.ts`,
-  derived **deterministically** from the selected plan (stable per plan, different
-  across the 10). No real EIA/expropriation computation behind them.
+  (box 3) boxes are derived estimates, not a real engine. Figures — corridor
+  width, buildings to demolish, compensation cost, EIA risk score, complaint
+  counts, parcel/affected-owner count, and the 11-step milestone tracker — come
+  from `src/lib/lrt-eia-data.ts`, derived **deterministically** from the selected
+  plan. The decision/financial/ridership/benchmark figures come from
+  `src/lib/lrt-decision-data.ts` (parametric, calibrated to published headline
+  numbers). All are labeled estimates — no real EIA/expropriation/financial engine
+  behind them. The Sila-corridor boundary is approximated by station zone, not
+  official municipal GIS.
 - The **top toolbar buttons** (Import, Settings, Legend, Attribute Table,
   Parameters, Time-Series, User Notes, Export) are **decorative** — tooltips only,
   no onClick wiring.

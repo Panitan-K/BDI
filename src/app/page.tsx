@@ -9,7 +9,7 @@ import { NliRightSidebar } from '@/components/nli-right-sidebar';
 import { NliMap } from '@/components/nli-map';
 import { NliMapToolbar } from '@/components/nli-map-toolbar';
 import { AiChatModal } from '@/components/nli-ai-chat';
-import { Share2, Copy, Upload, Settings, SlidersHorizontal, Download, Layers, BookText, Table2, History, StickyNote, Bot, Minimize, Maximize2, Minimize2 } from 'lucide-react';
+import { Share2, Copy, Upload, Settings, SlidersHorizontal, Download, Layers, BookText, Table2, History, StickyNote, Bot, Minimize, Maximize2, Minimize2, BarChart3, GraduationCap } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -25,6 +25,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { NewProjectDialog } from '@/components/nli-new-project-dialog';
 import { CompareProjectsDialog } from '@/components/nli-compare-dialog';
 import { AnalyzeProjectDialog } from '@/components/nli-analyze-dialog';
+import { NliPipelineDialog } from '@/components/nli-pipeline-dialog';
+import { NliTutorialDialog } from '@/components/nli-tutorial-dialog';
 import lrtPlansData from '../../docs/lrt_plans.json';
 
 const translations = {
@@ -56,6 +58,10 @@ const translations = {
     exportDataDesc: 'Download map data, analysis results, or export the current view as an image.',
     askAiTitle: 'Ask AI Assistant',
     askAiDesc: 'Get insights, run complex analyses, and ask questions using natural language.',
+    pipelineTitle: 'National Pipeline Ranking',
+    pipelineDesc: 'Compare Khon Kaen against the four MRTA regional cities on cost/km, ridership/km, BCR and readiness.',
+    tutorialTitle: 'Tutorial — How it works',
+    tutorialDesc: 'A guided tour of how the platform turns real data into decisions, and how each view breaks the Khon Kaen LRT deadlock.',
     exitFullscreen: 'Exit Fullscreen',
   },
   th: {
@@ -86,6 +92,10 @@ const translations = {
     exportDataDesc: 'ดาวน์โหลดข้อมูลแผนที่ ผลการวิเคราะห์ หรือส่งออกมุมมองปัจจุบันเป็นรูปภาพ',
     askAiTitle: 'สอบถามผู้ช่วย AI',
     askAiDesc: 'รับข้อมูลเชิงลึก ทำการวิเคราะห์ที่ซับซ้อน และถามคำถามโดยใช้ภาษาธรรมชาติ',
+    pipelineTitle: 'การจัดอันดับในแผนระดับชาติ',
+    pipelineDesc: 'เปรียบเทียบโครงการขอนแก่นกับ 4 จังหวัดในแผนของ รฟม. (ภูเก็ต เชียงใหม่ นครราชสีมา พิษณุโลก) ตามตัวชี้วัดที่ส่วนกลางใช้พิจารณา ได้แก่ ต้นทุนต่อกิโลเมตร ผู้โดยสารต่อกิโลเมตร อัตราส่วนผลประโยชน์ต่อทุน และระดับความพร้อม เพื่อประกอบการพิจารณาร่วมกัน',
+    tutorialTitle: 'คู่มือการใช้งาน — ระบบทำงานอย่างไร',
+    tutorialDesc: 'คำแนะนำการใช้งานโดยสังเขป ว่าระบบนำข้อมูลจริงมาประกอบการตัดสินใจอย่างไร และแต่ละมุมมองจะช่วยให้ทุกหน่วยงานที่เกี่ยวข้องร่วมกันคลี่คลายข้อติดขัดของโครงการรถไฟฟ้า LRT ขอนแก่นได้อย่างไร',
     exitFullscreen: 'ออกจากโหมดเต็มจอ',
   },
 };
@@ -170,13 +180,28 @@ export default function NliPlatformPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [theme, setTheme] = useState('dark');
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('th');
   const [activeParameters, setActiveParameters] = useState<string[]>([]);
 
   // LRT Plans states
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   const [showLrtRoutes, setShowLrtRoutes] = useState(true);
   const [showLrtStations, setShowLrtStations] = useState(true);
+  const [silaExcluded, setSilaExcluded] = useState(false);
+  const [isPipelineOpen, setPipelineOpen] = useState(false);
+  const [isTutorialOpen, setTutorialOpen] = useState(false);
+
+  // Auto-open the tutorial on first visit (once), as onboarding.
+  useEffect(() => {
+    if (!localStorage.getItem('nli-tutorial-seen')) {
+      setTutorialOpen(true);
+    }
+  }, []);
+
+  const handleTutorialOpenChange = (open: boolean) => {
+    setTutorialOpen(open);
+    if (!open) localStorage.setItem('nli-tutorial-seen', '1');
+  };
 
   const handlePlanSelect = (planId: number | null) => {
     setSelectedPlanId(planId);
@@ -391,6 +416,17 @@ export default function NliPlatformPage() {
                     <div className="flex items-center gap-1 glass-panel p-1 rounded-lg">
                         <Tooltip>
                             <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 h-8 w-8" onClick={() => setTutorialOpen(true)}>
+                                    <GraduationCap className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs text-left">
+                              <p className="font-bold">{t.tutorialTitle}</p>
+                              <p className="text-muted-foreground">{t.tutorialDesc}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent hover:text-primary h-8 w-8">
                                     <Upload className="h-4 w-4"/>
                                 </Button>
@@ -502,6 +538,17 @@ export default function NliPlatformPage() {
                         </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent hover:text-primary h-8 w-8" onClick={() => setPipelineOpen(true)}>
+                                    <BarChart3 className="h-4 w-4"/>
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs text-left">
+                              <p className="font-bold">{t.pipelineTitle}</p>
+                              <p className="text-muted-foreground">{t.pipelineDesc}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent hover:text-primary h-8 w-8" onClick={() => setAiChatOpen(true)}>
                                     <Bot className="h-4 w-4"/>
                                 </Button>
@@ -530,6 +577,8 @@ export default function NliPlatformPage() {
               onToggleLrtRoutes={setShowLrtRoutes}
               showLrtStations={showLrtStations}
               onToggleLrtStations={setShowLrtStations}
+              silaExcluded={silaExcluded}
+              onToggleSila={setSilaExcluded}
             />
             <div
               className="w-1 cursor-col-resize rounded-full bg-transparent hover:bg-border transition-colors self-stretch my-2"
@@ -589,6 +638,7 @@ export default function NliPlatformPage() {
               activeParameters={activeParameters}
               selectedPlanId={selectedPlanId}
               onClearLrtPlan={() => handlePlanSelect(null)}
+              silaExcluded={silaExcluded}
             />
           </>
         )}
@@ -598,6 +648,15 @@ export default function NliPlatformPage() {
       <NewProjectDialog isOpen={isNewProjectOpen} onOpenChange={setNewProjectOpen} language={language} />
       <CompareProjectsDialog isOpen={isCompareOpen} onOpenChange={setCompareOpen} onCompare={handleStartComparison} language={language} />
       <AnalyzeProjectDialog isOpen={isAnalyzeOpen} onOpenChange={setAnalyzeOpen} onAnalyze={handleStartAnalysis} language={language} />
+      <NliPipelineDialog isOpen={isPipelineOpen} onOpenChange={setPipelineOpen} language={language} selectedPlanId={selectedPlanId} />
+      <NliTutorialDialog
+        isOpen={isTutorialOpen}
+        onOpenChange={handleTutorialOpenChange}
+        language={language}
+        onSelectPlan={handlePlanSelect}
+        onToggleSila={setSilaExcluded}
+        onOpenPipeline={() => setPipelineOpen(true)}
+      />
     </div>
   );
 }

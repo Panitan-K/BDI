@@ -26,6 +26,8 @@ export interface EiaMetrics {
   /** Historical citizen-complaint counts along the corridor. */
   floodComplaints: number;
   noiseComplaints: number;
+  /** Estimated land parcels / affected owners along the corridor (modeled). */
+  parcelsAffected: number;
 }
 
 /** Deterministic pseudo-random in [0,1) from an integer seed. */
@@ -54,6 +56,8 @@ export function getEiaForPlan(planId: number): EiaMetrics {
   );
   const floodComplaints = Math.round(8 + r(7) * 55);
   const noiseComplaints = Math.round(18 + r(8) * 80);
+  // Affected land parcels / owners — modeled from buildings + corridor length.
+  const parcelsAffected = Math.round(buildingsToDemolish * 0.9 + corridorLengthKm * 1.5);
 
   return {
     rowWidthM,
@@ -65,30 +69,73 @@ export function getEiaForPlan(planId: number): EiaMetrics {
     eiaRiskScore,
     floodComplaints,
     noiseComplaints,
+    parcelsAffected,
   };
 }
 
-export type MilestoneStatus = 'done' | 'in_progress' | 'pending';
+export type MilestoneStatus = 'done' | 'in_progress' | 'at_risk' | 'pending';
 
 export interface Milestone {
   key: string;
   status: MilestoneStatus;
-  date: string;
+  /** Accountable entity (language-neutral acronym, e.g. KKTS, DRT). */
+  owner: string;
+  /** Originally planned date. */
+  baselineDate: string;
+  /** Current forecast / actual date ('—' when not yet schedulable). */
+  forecastDate: string;
+  /** Translation key for the blocker note (resolved in the sidebar). */
+  blockerKey?: string;
+  /** Translation key for an extra honesty note. */
+  noteKey?: string;
 }
 
 /**
- * Program-level accomplishment tracking. A couple of steps react to whether an
- * LRT plan is currently selected (mock "Line Plan Confirmed" gate).
+ * The opening-date slippage history — the single most corrosive fact about this
+ * project and the reason the tracker shows baseline-vs-forecast honestly.
+ */
+export const SLIPPAGE_HISTORY = '2022 → 2025 → 2027 → 2028';
+
+/**
+ * Program-level approval tracking — an HONEST view of where the project stands.
+ *
+ * Design rules (see CLAUDE.md honesty contract):
+ *  - The financing step can NEVER be 'done' — it is "Under review, NOT secured".
+ *  - The line-confirmation step is 'at_risk' because of Sila's withdrawal.
+ *  - DRT licensing steps (Rail Transport Act B.E. 2568) are shown explicitly,
+ *    including the first-of-its-kind local-operator licence.
+ *  - baselineDate vs forecastDate expose slippage rather than hiding it.
+ *
+ * Selecting a plan advances line-confirmation from at_risk → in_progress (an
+ * alignment is on the table), but everything downstream stays honestly pending.
  */
 export function getTracking(planSelected: boolean): Milestone[] {
   return [
-    { key: 'survey', status: 'done', date: '2025-08' },
-    { key: 'draft', status: 'done', date: '2025-11' },
-    { key: 'confirm', status: planSelected ? 'done' : 'in_progress', date: '2026-02' },
-    { key: 'eia_submit', status: planSelected ? 'in_progress' : 'pending', date: '2026-05' },
-    { key: 'eia_pass', status: 'pending', date: '—' },
-    { key: 'hearing', status: 'pending', date: '—' },
-    { key: 'budget', status: 'pending', date: '—' },
-    { key: 'construction', status: 'pending', date: '—' },
+    { key: 'survey', status: 'done', owner: 'KKTS', baselineDate: '2025-08', forecastDate: '2025-08' },
+    { key: 'draft', status: 'done', owner: 'KKTT', baselineDate: '2025-10', forecastDate: '2025-11' },
+    {
+      key: 'confirm',
+      status: planSelected ? 'in_progress' : 'at_risk',
+      owner: '4 Municipalities',
+      baselineDate: '2026-02',
+      forecastDate: '2026-Q3',
+      blockerKey: 'sila',
+    },
+    {
+      key: 'financing',
+      status: 'at_risk',
+      owner: 'KKTS / Lenders',
+      baselineDate: '2026-02',
+      forecastDate: 'TBD',
+      blockerKey: 'financing',
+      noteKey: 'fin_not_secured',
+    },
+    { key: 'eia_submit', status: planSelected ? 'in_progress' : 'pending', owner: 'KKTS', baselineDate: '2026-05', forecastDate: '2026-Q4' },
+    { key: 'eia_pass', status: 'pending', owner: 'ONEP / EIA Cttee', baselineDate: '2026-Q4', forecastDate: '—' },
+    { key: 'drt_engage', status: 'pending', owner: 'DRT', baselineDate: '2026-Q4', forecastDate: '—', noteKey: 'drt_new' },
+    { key: 'hearing', status: 'pending', owner: '4 Municipalities', baselineDate: '2027', forecastDate: '—' },
+    { key: 'drt_license', status: 'pending', owner: 'DRT', baselineDate: '2027', forecastDate: '—', blockerKey: 'drt_license' },
+    { key: 'budget', status: 'pending', owner: 'Cabinet / Lenders', baselineDate: '2027', forecastDate: '—' },
+    { key: 'construction', status: 'pending', owner: 'Contractor', baselineDate: '2028', forecastDate: '—' },
   ];
 }

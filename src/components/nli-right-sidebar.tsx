@@ -34,6 +34,17 @@ import {
     comparisonPopoverDetailData
 } from '@/lib/project-data';
 import lrtPlansData from '../../docs/lrt_plans.json';
+import {
+    getAnchorCapture,
+    getRidership,
+    getFinancials,
+    ASSUMPTIONS,
+    SOURCES,
+    FARE_THB,
+} from '@/lib/lrt-decision-data';
+import { EstimateBadge } from '@/components/nli-estimate-badge';
+import { Users2, Coins, TrainFront, Building2, ScrollText, MinusCircle } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 const translations = {
@@ -66,7 +77,28 @@ const translations = {
     p1analysis: 'shows superior short-term economic impact and job creation. However, its lower environmental score requires careful mitigation planning.',
     p2analysis: 'offers greater long-term strategic value for logistics and has a better environmental profile, but with a higher initial cost and longer payback period.',
     recommendation: 'Recommendation:',
-    recommendationDetail: 'For immediate economic stimulus, Project 1 is favorable. For long-term national logistics strategy and sustainability, Project 2 presents a stronger case despite higher upfront investment.'
+    recommendationDetail: 'For immediate economic stimulus, Project 1 is favorable. For long-term national logistics strategy and sustainability, Project 2 presents a stronger case despite higher upfront investment.',
+    // LRT decision views
+    ridershipTitle: 'Projected Daily Ridership',
+    ridershipRange: 'trips/day',
+    ridershipBasis: 'from real CCTV throughput',
+    silaImpact: 'If Sila corridor excluded',
+    silaWithdrawn: 'Sila Municipality withdrew (30 Apr 2026)',
+    anchorTitle: 'Strategic Anchor Capture',
+    anchorCaptured: 'captured',
+    anchorLostSila: 'lost without Sila',
+    anchorDataGap: 'not in dataset',
+    financeTitle: 'Financial Case',
+    capex: 'Capital cost (CAPEX)',
+    opex: 'Annual O&M (OPEX)',
+    farebox: 'Farebox revenue / yr',
+    recovery: 'Farebox recovery',
+    todUpside: 'TOD / land-value upside',
+    sensitivity: 'Sensitivity',
+    perYear: '/yr',
+    assumptionsTitle: 'Assumptions & Sources',
+    assumptionsHead: 'Assumptions',
+    sourcesHead: 'Sources',
   },
   th: {
     economicImpact: 'ผลกระทบทางเศรษฐกิจ',
@@ -97,7 +129,28 @@ const translations = {
     p1analysis: 'แสดงผลกระทบทางเศรษฐกิจและการสร้างงานในระยะสั้นที่เหนือกว่า อย่างไรก็ตาม คะแนนด้านสิ่งแวดล้อมที่ต่ำกว่าจำเป็นต้องมีการวางแผนลดผลกระทบอย่างรอบคอบ',
     p2analysis: 'มีคุณค่าเชิงกลยุทธ์ด้านโลจิสติกส์ในระยะยาวที่ดีกว่าและมีโปรไฟล์ด้านสิ่งแวดล้อมที่ดีกว่า แต่มีต้นทุนเริ่มต้นที่สูงกว่าและระยะเวลาคืนทุนนานกว่า',
     recommendation: 'คำแนะนำ:',
-    recommendationDetail: 'สำหรับการกระตุ้นเศรษฐกิจในทันที โปรเจกต์ 1 มีความน่าสนใจมากกว่า สำหรับกลยุทธ์โลจิสติกส์ของประเทศในระยะยาวและความยั่งยืน โปรเจกต์ 2 เป็นกรณีที่แข็งแกร่งกว่าแม้จะมีการลงทุนเริ่มต้นที่สูงกว่า'
+    recommendationDetail: 'สำหรับการกระตุ้นเศรษฐกิจในทันที โปรเจกต์ 1 มีความน่าสนใจมากกว่า สำหรับกลยุทธ์โลจิสติกส์ของประเทศในระยะยาวและความยั่งยืน โปรเจกต์ 2 เป็นกรณีที่แข็งแกร่งกว่าแม้จะมีการลงทุนเริ่มต้นที่สูงกว่า',
+    // LRT decision views
+    ridershipTitle: 'ประมาณการผู้โดยสารต่อวัน',
+    ridershipRange: 'เที่ยว/วัน',
+    ridershipBasis: 'อ้างอิงจากปริมาณจราจรจริงที่ตรวจวัดด้วยกล้อง CCTV',
+    silaImpact: 'กรณีตัดแนวเขตเทศบาลเมืองศิลา',
+    silaWithdrawn: 'เทศบาลเมืองศิลาได้ถอนตัว (30 เมษายน 2569)',
+    anchorTitle: 'การครอบคลุมจุดยุทธศาสตร์',
+    anchorCaptured: 'ครอบคลุม',
+    anchorLostSila: 'สูญเสียหากไม่มีศิลา',
+    anchorDataGap: 'ไม่มีในชุดข้อมูล',
+    financeTitle: 'กรณีศึกษาทางการเงิน',
+    capex: 'ต้นทุนก่อสร้าง (CAPEX)',
+    opex: 'ค่าดำเนินงานต่อปี (OPEX)',
+    farebox: 'รายได้ค่าโดยสาร/ปี',
+    recovery: 'อัตราคืนทุนค่าโดยสาร',
+    todUpside: 'มูลค่าเพิ่มที่ดิน/TOD',
+    sensitivity: 'การวิเคราะห์ความอ่อนไหว',
+    perYear: '/ปี',
+    assumptionsTitle: 'สมมติฐานและแหล่งข้อมูล',
+    assumptionsHead: 'สมมติฐาน',
+    sourcesHead: 'แหล่งข้อมูล',
   }
 };
 
@@ -310,9 +363,10 @@ interface NliRightSidebarProps {
     style?: React.CSSProperties;
     selectedPlanId: number | null;
     onClearLrtPlan: () => void;
+    silaExcluded?: boolean;
 }
 
-export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language, activeParameters = [], style, selectedPlanId, onClearLrtPlan }: NliRightSidebarProps) {
+export function NliRightSidebar({ activeProject, isComparing, selectedRegion, onClearRegion, language, activeParameters = [], style, selectedPlanId, onClearLrtPlan, silaExcluded = false }: NliRightSidebarProps) {
   const lrtPlan = useMemo(() => {
     if (selectedPlanId === null) return null;
     return lrtPlansData.plans.find((p: any) => p.plan_id === selectedPlanId) || null;
@@ -336,6 +390,17 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
       color: lrtPlan.lines[0]?.color || '#008080'
     };
   }, [lrtPlan, language]);
+
+  // ---- LRT decision-intelligence (derived from real CCTV + published figures) ----
+  const decision = useMemo(() => {
+    if (selectedPlanId === null) return null;
+    return {
+      ridershipBase: getRidership(selectedPlanId),
+      ridershipSila: getRidership(selectedPlanId, { excludeSila: true }),
+      anchors: getAnchorCapture(selectedPlanId, { excludeSila: silaExcluded }),
+      financials: getFinancials(selectedPlanId),
+    };
+  }, [selectedPlanId, silaExcluded]);
 
   const data = React.useMemo(() => {
     if (isComparing) {
@@ -520,6 +585,76 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                 </Card>
               </div>
 
+              {/* ── VIEW 1a — Projected ridership (range) + Sila impact ── */}
+              {decision && (
+                <Card className="glass-panel border-none">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <TrainFront className="h-4 w-4 text-primary" />
+                      {t.ridershipTitle}
+                      <EstimateBadge kind="estimate" language={language} tooltip={language === 'th' ? decision.ridershipBase.assumption_th : decision.ridershipBase.assumption_en} />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-1">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-2xl font-bold text-foreground">
+                        {(decision.ridershipBase.low / 1000).toFixed(1)}–{(decision.ridershipBase.high / 1000).toFixed(1)}k
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">{t.ridershipRange}</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{t.ridershipBasis}: {decision.ridershipBase.corridorDailyVehicles.toLocaleString()} veh/day</p>
+                    <div className="mt-2 flex items-center gap-2 rounded-md bg-red-500/10 border border-red-500/20 p-2">
+                      <MinusCircle className="h-4 w-4 text-red-400 shrink-0" />
+                      <div className="text-[11px] leading-tight">
+                        <span className="text-red-400 font-semibold">{t.silaImpact}: </span>
+                        <span className="text-foreground">
+                          −{((decision.ridershipBase.base - decision.ridershipSila.base) / 1000).toFixed(1)}k {t.ridershipRange}
+                          {decision.anchors.lostWithSilaCount > 0 && `, −${decision.anchors.lostWithSilaCount} ${t.anchorLostSila}`}
+                        </span>
+                        <p className="text-[10px] text-muted-foreground">{t.silaWithdrawn}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* ── VIEW 1b — Strategic anchor-capture scorecard ── */}
+              {decision && (
+                <Card className="glass-panel border-none">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <Users2 className="h-4 w-4 text-primary" />
+                      {t.anchorTitle}
+                      <span className="ml-auto text-[11px] font-bold text-primary">
+                        {decision.anchors.capturedCount}/{decision.anchors.realAnchorCount} {t.anchorCaptured}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-1">
+                    <div className="flex flex-wrap gap-1.5">
+                      {decision.anchors.rows.map((a) => (
+                        <span
+                          key={a.key}
+                          className={cn(
+                            'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium',
+                            a.dataGap
+                              ? 'bg-muted/30 text-muted-foreground border-border/40'
+                              : a.captured
+                              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                              : 'bg-background/40 text-muted-foreground border-border/40 line-through decoration-muted-foreground/50',
+                            a.lostWithSila && 'ring-1 ring-red-500/40',
+                          )}
+                        >
+                          {a.dataGap ? <Info className="h-2.5 w-2.5" /> : a.captured ? <CheckCircle2 className="h-2.5 w-2.5" /> : <XIcon className="h-2.5 w-2.5" />}
+                          {language === 'th' ? a.th : a.en}
+                          {a.dataGap && <span className="opacity-70">({t.anchorDataGap})</span>}
+                        </span>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* reasoning / value to municipality */}
               <Card className="glass-panel border-none">
                 <CardHeader className="p-3 pb-1">
@@ -551,6 +686,64 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                   </ChartContainer>
                 </CardContent>
               </Card>
+
+              {/* ── VIEW 2 — Financial case (parametric, all estimates) ── */}
+              {decision && (
+                <Card className="glass-panel border-none">
+                  <CardHeader className="p-3 pb-1">
+                    <CardTitle className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <Coins className="h-4 w-4 text-primary" />
+                      {t.financeTitle}
+                      <EstimateBadge kind="scenario" language={language} tooltip={language === 'th' ? ASSUMPTIONS.th[1] : ASSUMPTIONS.en[1]} />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-1 space-y-2 text-xs">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-md bg-background/40 border border-border/30 p-2">
+                        <p className="text-[10px] text-muted-foreground">{t.capex}</p>
+                        <p className="font-bold text-foreground">฿{decision.financials.capexBaseB}B</p>
+                        <p className="text-[10px] text-muted-foreground">฿{decision.financials.capexLowB}–{decision.financials.capexHighB}B</p>
+                      </div>
+                      <div className="rounded-md bg-background/40 border border-border/30 p-2">
+                        <p className="text-[10px] text-muted-foreground">{t.opex}</p>
+                        <p className="font-bold text-foreground">฿{decision.financials.opexPerYearM}M{t.perYear}</p>
+                      </div>
+                      <div className="rounded-md bg-background/40 border border-border/30 p-2">
+                        <p className="text-[10px] text-muted-foreground">{t.farebox}</p>
+                        <p className="font-bold text-foreground">฿{decision.financials.fareboxPerYearM}M</p>
+                        <p className="text-[10px] text-muted-foreground">@ ฿{FARE_THB}/trip</p>
+                      </div>
+                      <div className="rounded-md bg-background/40 border border-border/30 p-2">
+                        <p className="text-[10px] text-muted-foreground">{t.recovery}</p>
+                        <p className={cn('font-bold', decision.financials.recoveryPct >= 100 ? 'text-emerald-400' : decision.financials.recoveryPct >= 50 ? 'text-amber-400' : 'text-red-400')}>
+                          {decision.financials.recoveryPct}%
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between rounded-md bg-emerald-500/10 border border-emerald-500/20 p-2">
+                      <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <Building2 className="h-3.5 w-3.5 text-emerald-400" />
+                        {t.todUpside}
+                      </span>
+                      <span className="font-bold text-emerald-400">฿{decision.financials.todUpsideLowM}–{decision.financials.todUpsideHighM}M{t.perYear}</span>
+                    </div>
+                    {/* sensitivity */}
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground mb-1">{t.sensitivity}</p>
+                      <div className="space-y-1">
+                        {decision.financials.sensitivity.map((s) => (
+                          <div key={s.key} className="flex items-center justify-between text-[11px]">
+                            <span className="text-muted-foreground">{language === 'th' ? s.th : s.en}</span>
+                            <span className="font-mono text-foreground">
+                              {s.recoveryPct !== null ? `${s.recoveryPct}%` : s.capexB !== null ? `฿${s.capexB}B` : '—'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Pros & Cons */}
               <div className="grid grid-cols-1 gap-2">
@@ -592,6 +785,36 @@ export function NliRightSidebar({ activeProject, isComparing, selectedRegion, on
                   </CardContent>
                 </Card>
               </div>
+
+              {/* ── Assumptions & Sources (nothing hidden) ── */}
+              <Accordion type="single" collapsible className="rounded-lg border border-border/40 bg-secondary/10 px-2">
+                <AccordionItem value="assumptions" className="border-none">
+                  <AccordionTrigger className="py-2 text-[11px] font-semibold text-muted-foreground hover:no-underline">
+                    <span className="flex items-center gap-1.5">
+                      <ScrollText className="h-3.5 w-3.5" />
+                      {t.assumptionsTitle}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="text-[10px] text-muted-foreground space-y-2 pb-3">
+                    <div>
+                      <p className="font-semibold text-foreground/80 mb-0.5">{t.assumptionsHead}</p>
+                      <ul className="space-y-1 list-disc pl-3.5">
+                        {(language === 'th' ? ASSUMPTIONS.th : ASSUMPTIONS.en).map((a, i) => (
+                          <li key={i}>{a}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground/80 mb-0.5">{t.sourcesHead}</p>
+                      <ul className="space-y-1 list-disc pl-3.5">
+                        {(language === 'th' ? SOURCES.th : SOURCES.en).map((s, i) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           ) : (
             <div className="space-y-3 px-1">
