@@ -79,10 +79,11 @@ interface NliMapToolbarProps {
 }
 
 const basemaps = [
-  { name: 'DataViz Dark', url: 'https://api.maptiler.com/maps/dataviz-dark/style.json' },
-  { name: 'Streets', url: 'https://api.maptiler.com/maps/streets-v2-dark/style.json' },
-  { name: 'Outdoor', url: 'https://api.maptiler.com/maps/outdoor-v2/style.json' },
-  { name: 'Satellite', url: 'https://api.maptiler.com/maps/satellite/style.json' },
+  // ใช้ค่าสไตล์แบบสั้น (shorthand strings) เพื่อให้ SDK ดึงข้อมูลสไตล์พร้อม API key อัตโนมัติ
+  { name: 'DataViz Dark', url: 'dataviz-dark' },
+  { name: 'Streets', url: 'streets-v2' },
+  { name: 'Outdoor', url: 'outdoor' },
+  { name: 'Satellite', url: 'satellite' },
 ];
 
 const tools = [

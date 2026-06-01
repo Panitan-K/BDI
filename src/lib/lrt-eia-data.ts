@@ -9,6 +9,7 @@
  */
 
 import lrtPlansData from '../../docs/lrt_plans.json';
+import { getCollidingTilesForPlan } from './lrt-collision-utils';
 
 export interface EiaMetrics {
   /** Right-of-way / corridor street width that must be cleared, in metres. */
@@ -42,26 +43,65 @@ export function getEiaForPlan(planId: number): EiaMetrics {
 
   const corridorLengthKm = +(stations * (1.4 + r(1) * 0.6) + (lines - 1) * 3).toFixed(1);
   const rowWidthM = Math.round(20 + (lines - 1) * 4 + r(2) * 8); // ~20–36 m
-  const buildingsToDemolish = Math.round(corridorLengthKm * (4 + r(3) * 5));
-  const commercial = Math.round(buildingsToDemolish * (0.3 + r(4) * 0.2));
-  const residential = Math.max(0, buildingsToDemolish - commercial);
-  const compensationCostMTHB = Math.round(
-    buildingsToDemolish * (8 + r(5) * 7) + corridorLengthKm * 12
-  );
-  const eiaRiskScore = Math.min(
-    95,
-    Math.round(32 + buildingsToDemolish * 0.7 + lines * 6 + r(6) * 14)
-  );
+
+  // ดึงข้อมูลกริดที่ชนกับเส้นทางรถไฟฟ้าจริงจากผลลัพธ์ของ Turf.js
+  const collidingTiles = getCollidingTilesForPlan(planId);
+
+  let residential = 0;
+  let commercial = 0;
+  let compensationCostMTHB = 0;
+  let totalRiskPoints = 0;
+
+  // คำนวณผลกระทบ EIA จริงตามสัดส่วนความสูงและความหนาแน่นของสิ่งปลูกสร้างในแต่ละกริดเฉพาะที่แนวเส้นทางตัดผ่าน
+  collidingTiles.forEach((tile) => {
+    if (!tile.isColliding) return;
+
+    const seedX = tile.grid_x;
+    const seedY = tile.grid_y;
+
+    if (tile.severity === 'high') {
+      // ตึกสูงและหนาแน่น (z_range สูง, pct_high สูง) ทำให้มีอาคารที่ต้องรื้อถอนและค่าชดเชยสูงมาก
+      residential += Math.round(18 + seeded(seedX) * 12);
+      commercial += Math.round(12 + seeded(seedY) * 8);
+      compensationCostMTHB += Math.round(220 + seeded(seedX) * 100);
+      totalRiskPoints += 25;
+    } else if (tile.severity === 'medium') {
+      // อาคารปานกลาง
+      residential += Math.round(6 + seeded(seedX) * 6);
+      commercial += Math.round(3 + seeded(seedY) * 4);
+      compensationCostMTHB += Math.round(70 + seeded(seedX) * 40);
+      totalRiskPoints += 12;
+    } else {
+      // พื้นที่โล่งหรืออาคารต่ำ
+      residential += Math.round(1 + seeded(seedX) * 2);
+      commercial += Math.round(seeded(seedY) * 2);
+      compensationCostMTHB += Math.round(12 + seeded(seedX) * 8);
+      totalRiskPoints += 3;
+    }
+  });
+
+  const buildingsToDemolish = residential + commercial;
+  const actualCollisionsCount = collidingTiles.filter(t => t.isColliding).length;
+
+  // หากไม่มีพื้นที่ชนเลย ให้ใช้ค่าสถิติเริ่มต้นตามความยาว
+  const finalBuildings = actualCollisionsCount > 0 ? buildingsToDemolish : Math.round(corridorLengthKm * 2);
+  const finalResidential = actualCollisionsCount > 0 ? residential : Math.round(finalBuildings * 0.6);
+  const finalCommercial = actualCollisionsCount > 0 ? commercial : Math.max(0, finalBuildings - finalResidential);
+  const finalCompensation = actualCollisionsCount > 0 ? compensationCostMTHB : Math.round(finalBuildings * 5 + corridorLengthKm * 10);
+  const eiaRiskScore = actualCollisionsCount > 0
+    ? Math.min(98, Math.max(20, totalRiskPoints))
+    : Math.min(95, Math.round(15 + corridorLengthKm * 4));
+
   const floodComplaints = Math.round(8 + r(7) * 55);
   const noiseComplaints = Math.round(18 + r(8) * 80);
 
   return {
     rowWidthM,
     corridorLengthKm,
-    buildingsToDemolish,
-    residential,
-    commercial,
-    compensationCostMTHB,
+    buildingsToDemolish: finalBuildings,
+    residential: finalResidential,
+    commercial: finalCommercial,
+    compensationCostMTHB: finalCompensation,
     eiaRiskScore,
     floodComplaints,
     noiseComplaints,
@@ -92,3 +132,4 @@ export function getTracking(planSelected: boolean): Milestone[] {
     { key: 'construction', status: 'pending', date: '—' },
   ];
 }
+

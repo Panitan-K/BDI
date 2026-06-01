@@ -217,9 +217,10 @@ export default function NliPlatformPage() {
 
   // Effect to handle theme changes (DOM, localStorage, basemap)
   useEffect(() => {
+    // ใช้รหัสสไตล์แผนที่พื้นฐานที่ MapTiler SDK สนับสนุนโดยตรงเพื่อป้องกันปัญหาการโหลด URL ที่ไม่มี API key
     const newBasemap = theme === 'light' 
-      ? 'https://api.maptiler.com/maps/outdoor-v2/style.json' 
-      : 'https://api.maptiler.com/maps/dataviz-dark/style.json';
+      ? 'outdoor' 
+      : 'dataviz-dark';
     setBasemapStyle(newBasemap);
     
     document.documentElement.classList.remove('light', 'dark');

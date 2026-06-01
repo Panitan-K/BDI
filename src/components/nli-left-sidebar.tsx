@@ -39,6 +39,8 @@ import lrtPlansData from '../../docs/lrt_plans.json';
 import { Button } from '@/components/ui/button';
 import { NliLayerSettingsDialog } from './nli-layer-settings-dialog';
 import { getEiaForPlan, getTracking, type MilestoneStatus } from '@/lib/lrt-eia-data';
+import { getCollidingTilesForPlan } from '@/lib/lrt-collision-utils';
+
 
 interface Layer {
   name: string;
@@ -77,6 +79,9 @@ const translations = {
     riskLow: 'Low',
     riskMed: 'Moderate',
     riskHigh: 'High',
+    demolishList: 'Grid Demolition Impact',
+    zRangeLabel: 'Building Height (z_range)',
+    pctHighLabel: 'Bld. Density (pct_high)',
     // Box 3 — Tracking
     trackTitle: 'Project Tracking',
     trackSubtitle: 'Approval & accomplishment',
@@ -135,6 +140,9 @@ const translations = {
     riskLow: 'ต่ำ',
     riskMed: 'ปานกลาง',
     riskHigh: 'สูง',
+    demolishList: 'พื้นที่รื้อถอนสิ่งปลูกสร้าง (Grid)',
+    zRangeLabel: 'ความสูงตึก (z_range)',
+    pctHighLabel: 'ความหนาแน่น (pct_high)',
     trackTitle: 'การติดตามโครงการ',
     trackSubtitle: 'สถานะการอนุมัติและความคืบหน้า',
     milestonesDone: 'ขั้นตอนที่เสร็จสมบูรณ์',
@@ -317,6 +325,7 @@ export function NliLeftSidebar({
 
   // ---- EIA (mock, reacts to selected plan) ----
   const eia = planSelected ? getEiaForPlan(selectedPlanId!) : null;
+  const collidingTiles = planSelected ? getCollidingTilesForPlan(selectedPlanId!) : [];
   const riskBand =
     eia == null ? null : eia.eiaRiskScore >= 70 ? 'high' : eia.eiaRiskScore >= 45 ? 'med' : 'low';
   const riskColor =
@@ -522,6 +531,60 @@ export function NliLeftSidebar({
                       </span>
                     </div>
                   </div>
+
+                  {/* แสดงรายการกริดที่ปะทะกับแนวเส้นทางเพื่อแจ้งสิ่งปลูกสร้างที่ต้องรื้อถอน */}
+                  {collidingTiles.length > 0 && (
+                    <div className="mt-3 border-t border-border/30 pt-3">
+                      <span className="text-[11px] font-semibold text-muted-foreground block mb-2">{t.demolishList}</span>
+                      <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                        {[...collidingTiles]
+                          .sort((a, b) => {
+                            if (a.isColliding && !b.isColliding) return -1;
+                            if (!a.isColliding && b.isColliding) return 1;
+                            return 0;
+                          })
+                          .map((tile) => (
+                            <div
+                              key={tile.tile}
+                              className={cn(
+                                "text-[10px] rounded p-2 flex flex-col gap-1 transition-all",
+                                tile.isColliding
+                                  ? "bg-background/40 border border-border/20"
+                                  : "bg-background/10 border border-border/10 opacity-60"
+                              )}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-foreground flex items-center gap-1">
+                                  {tile.tile}
+                                  {!tile.isColliding && (
+                                    <span className="text-[8px] font-normal text-muted-foreground bg-secondary px-1.5 py-0.5 rounded scale-90 origin-left">
+                                      {language === 'th' ? 'นอกแนวเส้นทาง' : 'Outside Corridor'}
+                                    </span>
+                                  )}
+                                </span>
+                                <span className={cn(
+                                  "px-1.5 py-0.5 rounded text-[9px] font-bold",
+                                  tile.severity === 'high' ? "bg-red-500/10 text-red-400 border border-red-500/20" :
+                                  tile.severity === 'medium' ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
+                                  "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                )}>
+                                  {tile.severity === 'high' ? (language === 'th' ? 'เวนคืนสูง' : 'High Risk') :
+                                   tile.severity === 'medium' ? (language === 'th' ? 'เวนคืนปานกลาง' : 'Med Risk') :
+                                   (language === 'th' ? 'เวนคืนต่ำ' : 'Low Risk')}
+                                </span>
+                              </div>
+                              <div className="flex justify-between text-muted-foreground">
+                                <span>{t.zRangeLabel}: <strong className="text-foreground">{tile.z_range}m</strong></span>
+                                <span>{t.pctHighLabel}: <strong className="text-foreground">{tile.pct_high}%</strong></span>
+                              </div>
+                              <div className="text-[9px] text-muted-foreground/90 italic mt-0.5">
+                                {tile.desc}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </SidebarBox>

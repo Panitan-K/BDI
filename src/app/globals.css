@@ -9,56 +9,68 @@
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
- 
-    --primary: 238 100% 71%; /* #6C72FF */
+
+    --primary: 238 100% 71%;
+    /* #6C72FF */
     --primary-foreground: 0 0% 100%;
- 
+
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 222.2 47.4% 11.2%;
- 
+
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 215.4 16.3% 46.9%;
- 
+
     --accent: 240 4.8% 95.9%;
     --accent-foreground: 222.2 47.4% 11.2%;
- 
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 222.2 84% 4.9%;
- 
+
     --radius: 0.75rem;
 
-    --chart-1: 210 100% 67%; /* #57C3FF */
-    --chart-2: 227 91% 63%; /* #4A69F6 */
-    --chart-3: 54 97% 59%; /* #FCE525 */
-    --chart-4: 238 100% 71%; /* #6C72FF */
-    --chart-5: 243 21% 25%; /* #34324F */
+    --chart-1: 210 100% 67%;
+    /* #57C3FF */
+    --chart-2: 227 91% 63%;
+    /* #4A69F6 */
+    --chart-3: 54 97% 59%;
+    /* #FCE525 */
+    --chart-4: 238 100% 71%;
+    /* #6C72FF */
+    --chart-5: 243 21% 25%;
+    /* #34324F */
   }
 
   .dark {
-    --background: 227 60% 10%; /* #0A0E28 */
-    --foreground: 222 29% 85%; /* #D1D3FB */
+    --background: 227 60% 10%;
+    /* #0A0E28 */
+    --foreground: 222 29% 85%;
+    /* #D1D3FB */
 
-    --card: 240 48% 20%; /* #1C1C4C */
+    --card: 240 48% 20%;
+    /* #1C1C4C */
     --card-foreground: 0 0% 100%;
 
-    --popover: 252 56% 12%; 
+    --popover: 252 56% 12%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 238 100% 71%; /* #6C72FF */
+    --primary: 238 100% 71%;
+    /* #6C72FF */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 243 21% 25%; /* #34324F */
+    --secondary: 243 21% 25%;
+    /* #34324F */
     --secondary-foreground: 0 0% 100%;
 
     --muted: 243 21% 25%;
-    --muted-foreground: 222 29% 71%; /* #A6B0D1 */
+    --muted-foreground: 222 29% 71%;
+    /* #A6B0D1 */
 
     --accent: 243 21% 35%;
     --accent-foreground: 0 0% 100%;
@@ -66,7 +78,8 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 243 21% 25%; /* #34324F */
+    --border: 243 21% 25%;
+    /* #34324F */
     --input: 243 21% 30%;
     --ring: 238 100% 71%;
   }
@@ -76,6 +89,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
@@ -89,5 +103,61 @@
 
   .maplibregl-ctrl-attrib {
     display: none !important;
+  }
+
+  /* Fix map popup to stay stationary at the top-left of the map container */
+  .lrt-popup {
+    position: absolute !important;
+    top: 16px !important;
+    left: 16px !important;
+    transform: none !important;
+    z-index: 40 !important;
+    animation: popupFadeIn 0.2s ease-out forwards;
+  }
+
+  /* Hide the geographic pointer arrow */
+  .lrt-popup .maplibregl-popup-tip,
+  .lrt-popup .mapboxgl-popup-tip {
+    display: none !important;
+  }
+
+  /* Make the default MapLibre content container transparent and unpadded */
+  .lrt-popup .maplibregl-popup-content,
+  .lrt-popup .mapboxgl-popup-content {
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Customize the popup close button */
+  .lrt-popup .maplibregl-popup-close-button,
+  .lrt-popup .mapboxgl-popup-close-button {
+    color: #9ca3af !important;
+    font-size: 16px !important;
+    padding: 4px 8px !important;
+    top: 6px !important;
+    right: 6px !important;
+    outline: none !important;
+    border-radius: 4px !important;
+    transition: all 0.15s ease;
+  }
+
+  .lrt-popup .maplibregl-popup-close-button:hover,
+  .lrt-popup .mapboxgl-popup-close-button:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+  }
+}
+
+@keyframes popupFadeIn {
+  from {
+    opacity: 0;
+    margin-top: -8px;
+  }
+
+  to {
+    opacity: 1;
+    margin-top: 0;
   }
 }
